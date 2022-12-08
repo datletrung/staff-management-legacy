@@ -1,0 +1,75 @@
+.MainBody {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.HeaderRow {
+    display: flex;
+}
+
+.HeaderMenu {
+    cursor: pointer;
+    position: relative;
+    padding: 0 2rem 0 1.5rem;
+    top: 50%;
+    height: 0;
+}
+.HeaderMenu:hover {
+    color: aquamarine;
+}
+
+.HeaderContainer {
+    display: flex;
+    flex-direction: row;
+}
+
+.BodyContainer {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: row;
+}
+
+.FooterContainer {
+    margin-top: auto;
+}
+
+.NavBarContainer {
+    display: block;
+    width: 300px;
+    border: 2px solid green;
+    border-left: 0;
+    border-bottom: 0;
+    border-radius: 0 1.5rem 1.5rem 0.5rem;
+}
+
+.ContentContainer {
+    margin-right: auto;
+    width: 100%;
+    padding: 0 1rem;
+}
+
+.NavBar {
+}
+
+.NavBarList {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.NavBarItem {
+    padding: 1rem 2rem;
+    border-radius: 0 1.5rem 1.5rem 0;
+}
+
+.NavBarItem:hover {
+    color: black;
+    background-color: lightgray;
+}
+
+@media only screen and (max-width: 1000px) {
+    .NavBarContainer {
+        display: none;
+    }
+}
