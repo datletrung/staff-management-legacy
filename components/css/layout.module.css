@@ -37,19 +37,17 @@
 .NavBarContainer {
     display: block;
     width: 300px;
-    border: 2px solid green;
+    border: 2px solid rgba(0,255,0,1);
     border-left: 0;
     border-bottom: 0;
-    border-radius: 0 1.5rem 1.5rem 0.5rem;
+    border-radius: 0.25rem 1.5rem 1.5rem;
+    animation: neon 2s linear infinite alternate;
 }
 
 .ContentContainer {
     margin-right: auto;
     width: 100%;
     padding: 0 1rem;
-}
-
-.NavBar {
 }
 
 .NavBarList {
@@ -72,4 +70,10 @@
     .NavBarContainer {
         display: none;
     }
+}
+
+@keyframes neon {
+    0%   {border: 2px solid rgba(0,255,0,0.4); border-left: 0; border-bottom: 0;}
+    100% {border: 2px solid rgba(0,255,0,1); border-left: 0; border-bottom: 0;}
+    0% {border: 2px solid rgba(0,255,0,0.4); border-left: 0; border-bottom: 0;}
 }

@@ -1,0 +1,20 @@
+.Label {
+    padding: 0.5rem;
+}
+
+.Input {
+    padding: 0.5rem;
+}
+
+.TimeEntryDiv {
+    overflow: auto;
+    display: flex;
+    flex-direction: row;
+    text-align: center;
+}
+
+.TimeDiv {
+    padding: 0.2rem;
+    display: flex;
+    flex-direction: column;
+}

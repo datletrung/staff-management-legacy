@@ -1,6 +1,6 @@
 import Link from "next/link";
-import styles from './layout.module.css';
-import React, { useState, useEffect } from "react";
+import styles from './css/layout.module.css';
+import React, { useState } from "react";
 import { NavBarItems } from "./NavBarItems";
 
 const Header = () => {
@@ -42,7 +42,7 @@ const Navbar = () => {
   
     return (
       <>
-        <nav className={styles.NavBar}>
+        <div>
             <div onClick={() => setNavActive(!navActive)} className={`nav__menu-bar`}></div>
             <div className={`${navActive ? "NavBarActive" : ""} ${styles.NavBarList}`}>
                 {NavBarItems.map((menu, idx) => (
@@ -53,7 +53,7 @@ const Navbar = () => {
                     </div>
                 ))}
             </div>
-        </nav>
+        </div>
       </>
     );
 };
