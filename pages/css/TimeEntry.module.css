@@ -1,16 +1,21 @@
 .DateDiv {
-    width: 100%;
+    width: 75vw;
     display: flex;
     flex-direction: row;
 }
 
+@media only screen and (max-width: 1000px) {
+    .DateDiv {
+        width: 100vw;
+    }
+}
+
 .DateLabel {
-    width: 8rem;
+    min-width: 8rem;
 }
 
 .TimeEntryDiv {
     overflow-x: auto;
-    width: 70vw;
     display: flex;
     flex-direction: row;
 }
@@ -38,4 +43,8 @@
 }
 .FAIcon:hover {
     color: aquamarine;
+}
+
+.ClockInOut {
+    margin: 0 0.5rem 0 0;
 }
