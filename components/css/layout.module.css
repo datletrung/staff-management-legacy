@@ -8,14 +8,14 @@
     display: flex;
 }
 
-.HeaderMenu {
+.FAIcon {
     cursor: pointer;
     position: relative;
     padding: 0 2rem 0 1.5rem;
     top: 50%;
     height: 0;
 }
-.HeaderMenu:hover {
+.FAIcon:hover {
     color: aquamarine;
 }
 
@@ -36,7 +36,7 @@
 
 .NavBarContainer {
     display: block;
-    width: 300px;
+    min-width: 220px;
     border: 2px solid rgba(0,255,0,1);
     border-left: 0;
     border-bottom: 0;
@@ -46,7 +46,7 @@
 
 .ContentContainer {
     margin-right: auto;
-    width: 100%;
+    width: 80%;
     padding: 0 1rem;
 }
 
@@ -69,11 +69,12 @@
 @media only screen and (max-width: 1000px) {
     .NavBarContainer {
         display: none;
+        width: 100%;
     }
 }
 
 @keyframes neon {
-    0%   {border: 2px solid rgba(0,255,0,0.4); border-left: 0; border-bottom: 0;}
+    0%   {border: 2px solid rgba(0,255,0,0.2); border-left: 0; border-bottom: 0;}
     100% {border: 2px solid rgba(0,255,0,1); border-left: 0; border-bottom: 0;}
-    0% {border: 2px solid rgba(0,255,0,0.4); border-left: 0; border-bottom: 0;}
+    0% {border: 2px solid rgba(0,255,0,0.2); border-left: 0; border-bottom: 0;}
 }

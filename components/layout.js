@@ -7,16 +7,14 @@ const Header = () => {
     return (
         <>
         <div className={styles.HeaderRow}>
-            <i className={`fa-solid fa-bars fa-2xl ${styles.HeaderMenu}`}
+            <i className={`fa-solid fa-bars fa-2xl ${styles.FAIcon}`}
                 onClick={() => {
-                    console.log('clicked');
                     if (window.screen.width <= 1000 && document.getElementById('nav-bar-container').style.display == ''){
-                        document.getElementById('nav-bar-container').style.display = 'block'
+                        document.getElementById('nav-bar-container').style.display = 'block';
                     } else if (window.screen.width > 1000 && document.getElementById('nav-bar-container').style.display == ''){
-                        document.getElementById('nav-bar-container').style.display = 'none'
+                        document.getElementById('nav-bar-container').style.display = 'none';
                     } else {
                         document.getElementById('nav-bar-container').style.display = document.getElementById('nav-bar-container').style.display == 'none' ? 'block' : 'none';
-                        document.getElementById('nav-bar-container').style.display = '';
                     }
                 }}
             ></i>
@@ -43,7 +41,7 @@ const Navbar = () => {
     return (
       <>
         <div>
-            <div onClick={() => setNavActive(!navActive)} className={`nav__menu-bar`}></div>
+            <div onClick={() => setNavActive(!navActive)}></div>
             <div className={`${navActive ? "NavBarActive" : ""} ${styles.NavBarList}`}>
                 {NavBarItems.map((menu, idx) => (
                     <div onClick={() => { setActiveIdx(idx); setNavActive(false); }} key={menu.text} >
@@ -65,7 +63,7 @@ export default function Layout({ children }) {
             <div className={styles.HeaderContainer}><Header /></div>
             <div className={styles.BodyContainer}>
                 <div className={styles.NavBarContainer} id={`nav-bar-container`}><Navbar /></div>
-                <div className={styles.ContentContainer}>{children}</div>
+                <div className={styles.ContentContainer} id={`content-container`}>{children}</div>
             </div>
             <div className={styles.FooterContainer}><Footer /></div>
         </div>
