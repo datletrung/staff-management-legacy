@@ -54,7 +54,7 @@ export default function TimeEntry() {
               <>
               <div key={timeIndex} className={stylesTimeEntry.TimeDiv}>
                 <TextField className={stylesTimeEntry.Input}
-                            label={"From"+(dateTimeItem.time > 1 ? " (" + parseInt(timeIndex+1) + ")": '')}
+                            label={"From"+(dateTimeItem.time > 1 ? " (" + String(timeIndex+1) + ")": '')}
                             variant="standard"
                             type="text"
                             id={"time-from-"+dateTimeItem.day+"-"+timeIndex}
@@ -62,7 +62,7 @@ export default function TimeEntry() {
               </div>
               <div className={stylesTimeEntry.TimeDiv}>
                 <TextField className={stylesTimeEntry.Input}
-                            label={"To"+(dateTimeItem.time > 1 ? " (" + parseInt(timeIndex+1) + ")": '')}
+                            label={"To"+(dateTimeItem.time > 1 ? " (" + String(timeIndex+1) + ")": '')}
                             variant="standard"
                             type="text"
                             id={"time-to-"+dateTimeItem.day+"-"+timeIndex}
