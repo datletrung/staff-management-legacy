@@ -21,6 +21,11 @@ export default function TimeEntry() {
   // as well, if this is just an array, you can just do useState([...data])
   // in my opinion, a user should only be able to set their hours for the current day
   // so I don't think we need any array with all the dates
+
+  // Brian: I would like to display a clock that shows the current local time (update every second on client side)
+  // the Clock In button will set the time of the current local date to whatever the current time shown in the clock above
+  // user can clock in and clock out more than 1 time per day
+  // user should not and cannot modify the past time but a person with role manager can
   const [hours, setHours ] = useState(0);
   const [dateTime, setDateTime] = useState([
                                               { day: 'Monday', time: 1, },
