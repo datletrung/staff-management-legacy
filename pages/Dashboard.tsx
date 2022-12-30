@@ -84,17 +84,6 @@ const dataProductivity = {
             'rgba(255, 206, 86, 1)',
         ],
         borderWidth: 1,
-    }, {
-        label: 'Target',
-        data: [5, 5, 5, 5],
-        type: 'line',
-        backgroundColor: [
-            'rgba(0, 200, 64, 1)',
-        ],
-        borderColor: [
-            'rgba(0, 200, 64, 1)',
-        ],
-        borderWidth: 2,
     }
 ]};
 
