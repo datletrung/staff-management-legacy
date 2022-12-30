@@ -10,7 +10,7 @@ export default NextAuth({
         }),
     ],
     callbacks: {
-        async session({ session }) {
+        async session({ session }:{ session: any}) {
             //retrieve ROLE and assign to session after signed in
             const mysql = require('serverless-mysql')({
                 config: {

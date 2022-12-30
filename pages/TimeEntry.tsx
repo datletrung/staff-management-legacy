@@ -18,7 +18,7 @@ import stylesTimeEntry from './css/TimeEntry.module.css';
 
 
 export default function TimeEntry({ calendarDate, timeClock }: {calendarDate: string, timeClock: string}) {
-  const { data: session } = useSession();
+  const session: any = useSession().data;
   const [loading, setLoading] = useState(false);
   const [disableEdit, setDisableEdit] = useState(true); // disable edit if not Manager
   const [currentDatetime, setCurrentDatetime] = useState(''); // display current date time
@@ -135,8 +135,9 @@ export default function TimeEntry({ calendarDate, timeClock }: {calendarDate: st
     setDateTime(tmp);
   };
 
-  const checkTime = (fieldId: string) => {
-    const field = document.getElementById(fieldId);
+  const checkTime = (idx: string) => {
+    let field = (document.getElementById(idx) as HTMLInputElement);
+    if (!field) return;
     const isValid = /^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$/.test(field.value);
     if (isValid) {
       field.style.backgroundColor = '#bfa';
@@ -177,20 +178,21 @@ export default function TimeEntry({ calendarDate, timeClock }: {calendarDate: st
             value="check"
             selected={!disableEdit}
             onChange={() => {
-              if (typeof window !== "undefined"
-              && session
-              && session.user.role != "EMPLOYEE") {
-                setDisableEdit(!disableEdit);
-              } else {
-                toast.error("You don't have permission to use this feature.", {
-                  position: "top-right",
-                  autoClose: 5000,
-                  hideProgressBar: false,
-                  closeOnClick: true,
-                  pauseOnHover: true,
-                  draggable: false,
-                  theme: "colored",
-                });
+              if (typeof window !== "undefined"){
+                if (!session || !session.user) return;
+                if (session.user.role != "EMPLOYEE") {
+                  setDisableEdit(!disableEdit);
+                } else {
+                  toast.error("You don't have permission to use this feature.", {
+                    position: "top-right",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: false,
+                    theme: "colored",
+                  });
+                }
               }
             }}
           >
@@ -203,7 +205,7 @@ export default function TimeEntry({ calendarDate, timeClock }: {calendarDate: st
           <div key={dateTimeIndex.toString()} className={stylesTimeEntry.DateDiv}>
             <div>
               <h4 className={stylesTimeEntry.DateLabel}>{dateTimeItem.weekday}</h4>
-              <h5 className={stylesTimeEntry.DateLabel}>{dateTimeItem.date}</h5>
+              <h5 className={`${stylesTimeEntry.DateLabel} ${stylesTimeEntry.DateLabelNoBold}`}>{dateTimeItem.date}</h5>
             </div>
             <div className={stylesTimeEntry.TimeEntryDiv}>
               {[...Array(dateTimeItem.time)].map((timeItem, timeIndex, times) => (
@@ -218,9 +220,10 @@ export default function TimeEntry({ calendarDate, timeClock }: {calendarDate: st
                               onChange={() => checkTime("time-from-"+dateTimeItem.date_id+"-"+timeIndex)}
                               onBlur={() => {
                                 const idx = "time-from-"+dateTimeItem.date_id+"-"+timeIndex;
-                                let field = document.getElementById(idx);
+                                let field = (document.getElementById(idx) as HTMLInputElement);
+                                if (!field) return;
                                 if (checkTime(idx) || (!checkTime(idx) && field.value === '')){
-                                  field.style.backgroundColor = null;
+                                  field.style.backgroundColor = '';
                                 }
                               }}
                   />
@@ -236,9 +239,10 @@ export default function TimeEntry({ calendarDate, timeClock }: {calendarDate: st
                               onChange={() => checkTime("time-to-"+dateTimeItem.date_id+"-"+timeIndex)}
                               onBlur={() => {
                                 const idx = "time-to-"+dateTimeItem.date_id+"-"+timeIndex;
-                                let field = document.getElementById(idx);
+                                let field = (document.getElementById(idx) as HTMLInputElement);
+                                if (!field) return;
                                 if (checkTime(idx) || (!checkTime(idx) && field.value === '')){
-                                  field.style.backgroundColor = null;
+                                  field.style.backgroundColor = '';
                                 }
                               }}
                   />
@@ -277,7 +281,7 @@ export default function TimeEntry({ calendarDate, timeClock }: {calendarDate: st
   );
 }
 
-export async function getServerSideProps(context) {
+export async function getServerSideProps(context: any) {
   const mysql = require('serverless-mysql')({
     config: {
       host     : process.env.sqlHostName,
@@ -291,7 +295,7 @@ export async function getServerSideProps(context) {
   let calendarDate = await JSON.stringify(await mysql.query(fetchCalendarDateQuery));
   // retrieve person's timeclock
   let timeClock = await JSON.stringify(await mysql.query(fetchTimeClockQuery,
-                                                        [ session.user.email ]
+                                                        [ session?.user?.email ]
   ));
   await mysql.end();
   return { props: { calendarDate, timeClock } }

@@ -17,6 +17,10 @@
     text-align: center;
 }
 
+.DateLabelNoBold {
+    font-weight: normal;
+}
+
 .TimeEntryDiv {
     overflow-x: auto;
     display: flex;

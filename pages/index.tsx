@@ -29,7 +29,7 @@ export default function Account() {
             </>
         )
     } else { //if signed in then redirect to Dashboard or whereever the user left
-        router.push(!router.query.returnUrl.toString()
+        router.push(!router.query.returnUrl
                             ? '/Dashboard'
                             : router.query.returnUrl.toString());
     }
