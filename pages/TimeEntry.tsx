@@ -17,7 +17,7 @@ import { fetchTimeClockQuery } from './sql/TimeEntry/fetchTimeClock';
 import stylesTimeEntry from './css/TimeEntry.module.css';
 
 
-export default function TimeEntry({ calendarDate, timeClock }) {
+export default function TimeEntry({ calendarDate, timeClock }: {calendarDate: string, timeClock: string}) {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [disableEdit, setDisableEdit] = useState(true); // disable edit if not Manager
@@ -26,7 +26,7 @@ export default function TimeEntry({ calendarDate, timeClock }) {
   const calendarDateData = JSON.parse(calendarDate); // retrieve and display date and month
   const timeClockData = JSON.parse(timeClock); // timeclock data
 
-  const calculateFields = (date_id) => {
+  const calculateFields = (date_id: string) => {
     // if no timeclock data then default numFieldData to 1
     const dateIdPos = timeClockData.findIndex(el => el.DATE_ID === date_id);
     if (dateIdPos === -1){
@@ -42,7 +42,7 @@ export default function TimeEntry({ calendarDate, timeClock }) {
     }
   }
 
-  const dateData = (plus, date_id, timeIndex) => {
+  const dateData = (plus: number, date_id: string, timeIndex: number) => {
     const dateIdPos = timeClockData.findIndex(el => el.DATE_ID === date_id);
     if (dateIdPos === -1){ // if no timeclock data then default to null
       return null;
@@ -109,7 +109,7 @@ export default function TimeEntry({ calendarDate, timeClock }) {
     setLoading(false);
   };
 
-  const handleDateTimeSubtract = (dateTimeItem) => {
+  const handleDateTimeSubtract = (dateTimeItem: string) => {
     const tmp: { date_id: string; weekday: string;  date: string; time: number; }[] = [];
     dateTime.map((dateTimeItemTmp) => {
       let timeTmp = dateTimeItemTmp.time;
@@ -122,7 +122,7 @@ export default function TimeEntry({ calendarDate, timeClock }) {
     setDateTime(tmp);
   };
 
-  const handleDateTimeAdd = (dateTimeItem) => {
+  const handleDateTimeAdd = (dateTimeItem: string) => {
     const tmp: { weekday: string;  date: string; time: number; }[] = [];
     dateTime.map((dateTimeItemTmp) => {
       let timeTmp = dateTimeItemTmp.time;
@@ -135,7 +135,7 @@ export default function TimeEntry({ calendarDate, timeClock }) {
     setDateTime(tmp);
   };
 
-  const checkTime = (fieldId) => {
+  const checkTime = (fieldId: string) => {
     const field = document.getElementById(fieldId);
     const isValid = /^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$/.test(field.value);
     if (isValid) {
