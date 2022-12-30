@@ -28,7 +28,7 @@ export default function TimeEntry({ calendarDate, timeClock }: {calendarDate: st
 
   const calculateFields = (date_id: string) => {
     // if no timeclock data then default numFieldData to 1
-    const dateIdPos = timeClockData.findIndex(el => el.DATE_ID === date_id);
+    const dateIdPos = timeClockData.findIndex((el: any) => el.DATE_ID === date_id);
     if (dateIdPos === -1){
       return 1;
     }
@@ -43,7 +43,7 @@ export default function TimeEntry({ calendarDate, timeClock }: {calendarDate: st
   }
 
   const dateData = (plus: number, date_id: string, timeIndex: number) => {
-    const dateIdPos = timeClockData.findIndex(el => el.DATE_ID === date_id);
+    const dateIdPos = timeClockData.findIndex((el: any) => el.DATE_ID === date_id);
     if (dateIdPos === -1){ // if no timeclock data then default to null
       return null;
     }
