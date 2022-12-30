@@ -109,7 +109,7 @@ export default function TimeEntry({ calendarDate, timeClock }: {calendarDate: st
     setLoading(false);
   };
 
-  const handleDateTimeSubtract = (dateTimeItem: string) => {
+  const handleDateTimeSubtract = (dateTimeItem: any) => {
     const tmp: { date_id: string; weekday: string;  date: string; time: number; }[] = [];
     dateTime.map((dateTimeItemTmp) => {
       let timeTmp = dateTimeItemTmp.time;
@@ -122,8 +122,8 @@ export default function TimeEntry({ calendarDate, timeClock }: {calendarDate: st
     setDateTime(tmp);
   };
 
-  const handleDateTimeAdd = (dateTimeItem: string) => {
-    const tmp: { weekday: string;  date: string; time: number; }[] = [];
+  const handleDateTimeAdd = (dateTimeItem: any) => {
+    const tmp: { date_id: string, weekday: string;  date: string; time: number; }[] = [];
     dateTime.map((dateTimeItemTmp) => {
       let timeTmp = dateTimeItemTmp.time;
       if (dateTimeItem.weekday == dateTimeItemTmp.weekday) {
