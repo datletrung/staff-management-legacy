@@ -5,6 +5,14 @@ const nextConfig = {
   env: {
     websiteName: 'LRT Staff Management',
   },
+  images: {
+    remotePatterns: [
+      {
+        hostname: '*',
+      },
+    ],
+  },
+
 }
 
 module.exports = nextConfig

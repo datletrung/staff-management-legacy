@@ -2,6 +2,7 @@
     width: 75vw;
     display: flex;
     flex-direction: row;
+    align-items: center;
 }
 
 @media only screen and (max-width: 1000px) {
@@ -11,7 +12,9 @@
 }
 
 .DateLabel {
-    min-width: 8rem;
+    min-width: 50px;
+    margin: 0 0.5rem 0 0.5rem;
+    text-align: center;
 }
 
 .TimeEntryDiv {
@@ -45,6 +48,6 @@
     color: aquamarine;
 }
 
-.ClockInOut {
+.Button {
     margin: 0 0.5rem 0 0;
 }

@@ -4,16 +4,31 @@
     flex-direction: column;
 }
 
-.HeaderRow {
+.HeaderRowContainer {
+    width: 100%;
     display: flex;
+    justify-content: space-between;
+}
+
+.HeaderLogo {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+}
+
+.HeaderAccountButton {
+    cursor: pointer;
+    margin: 2rem;
+    padding: 0.5rem;
+    border: 1px solid green;
+    border-radius: 8px;
+    text-align: center;
 }
 
 .FAIcon {
     cursor: pointer;
-    position: relative;
-    padding: 0 2rem 0 1.5rem;
-    top: 50%;
-    height: 0;
+    height: auto;
+    padding: 0 1rem 0 1.5rem;
 }
 .FAIcon:hover {
     color: aquamarine;
@@ -35,13 +50,11 @@
 }
 
 .NavBarContainer {
-    display: block;
     min-width: 220px;
     border: 2px solid rgba(0,255,0,1);
     border-left: 0;
     border-bottom: 0;
     border-radius: 0.25rem 1.5rem 1.5rem;
-    animation: neon 2s linear infinite alternate;
 }
 
 .ContentContainer {
@@ -69,12 +82,13 @@
 @media only screen and (max-width: 1000px) {
     .NavBarContainer {
         display: none;
-        width: 100%;
     }
 }
 
-@keyframes neon {
-    0%   {border: 2px solid rgba(0,255,0,0.2); border-left: 0; border-bottom: 0;}
-    100% {border: 2px solid rgba(0,255,0,1); border-left: 0; border-bottom: 0;}
-    0% {border: 2px solid rgba(0,255,0,0.2); border-left: 0; border-bottom: 0;}
+.UserNameText:hover span{
+    display: none;
+}
+
+.UserNameText:hover:before {
+    content: "Sign out";
 }

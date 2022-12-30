@@ -1,0 +1,14 @@
+.ChartContainer {
+    display: flex;
+    flex-wrap: wrap;
+    flex-grow: 2;
+    width: 100%;
+    height: 100%;
+    justify-content: space-around;
+    margin-bottom: 2rem;
+}
+
+.Chart {
+    margin: 1rem;
+    padding: 1rem;
+}

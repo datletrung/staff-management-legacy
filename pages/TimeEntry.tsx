@@ -1,159 +1,298 @@
-// useClient because we're using react client code
-// see https://beta.nextjs.org/docs/rendering/server-and-client-components
 'use client';
 
-import stylesTimeEntry from './css/TimeEntry.module.css';
-import { DateTime } from 'luxon';
+import { LoadingButton } from '@mui/lab';
+import { TextField, ToggleButton } from '@mui/material';
+import { Save as SaveIcon, Send as SendIcon, Login as LoginIcon,
+        Logout  as LogoutIcon, Edit  as EditIcon,
+      } from '@mui/icons-material';
+
+import Head from 'next/head';
 import { useState, useEffect } from 'react';
-import  Head from 'next/head';
-import Button from '@mui/material/Button';
-import LoadingButton from '@mui/lab/LoadingButton';
-import TextField  from '@mui/material/TextField';
-import SendIcon from '@mui/icons-material/Send';
-import LoginIcon from '@mui/icons-material/Login';
-import LogoutIcon from '@mui/icons-material/Logout';
+import { useSession, getSession } from 'next-auth/react';
+import { toast } from 'react-toastify';
 
-export default function TimeEntry() {
+import { fetchCalendarDateQuery } from './sql/TimeEntry/fetchCalendarDate';
+import { fetchTimeClockQuery } from './sql/TimeEntry/fetchTimeClock';
+
+import stylesTimeEntry from './css/TimeEntry.module.css';
+
+
+export default function TimeEntry({ calendarDate, timeClock }) {
+  const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
-  //this is fine for testing, but it is bad practice
-  // if this is the current times from a database, it will be an api call
-  // if this is a default, I would put it into a const.tsx file
-  // as well, if this is just an array, you can just do useState([...data])
-  // in my opinion, a user should only be able to set their hours for the current day
-  // so I don't think we need any array with all the dates
+  const [disableEdit, setDisableEdit] = useState(true); // disable edit if not Manager
+  const [currentDatetime, setCurrentDatetime] = useState(''); // display current date time
+  
+  const calendarDateData = JSON.parse(calendarDate); // retrieve and display date and month
+  const timeClockData = JSON.parse(timeClock); // timeclock data
 
-  // Brian: I would like to display a clock that shows the current local time (update every second on client side)
-  // the Clock In button will set the time of the current local date to whatever the current time shown in the clock above
-  // user can clock in and clock out more than 1 time per day
-  // user should not and cannot modify the past time but a person with role manager can
-  const [hours, setHours ] = useState(0);
+  const calculateFields = (date_id) => {
+    // if no timeclock data then default numFieldData to 1
+    const dateIdPos = timeClockData.findIndex(el => el.DATE_ID === date_id);
+    if (dateIdPos === -1){
+      return 1;
+    }
+    const times = timeClockData[dateIdPos]['TIME'].split(',');
+    const len = times.length;
+    // calculate numbers of field
+    if (len % 2 === 0){ // if length is even means display just enough numbers of field
+      return len / 2;
+    } else { // if length is odd means display numbers of field + 1
+      return Math.floor(len / 2) + 1;
+    }
+  }
+
+  const dateData = (plus, date_id, timeIndex) => {
+    const dateIdPos = timeClockData.findIndex(el => el.DATE_ID === date_id);
+    if (dateIdPos === -1){ // if no timeclock data then default to null
+      return null;
+    }
+    const times = timeClockData[dateIdPos]['TIME'].split(',');
+    return times[(timeIndex*2)+plus]; // using this formula to find out index: from: (i*2) | to: (i*2)+1
+  }
+
   const [dateTime, setDateTime] = useState([
-                                              { day: 'Monday', time: 1, },
-                                              { day: 'Tuesday', time: 1, },
-                                              { day: 'Wednesday', time: 1, },
-                                              { day: 'Thursday', time: 1, },
-                                              { day: 'Friday', time: 1, },
-                                              { day: 'Saturday', time: 1, },
-                                              { day: 'Sunday', time: 1, },
-                                            ]);
-
-  const [currentDatetime, setCurrentDatetime] = useState(DateTime.now());
-  //instead of this, we can just directly call setCurrentDateTime from the interval
-  /*
-  const updateCurrentDatetime = useCallback(() => {
-    setCurrentDatetime(() => new Date().toLocaleString() + "");
-  }, [setCurrentDatetime]);
- */
+          { date_id: calendarDateData[0]["DATE_ID"],
+            weekday: calendarDateData[0]["WEEKDAY"],
+            date: calendarDateData[0]["FORMATTED_DATE"],
+            time: calculateFields(calendarDateData[0]["DATE_ID"]), },
+          { date_id: calendarDateData[1]["DATE_ID"],
+            weekday: calendarDateData[1]["WEEKDAY"],
+            date: calendarDateData[1]["FORMATTED_DATE"],
+            time: calculateFields(calendarDateData[1]["DATE_ID"]), },
+          { date_id: calendarDateData[2]["DATE_ID"],
+            weekday: calendarDateData[2]["WEEKDAY"],
+            date: calendarDateData[2]["FORMATTED_DATE"],
+            time: calculateFields(calendarDateData[2]["DATE_ID"]), },
+          { date_id: calendarDateData[3]["DATE_ID"],
+            weekday: calendarDateData[3]["WEEKDAY"],
+            date: calendarDateData[3]["FORMATTED_DATE"],
+            time: calculateFields(calendarDateData[3]["DATE_ID"]), },
+          { date_id: calendarDateData[4]["DATE_ID"],
+            weekday: calendarDateData[4]["WEEKDAY"],
+            date: calendarDateData[4]["FORMATTED_DATE"],
+            time: calculateFields(calendarDateData[4]["DATE_ID"]), },
+          { date_id: calendarDateData[5]["DATE_ID"],
+            weekday: calendarDateData[5]["WEEKDAY"],
+            date: calendarDateData[5]["FORMATTED_DATE"],
+            time: calculateFields(calendarDateData[5]["DATE_ID"]), },
+          { date_id: calendarDateData[6]["DATE_ID"],
+            weekday: calendarDateData[6]["WEEKDAY"],
+            date: calendarDateData[6]["FORMATTED_DATE"],
+            time: calculateFields(calendarDateData[6]["DATE_ID"]), },
+        ]);
+    
   useEffect(() => {
-    console.log(currentDatetime);
     const r = setInterval(() => {
-      setCurrentDatetime(DateTime.now());
+      setCurrentDatetime(new Date().toLocaleString("en-US", {
+                                                    weekday: 'short',
+                                                    month: 'short',
+                                                    day: '2-digit',
+                                                    year: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    second: '2-digit',
+                                                    hour12: false,
+                                                  }
+                ));
     }, 1000);
-
     return () => { clearInterval(r) }
-  }, [])
+  }, []);
+
   const handleSubmit = async () => {
-    //handle submit here
-    setLoading(true)
-    //just for demonstration, we can wait for 1 second
+    setLoading(true);
+    
     const sleep = (ms: number | undefined) => new Promise(
       resolve => setTimeout(resolve, ms)
     );
     await sleep(1000);
-    //setLoading to false, once submit is finished
-    setLoading(false)
-  }
-  const handleDateTimeSubtract = () => {
-    //do onclick stuff in here
-    //since we're using tsx, we need to specify a type for arrays
-    const tmp: { day: string; time: number; }[] = [];
+    setLoading(false);
+  };
+
+  const handleDateTimeSubtract = (dateTimeItem) => {
+    const tmp: { date_id: string; weekday: string;  date: string; time: number; }[] = [];
     dateTime.map((dateTimeItemTmp) => {
       let timeTmp = dateTimeItemTmp.time;
-      //This will always be true?
-      if (dateTimeItemTmp.day == dateTimeItemTmp.day) {
+      if (dateTimeItem.weekday == dateTimeItemTmp.weekday) {
           timeTmp -= 1;
       }
-      tmp.push({ day: dateTimeItemTmp.day, time: timeTmp });
+      tmp.push({ date_id: dateTimeItemTmp.date_id, weekday: dateTimeItemTmp.weekday,
+                  date: dateTimeItemTmp.date, time: timeTmp });
     })
     setDateTime(tmp);
-  }
-  const handleDateTimeAdd = () => {
-    const tmp: { day: string; time: number; }[] = [];
+  };
+
+  const handleDateTimeAdd = (dateTimeItem) => {
+    const tmp: { weekday: string;  date: string; time: number; }[] = [];
     dateTime.map((dateTimeItemTmp) => {
       let timeTmp = dateTimeItemTmp.time;
-      if (dateTimeItemTmp.day == dateTimeItemTmp.day) {
+      if (dateTimeItem.weekday == dateTimeItemTmp.weekday) {
         timeTmp += 1;
       }
-      tmp.push({ day: dateTimeItemTmp.day, time: timeTmp });
+      tmp.push({ date_id: dateTimeItemTmp.date_id, weekday: dateTimeItemTmp.weekday,
+                  date: dateTimeItemTmp.date, time: timeTmp });
     })
     setDateTime(tmp);
+  };
+
+  const checkTime = (fieldId) => {
+    const field = document.getElementById(fieldId);
+    const isValid = /^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$/.test(field.value);
+    if (isValid) {
+      field.style.backgroundColor = '#bfa';
+      return true;
+    } else {
+      field.style.backgroundColor = '#fba';
+      return false;
+    }
   }
+
   return (
     <>
         <Head>
-            <title>Time Entry | {process.env.websiteName}</title>
+            <title>{`Time Entry | ${process.env.websiteName}`}</title>
         </Head>
         <h1>Time Entry</h1>
-        <div><i><b>Current Time: </b>{currentDatetime.toLocaleString(DateTime.DATETIME_MED)}</i></div>
+        <div><i><b>Current Time: </b>{currentDatetime}</i></div>
         <br/>
         <div>
-          <Button size="large" variant="outlined" type="submit" color="success" endIcon={<LoginIcon />} className={stylesTimeEntry.ClockInOut}>Clock In</Button>
-          <Button size="large" variant="outlined" type="submit" color="success" endIcon={<LogoutIcon />} className={stylesTimeEntry.ClockInOut}>Clock Out</Button>
+        <LoadingButton
+            size="large" variant="outlined" color="success" endIcon={<LoginIcon />}
+            loading={loading} loadingPosition="end"
+            className={stylesTimeEntry.Button}
+            onClick={handleSubmit}
+          >
+            Clock In
+          </LoadingButton>
+          <LoadingButton
+            size="large" variant="outlined" color="success" endIcon={<LogoutIcon />}
+            loading={loading} loadingPosition="end"
+            className={stylesTimeEntry.Button}
+            onClick={handleSubmit}
+          >
+            Clock Out
+          </LoadingButton>
+          <ToggleButton
+            size="small" color="success"
+            value="check"
+            selected={!disableEdit}
+            onChange={() => {
+              if (typeof window !== "undefined"
+              && session
+              && session.user.role != "EMPLOYEE") {
+                setDisableEdit(!disableEdit);
+              } else {
+                toast.error("You don't have permission to use this feature.", {
+                  position: "top-right",
+                  autoClose: 5000,
+                  hideProgressBar: false,
+                  closeOnClick: true,
+                  pauseOnHover: true,
+                  draggable: false,
+                  theme: "colored",
+                });
+              }
+            }}
+          >
+            <EditIcon />
+          </ToggleButton>
         </div>
-        
-        {/* For now, I'm going to have all this commented out so that you can compare our approaches
+        <div style={{marginTop:'1rem', marginBottom:'1rem',}}>
         {dateTime.map((dateTimeItem, dateTimeIndex) => (
           <>
-          <div key={dateTimeIndex} className={stylesTimeEntry.DateDiv}>
-            <h4 className={stylesTimeEntry.DateLabel}>{dateTimeItem.day}</h4>
-            <div className={stylesTimeEntry.TimeEntryDiv}>
-
-            {[...Array(dateTimeItem.time)].map((timeItem, timeIndex, times) => (
-              <>
-              <div key={timeIndex} className={stylesTimeEntry.TimeDiv}>
-                <TextField className={stylesTimeEntry.Input}
-                            label={"From"+(dateTimeItem.time > 1 ? " (" + times[timeIndex+1] + ")": '')}
-                            variant="standard"
-                            type="text"
-                            id={"time-from-"+dateTimeItem.day+"-"+timeIndex}
-                />
-              </div>
-              <div className={stylesTimeEntry.TimeDiv}>
-                <TextField className={stylesTimeEntry.Input}
-                            label={"To"+(dateTimeItem.time > 1 ? " (" + String(timeIndex+1) + ")": '')}
-                            variant="standard"
-                            type="text"
-                            id={"time-to-"+dateTimeItem.day+"-"+timeIndex}
-                />
-              </div>
-              </>
-            ))}
+          <div key={dateTimeIndex.toString()} className={stylesTimeEntry.DateDiv}>
+            <div>
+              <h4 className={stylesTimeEntry.DateLabel}>{dateTimeItem.weekday}</h4>
+              <h5 className={stylesTimeEntry.DateLabel}>{dateTimeItem.date}</h5>
             </div>
+            <div className={stylesTimeEntry.TimeEntryDiv}>
+              {[...Array(dateTimeItem.time)].map((timeItem, timeIndex, times) => (
+                <>
+                <div key={'from-'+dateTimeIndex.toString()+timeIndex.toString()} className={stylesTimeEntry.TimeDiv}>
+                  <TextField className={stylesTimeEntry.Input}
+                              label={"From"+(dateTimeItem.time > 1 ? " (" + (timeIndex+1).toString() + ")": '')}
+                              variant="standard" type="text"
+                              disabled={disableEdit}
+                              id={"time-from-"+dateTimeItem.date_id+"-"+timeIndex}
+                              defaultValue={dateData(0, dateTimeItem.date_id, timeIndex)}
+                              onChange={() => checkTime("time-from-"+dateTimeItem.date_id+"-"+timeIndex)}
+                              onBlur={() => {
+                                const idx = "time-from-"+dateTimeItem.date_id+"-"+timeIndex;
+                                let field = document.getElementById(idx);
+                                if (checkTime(idx) || (!checkTime(idx) && field.value === '')){
+                                  field.style.backgroundColor = null;
+                                }
+                              }}
+                  />
+                </div>
+                <div key={'to-'+dateTimeIndex.toString()+timeIndex.toString()} className={stylesTimeEntry.TimeDiv}>
+                  <TextField className={stylesTimeEntry.Input}
+                              label={"To"+(dateTimeItem.time > 1 ? " (" + (timeIndex+1).toString() + ")": '')}
+                              variant="standard"
+                              type="text"
+                              disabled={disableEdit}
+                              id={"time-to-"+dateTimeItem.date_id+"-"+timeIndex}
+                              defaultValue={dateData(1, dateTimeItem.date_id, timeIndex)}
+                              onChange={() => checkTime("time-to-"+dateTimeItem.date_id+"-"+timeIndex)}
+                              onBlur={() => {
+                                const idx = "time-to-"+dateTimeItem.date_id+"-"+timeIndex;
+                                let field = document.getElementById(idx);
+                                if (checkTime(idx) || (!checkTime(idx) && field.value === '')){
+                                  field.style.backgroundColor = null;
+                                }
+                              }}
+                  />
+                </div>
+                </>
+              ))}
+            </div>
+           {(!disableEdit)
+            ? (<>
             <div className={stylesTimeEntry.signDiv}>
               <i className={`fa-solid fa-minus fa-xl ${stylesTimeEntry.FAIcon}`} style={{display: (dateTimeItem.time > 1 ? 'block' : 'none')}}
-                  onClick={handleDateTimeSubtract}
+                  onClick={() => handleDateTimeSubtract(dateTimeItem)}
               ></i>
               <i className={`fa-solid fa-plus fa-xl ${stylesTimeEntry.FAIcon}`} style={{display: (dateTimeItem.time < 5 ? 'block' : 'none')}}
-                  onClick={handleDateTimeAdd}
+                  onClick={() => handleDateTimeAdd(dateTimeItem)}
               ></i>
             </div>
+            </>)
+            : (<></>)
+            }
           </div>
           </>
         ))}
-            */}
+        </div>
         <div>
           <LoadingButton
-            size="large"
+            size="large" variant="outlined" color="success" endIcon={<SendIcon />}
+            loading={loading} loadingPosition="end"
+            className={stylesTimeEntry.Button}
             onClick={handleSubmit}
-            endIcon={<SendIcon />}
-            loading={loading}
-            loadingPosition="end"
-            variant="outlined"
-            color="success"
           >
             Submit
           </LoadingButton>
         </div>
     </>
   );
+}
+
+export async function getServerSideProps(context) {
+  const mysql = require('serverless-mysql')({
+    config: {
+      host     : process.env.sqlHostName,
+      database : process.env.sqlDatabase,
+      user     : process.env.sqlUsername,
+      password : process.env.sqlPassword
+    }
+  });
+  const session = await getSession(context);
+  // retrieve date from db
+  let calendarDate = await JSON.stringify(await mysql.query(fetchCalendarDateQuery));
+  // retrieve person's timeclock
+  let timeClock = await JSON.stringify(await mysql.query(fetchTimeClockQuery,
+                                                        [ session.user.email ]
+  ));
+  await mysql.end();
+  return { props: { calendarDate, timeClock } }
 }

@@ -1,5 +1,5 @@
 export const NavBarItems = [
-    { text: "Dashboard", href: "/" },
-    { text: "Time Entry", href: "/TimeEntry" },
-    { text: "Assignments", href: "/Assignments" },
+    { text: "Dashboard", icon: 'fa-solid fa-chart-line', href: "/Dashboard" },
+    { text: "Time Entry", icon: 'fa-solid fa-user-clock', href: "/TimeEntry" },
+    { text: "Assignments", icon: 'fa-solid fa-code', href: "/Assignments" },
 ];
