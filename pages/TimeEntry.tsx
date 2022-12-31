@@ -11,10 +11,10 @@ import { useState, useEffect } from 'react';
 import { useSession, getSession } from 'next-auth/react';
 import { toast } from 'react-toastify';
 
-import { fetchCalendarDateQuery } from './sql/TimeEntry/fetchCalendarDate';
-import { fetchTimeClockQuery } from './sql/TimeEntry/fetchTimeClock';
+import { fetchCalendarDateQuery } from '../components/sql/TimeEntry/fetchCalendarDate';
+import { fetchTimeClockQuery } from '../components/sql/TimeEntry/fetchTimeClock';
 
-import stylesTimeEntry from './css/TimeEntry.module.css';
+import stylesTimeEntry from '../components/css/TimeEntry.module.css';
 
 
 export default function TimeEntry({ calendarDate, timeClock }: {calendarDate: string, timeClock: string}) {

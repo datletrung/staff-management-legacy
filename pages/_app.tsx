@@ -1,5 +1,6 @@
 import '../styles/globals.css'
-import './css/nprogress.css';
+import '../components/css/nprogress.css';
+
 import type { AppProps } from 'next/app'
 import Script from 'next/script';
 import Router from 'next/router';

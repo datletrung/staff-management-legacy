@@ -1,6 +1,6 @@
 'use client';
 
-import stylesDashboard from './css/Dashboard.module.css';
+import stylesDashboard from '../components/css/Dashboard.module.css';
 import Head from 'next/head';
 import {
         Chart as ChartJS,

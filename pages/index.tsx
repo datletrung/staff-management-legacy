@@ -1,9 +1,9 @@
 'use client';
 
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import stylesIndex from './css/index.module.css';
+import stylesIndex from '../components/css/index.module.css';
 
 export default function Account() {
     const {data: session} = useSession();

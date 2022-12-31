@@ -5,7 +5,7 @@ import { NavBarItems } from "./NavBarItems";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from 'next/router';
 
-export default function Layout({ children }) {
+export default function Layout({ children }:{ children: any}) {
     const { data: session } = useSession();
     const router = useRouter();
     return (
@@ -30,7 +30,7 @@ export default function Layout({ children }) {
                             }
                         }}
                     >
-                        {(session)
+                        {(session && session.user && session.user.image)
                         ? (<div style={{display: 'flex', position: 'relative', width: '100%', height: '100%'}}>
                             <Image src={session.user.image}
                             width={20} height={20}

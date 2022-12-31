@@ -1,6 +1,6 @@
 import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google";
-import { fetchRoleQuery } from './fetchRole';
+import { fetchRoleQuery } from '../../../components/sql/auth/fetchRole';
 
 export default NextAuth({
     providers: [
