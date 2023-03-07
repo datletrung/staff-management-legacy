@@ -66,7 +66,7 @@ export default function TimeEntry() {
   const [prevDate, setPrevDate] = useState(new Date('0001-01-01'));
   const [date, setDate] = useState(new Date());
   const [timePunchData, setTimePunchData] = useState<any[]>([]);
-  const [timePunchMonthData, setTimePunchMonthData] = useState<Date[]>([]);
+  const [timePunchMonthData, setTimePunchMonthData] = useState<number[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [disabled, setDisabled] = useState(false);
@@ -135,7 +135,7 @@ export default function TimeEntry() {
     const response = await fetch(apiUrlEndpoint, postData);
     const res = await response.json();
     let data = res.data;
-    let tmp: Array<Date> = [];
+    let tmp: Array<number> = [];
     data.forEach((item: any) => {
       let time = new Date(item.DATE).setHours(0,0,0,0);
       tmp.push(time);
