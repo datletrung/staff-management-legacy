@@ -89,7 +89,7 @@ export default function TimeEntry() {
   const [timePunchMonthData, setTimePunchMonthData] = useState<String[]>([]);
 
   async function getTimeEntryPerDay(datePara: string) {
-    const apiUrlEndpoint = 'http://localhost:3000/api/fetchSql';
+    const apiUrlEndpoint = 'api/fetchSql';
     const postData = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json '},
@@ -112,7 +112,7 @@ export default function TimeEntry() {
     } else {
       setPrevDate(datePara);
     }
-    const apiUrlEndpoint = 'http://localhost:3000/api/fetchSql';
+    const apiUrlEndpoint = 'api/fetchSql';
     const postData = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json '},

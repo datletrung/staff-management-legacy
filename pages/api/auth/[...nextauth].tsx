@@ -12,14 +12,15 @@ export default NextAuth({
     callbacks: {
         async session({ session }:{ session: any}) {
             //retrieve ROLE and assign to session after signed in
-            const apiUrlEndpoint = 'http://localhost:3000/api/fetchSql';
+            //const apiUrlEndpoint = 'http://localhost:3000/api/fetchSql';
+            const apiUrlEndpoint = 'https://company-management.vercel.app/api/fetchSql';
             const postData = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json '},
                 body: JSON.stringify({
                     action: 'fetch',
                     query: 'fetchRoleQuery',
-                    para: ['brianle@lionrocktech.net']
+                    para: [session.user.email]
                 })
             }
             const response = await fetch(apiUrlEndpoint, postData);
