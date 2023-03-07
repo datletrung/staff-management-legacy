@@ -27,9 +27,12 @@ export const sqlQuery = {
             AND USER.EMAIL = ?
             AND DATE_FORMAT(TIMECLOCK.TIME, '%Y-%m') = DATE_FORMAT(STR_TO_DATE(?, '%m/%Y'), '%Y-%m')
     `,
-    'updateTimeEntryQuery': `
+    'submitTimeEntry': `
             INSERT INTO TIMECLOCK (USER_ID, ACTION)
-            VALUES (?, ?)
+            SELECT USER_ID, ?
+            FROM USER
+            WHERE EMAIL = ?
+                
     `
 };
 

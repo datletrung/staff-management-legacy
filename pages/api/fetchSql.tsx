@@ -21,4 +21,3 @@ export default async function handler(req: any, res: { status: (arg0: number) =>
     res.status(500).json({ error: error.message });
   }
 }
-

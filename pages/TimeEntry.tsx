@@ -15,11 +15,19 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import stylesTimeEntry from '../components/css/TimeEntry.module.css';
 
-function ButtonDisplay() {
+
+export default function TimeEntry() {
+  const [prevDate, setPrevDate] = useState('');
+  const [date, setDate] = useState(new Date());
+  const [timePunchData, setTimePunchData] = useState([]);
+  const [timePunchMonthData, setTimePunchMonthData] = useState<String[]>([]);
+
   const [loading, setLoading] = useState(false);
+  const [disabled, setDisabled] = useState(false);
   const [currentDatetime, setCurrentDatetime] = useState(''); // display current date time
 
   useEffect(() => {
+    refreshStatus();
     const r = setInterval(() => {
       setCurrentDatetime(new Date().toLocaleString("en-US", {weekday: 'short', month: 'short', day: '2-digit', year: 'numeric',
                                                             hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
@@ -28,65 +36,10 @@ function ButtonDisplay() {
     return () => { clearInterval(r) }
   }, []);
 
-  const handleSubmit = async () => {
-    setLoading(true);
-    
-    const sleep = (ms: number | undefined) => new Promise(
-      resolve => setTimeout(resolve, ms)
-    );
-    await sleep(1000);
-    setLoading(false);
-  };
-
-  return(
-    <>
-    <div>
-      <div><i><b>Current Time: </b>{currentDatetime}</i></div>
-      <br/>
-
-      <div className={stylesTimeEntry.ButtonContainer}>
-        <div className={stylesTimeEntry.Button}>
-          <LoadingButton
-            size="large" variant="outlined" color="success" endIcon={<LoginIcon />}
-            loading={loading} loadingPosition="end"
-            className={stylesTimeEntry.Button}
-            onClick={handleSubmit}
-          >
-            Clock In
-          </LoadingButton>
-        </div>
-        <div className={stylesTimeEntry.Button}>
-          <LoadingButton
-            size="large" variant="outlined" endIcon={<AddAlarmIcon />}
-            loading={loading} loadingPosition="end"
-            className={stylesTimeEntry.Button}
-            onClick={handleSubmit}
-          >
-            Add Break
-          </LoadingButton>
-        </div>
-        <div className={stylesTimeEntry.Button}>
-          <LoadingButton
-            size="large" variant="outlined" color="error" endIcon={<LogoutIcon />}
-            loading={loading} loadingPosition="end"
-            className={stylesTimeEntry.Button}
-            onClick={handleSubmit}
-          >
-            Clock Out
-          </LoadingButton>
-        </div>
-      </div>
-
-    </div>
-    </>
-  );
-};
-
-export default function TimeEntry() {
-  const [prevDate, setPrevDate] = useState('');
-  const [date, setDate] = useState(new Date());
-  const [timePunchData, setTimePunchData] = useState([]);
-  const [timePunchMonthData, setTimePunchMonthData] = useState<String[]>([]);
+  async function refreshStatus() {
+    await getTimeEntryPerDay(new Date().toLocaleString("en-US", {year: 'numeric', month: '2-digit', day: '2-digit'}));
+    await getTimeEntryPerMonth(new Date().toLocaleString("en-US", {year: 'numeric', month: '2-digit'}), true);
+  }
 
   async function getTimeEntryPerDay(datePara: string) {
     const apiUrlEndpoint = 'api/fetchSql';
@@ -102,12 +55,17 @@ export default function TimeEntry() {
     
     const response = await fetch(apiUrlEndpoint, postData);
     const res = await response.json();
-    let data = res.data;
-    setTimePunchData(data);
+    setTimePunchData(res.data);
+    setLoading(false);
+    if (datePara == new Date().toLocaleString("en-US", {year: 'numeric', month: '2-digit', day: '2-digit'})){
+      setDisabled(false);
+    } else {
+      setDisabled(true);
+    }
   }
 
-  async function getTimeEntryPerMonth(datePara: string) {
-    if (datePara == prevDate){
+  async function getTimeEntryPerMonth(datePara: string, forceRefresh: boolean) {
+    if (!forceRefresh && datePara == prevDate){
       return;
     } else {
       setPrevDate(datePara);
@@ -150,10 +108,28 @@ export default function TimeEntry() {
     return null;
   }
 
-  useEffect(() => {
-    getTimeEntryPerDay(new Date().toLocaleString("en-US", {year: 'numeric', month: '2-digit', day: '2-digit'}));
-    getTimeEntryPerMonth(new Date().toLocaleString("en-US", {year: 'numeric', month: '2-digit'}));
-  }, []);
+  async function submitTimeEntry(action: string) {
+    if (!['IN', 'OUT', 'BREAK'].includes(action)) return;
+    setLoading(true);
+    const apiUrlEndpoint = 'api/fetchSql';
+    const postData = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json '},
+        body: JSON.stringify({
+            action: 'fetch',
+            query: 'submitTimeEntry',
+            para: [action, 'brianle@lionrocktech.net']
+        })
+    }
+    
+    const response = await fetch(apiUrlEndpoint, postData);
+    const res = await response.json();
+    if (res.data.affectedRows == 0) {
+      console.log("Something went wrong");
+      return;
+    }
+    refreshStatus();
+  }
 
   return (
     <>
@@ -165,9 +141,11 @@ export default function TimeEntry() {
         <div className={stylesTimeEntry.SplitViewRow}>
           <div>
             <Calendar className={stylesTimeEntry.CalendarContainer}
-              onChange={(datePara: any) => {setDate(datePara);
-                                          getTimeEntryPerDay(new Intl.DateTimeFormat('en-US', {year: "numeric", month: "2-digit", day: "2-digit"}).format(datePara));
-                                          getTimeEntryPerMonth(new Intl.DateTimeFormat('en-US', {year: "numeric", month: "2-digit"}).format(datePara));
+              onChange={(datePara: any) => {
+                setLoading(true);
+                setDate(datePara);
+                getTimeEntryPerDay(new Intl.DateTimeFormat('en-US', {year: "numeric", month: "2-digit", day: "2-digit"}).format(datePara));
+                getTimeEntryPerMonth(new Intl.DateTimeFormat('en-US', {year: "numeric", month: "2-digit"}).format(datePara), false);
               }}
               value={date}
               tileContent={tileContent}
@@ -176,7 +154,47 @@ export default function TimeEntry() {
           <div className={stylesTimeEntry.SplitViewRowChild}>
             <div className={stylesTimeEntry.SplitViewColumn}>
               <div className={stylesTimeEntry.SplitViewColumnChild}>
-                <ButtonDisplay/>
+              <div>
+                <div><i><b>Current Time: </b>{currentDatetime}</i></div>
+                <br/>
+
+                <div className={stylesTimeEntry.ButtonContainer}>
+                  <div className={stylesTimeEntry.Button}>
+                    <LoadingButton
+                      size="large" variant="outlined" color="success" endIcon={<LoginIcon />}
+                      loading={loading} loadingPosition="end"
+                      className={stylesTimeEntry.Button}
+                      onClick={() => submitTimeEntry('IN')}
+                      disabled={disabled}
+                    >
+                      Clock In
+                    </LoadingButton>
+                  </div>
+                  <div className={stylesTimeEntry.Button}>
+                    <LoadingButton
+                      size="large" variant="outlined" endIcon={<AddAlarmIcon />}
+                      loading={loading} loadingPosition="end"
+                      className={stylesTimeEntry.Button}
+                      onClick={() => submitTimeEntry('BREAK')}
+                      disabled={disabled}
+                    >
+                      Add Break
+                    </LoadingButton>
+                  </div>
+                  <div className={stylesTimeEntry.Button}>
+                    <LoadingButton
+                      size="large" variant="outlined" color="error" endIcon={<LogoutIcon />}
+                      loading={loading} loadingPosition="end"
+                      className={stylesTimeEntry.Button}
+                      onClick={() => submitTimeEntry('OUT')}
+                      disabled={disabled}
+                    >
+                      Clock Out
+                    </LoadingButton>
+                  </div>
+                </div>
+
+              </div>
               </div>
               <div className={`${stylesTimeEntry.SplitViewColumnChild} ${stylesTimeEntry.TimePunchView}`}>          
                 {timePunchData.map((item: { TIME: any; ACTION: any; }) => {
