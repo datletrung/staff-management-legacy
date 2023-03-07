@@ -63,10 +63,10 @@ function notify(msg:String, type:String){
 export default function TimeEntry() {
   const { data: session } = useSession();
   const [email] = useState(session?.user?.email);
-  const [prevDate, setPrevDate] = useState('');
+  const [prevDate, setPrevDate] = useState(new Date('0001-01-01'));
   const [date, setDate] = useState(new Date());
   const [timePunchData, setTimePunchData] = useState<any[]>([]);
-  const [timePunchMonthData, setTimePunchMonthData] = useState<String[]>([]);
+  const [timePunchMonthData, setTimePunchMonthData] = useState<Date[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [disabled, setDisabled] = useState(false);
@@ -83,11 +83,13 @@ export default function TimeEntry() {
   }, []);
 
   async function refreshStatus() {
-    await getTimeEntryPerDay(new Date().toLocaleString("en-US", {year: 'numeric', month: '2-digit', day: '2-digit'}));
-    await getTimeEntryPerMonth(new Date().toLocaleString("en-US", {year: 'numeric', month: '2-digit'}), true);
+    await getTimeEntryPerDay(new Date());
+    await getTimeEntryPerMonth(new Date(), true);
   }
 
-  async function getTimeEntryPerDay(datePara: string) {
+  async function getTimeEntryPerDay(datePara: Date) {
+    if (typeof(datePara) === 'undefined') return;
+    let formattedDate = datePara.toLocaleDateString("en-US", {year: 'numeric', month: '2-digit', day: '2-digit'});
     const apiUrlEndpoint = 'api/fetchSql';
     const postData = {
         method: 'POST',
@@ -95,7 +97,7 @@ export default function TimeEntry() {
         body: JSON.stringify({
             action: 'fetch',
             query: 'fetchTimeEntryDayQuery',
-            para: [email, datePara]
+            para: [email, formattedDate]
         })
     }
     
@@ -103,19 +105,22 @@ export default function TimeEntry() {
     const res = await response.json();
     setTimePunchData(res.data);
     setLoading(false);
-    if (datePara == new Date().toLocaleString("en-US", {year: 'numeric', month: '2-digit', day: '2-digit'})){
+    if (datePara.setHours(0,0,0,0) == new Date().setHours(0,0,0,0)){
       setDisabled(false);
     } else {
       setDisabled(true);
     }
   }
 
-  async function getTimeEntryPerMonth(datePara: string, forceRefresh: boolean) {
-    if (!forceRefresh && datePara == prevDate){
+  async function getTimeEntryPerMonth(datePara: Date, forceRefresh: boolean) {
+    if (!forceRefresh
+        && (datePara.getMonth() === prevDate.getMonth() && datePara.getFullYear() === prevDate.getFullYear())
+    ){
       return;
     } else {
       setPrevDate(datePara);
     }
+    let formattedDate = datePara.toLocaleDateString("en-US", {year: 'numeric', month: '2-digit'});
     const apiUrlEndpoint = 'api/fetchSql';
     const postData = {
         method: 'POST',
@@ -123,16 +128,16 @@ export default function TimeEntry() {
         body: JSON.stringify({
             action: 'fetch',
             query: 'fetchTimeEntryMonthQuery',
-            para: [email, datePara]
+            para: [email, formattedDate]
         })
     }
     
     const response = await fetch(apiUrlEndpoint, postData);
     const res = await response.json();
     let data = res.data;
-    let tmp: Array<String> = [];
+    let tmp: Array<Date> = [];
     data.forEach((item: any) => {
-      let time = new Date(item.DATE).toLocaleString("en-US", {year: "numeric", month: "2-digit", day: "2-digit"});
+      let time = new Date(item.DATE).setHours(0,0,0,0);
       tmp.push(time);
     });
     setTimePunchMonthData(tmp);
@@ -179,7 +184,8 @@ export default function TimeEntry() {
   }
   
   function tileContent(datePara: any) {
-    if (timePunchMonthData.includes(new Intl.DateTimeFormat('en-US', {year: "numeric", month: "2-digit", day: "2-digit"}).format(datePara.date))) {
+    let formattedDate = datePara.date.setHours(0,0,0,0);
+    if (timePunchMonthData.includes(formattedDate)) {
       return (
         <div
           style={{
@@ -212,8 +218,8 @@ export default function TimeEntry() {
               onChange={(datePara: any) => {
                 setLoading(true);
                 setDate(datePara);
-                getTimeEntryPerDay(new Intl.DateTimeFormat('en-US', {year: "numeric", month: "2-digit", day: "2-digit"}).format(datePara));
-                getTimeEntryPerMonth(new Intl.DateTimeFormat('en-US', {year: "numeric", month: "2-digit"}).format(datePara), false);
+                getTimeEntryPerDay(datePara);
+                getTimeEntryPerMonth(datePara, false);
               }}
               value={date}
               tileContent={tileContent}
