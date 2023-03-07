@@ -13,8 +13,20 @@ export const sqlQuery = {
         FROM TIMECLOCK TIMECLOCK
             ,USER
         WHERE 1=1
-            AND TIMECLOCK.USER_ID = USER.USER_ID
             AND USER.EMAIL = ?
+            AND TIMECLOCK.USER_ID = USER.USER_ID
+            AND TIMECLOCK.ACTION IN ('IN', 'OUT')
+            AND DATE_FORMAT(TIMECLOCK.TIME, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
+    `,
+    'fetchBreakDayQuery': `
+        SELECT
+            COUNT(*) AS BREAK_NUM
+        FROM TIMECLOCK TIMECLOCK
+            ,USER
+        WHERE 1=1
+            AND USER.EMAIL = ?
+            AND TIMECLOCK.USER_ID = USER.USER_ID
+            AND TIMECLOCK.ACTION = 'BREAK'
             AND DATE_FORMAT(TIMECLOCK.TIME, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
     `,
     'fetchTimeEntryMonthQuery': `

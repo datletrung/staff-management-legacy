@@ -66,6 +66,7 @@ export default function TimeEntry() {
   const [prevDate, setPrevDate] = useState(new Date('0001-01-01'));
   const [date, setDate] = useState(new Date());
   const [timePunchData, setTimePunchData] = useState<any[]>([]);
+  const [breakData, setBreakData] = useState(0);
   const [timePunchMonthData, setTimePunchMonthData] = useState<number[]>([]);
 
   const [loading, setLoading] = useState(false);
@@ -91,7 +92,7 @@ export default function TimeEntry() {
     if (typeof(datePara) === 'undefined') return;
     let formattedDate = datePara.toLocaleDateString("en-US", {year: 'numeric', month: '2-digit', day: '2-digit'});
     const apiUrlEndpoint = 'api/fetchSql';
-    const postData = {
+    let postData = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json '},
         body: JSON.stringify({
@@ -101,9 +102,24 @@ export default function TimeEntry() {
         })
     }
     
-    const response = await fetch(apiUrlEndpoint, postData);
-    const res = await response.json();
+    let response = await fetch(apiUrlEndpoint, postData);
+    let res = await response.json();
     setTimePunchData(res.data);
+
+    postData = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json '},
+        body: JSON.stringify({
+            action: 'fetch',
+            query: 'fetchBreakDayQuery',
+            para: [email, formattedDate]
+        })
+    }
+    
+    response = await fetch(apiUrlEndpoint, postData);
+    res = await response.json();
+    setBreakData(res.data[0].BREAK_NUM);
+
     setLoading(false);
     if (datePara.setHours(0,0,0,0) == new Date().setHours(0,0,0,0)){
       setDisabled(false);
@@ -243,17 +259,6 @@ export default function TimeEntry() {
                   </div>
                   <div className={stylesTimeEntry.Button}>
                     <LoadingButton
-                      size="large" variant="outlined" endIcon={<AddAlarmIcon />}
-                      loading={loading} loadingPosition="end"
-                      className={stylesTimeEntry.Button}
-                      onClick={() => submitTimeEntry('BREAK')}
-                      disabled={disabled}
-                    >
-                      Add Break
-                    </LoadingButton>
-                  </div>
-                  <div className={stylesTimeEntry.Button}>
-                    <LoadingButton
                       size="large" variant="outlined" color="error" endIcon={<LogoutIcon />}
                       loading={loading} loadingPosition="end"
                       className={stylesTimeEntry.Button}
@@ -263,11 +268,23 @@ export default function TimeEntry() {
                       Clock Out
                     </LoadingButton>
                   </div>
+                  <div className={stylesTimeEntry.Button}>
+                    <LoadingButton
+                      size="large" variant="outlined" endIcon={<AddAlarmIcon />}
+                      loading={loading} loadingPosition="end"
+                      className={stylesTimeEntry.Button}
+                      onClick={() => submitTimeEntry('BREAK')}
+                      disabled={disabled}
+                    >
+                      Add Break
+                    </LoadingButton>
+                  </div>
                 </div>
                 <div><i><small>*One break is 30 minutes.</small></i></div>
               </div>
               </div>
-              <div className={`${stylesTimeEntry.SplitViewColumnChild} ${stylesTimeEntry.TimePunchView}`}>          
+              <div className={`${stylesTimeEntry.SplitViewColumnChild} ${stylesTimeEntry.TimePunchView}`}>
+                <hr/>
                 {timePunchData.map((item: { TIME: any; ACTION: any; }) => {
                     let time = new Date(item.TIME).toLocaleString("en-US", {hour: '2-digit', minute: '2-digit', hour12: true});
                     let action = item.ACTION;
@@ -282,15 +299,17 @@ export default function TimeEntry() {
                           <div key={item.TIME} className={`${stylesTimeEntry.TimeCard} ${stylesTimeEntry.TimeCardOut}`}>
                             <b>Time OUT</b> <i>{time}</i>
                           </div>
-                        ); 
-                    } else if (action == 'BREAK') {
-                      return (
-                        <div key={item.TIME} className={`${stylesTimeEntry.TimeCard} ${stylesTimeEntry.TimeCardBreak}`}>
-                          <b>BREAK</b> 30 mins <i>{time}</i>
-                        </div>
-                      );
+                        );
                     }
                 })}
+                {(breakData != 0) ?
+                  <>
+                  <hr/>
+                  <div className={`${stylesTimeEntry.TimeCard} ${stylesTimeEntry.TimeCardBreak}`}>
+                    <b>BREAK</b> <i>30 minutess</i> x{breakData}
+                  </div>
+                  </> : null
+                }
                 <hr/><b>• Total Time:</b> <i>+08:00:00</i>
                 <br/><b>• Total Break:</b> <i>-00:30:00</i>
                 <hr/><b>Total Working Time:</b> <i>07:30:00</i>
