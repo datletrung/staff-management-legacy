@@ -10,8 +10,8 @@ export default async function handler(req: any, res: { status: (arg0: number) =>
   });
 
   try {
-    const queryName = req.body.query;
-    const query = sqlQuery[queryName];
+    const queryName:string = req.body.query;
+    const query = sqlQuery[queryName as keyof typeof sqlQuery];
     const para = req.body.para;
     const [data] = await db.execute(query, para);
     db.end();
