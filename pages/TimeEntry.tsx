@@ -86,7 +86,7 @@ export default function TimeEntry() {
   const [prevDate, setPrevDate] = useState('');
   const [date, setDate] = useState(new Date());
   const [timePunchData, setTimePunchData] = useState([]);
-  const [timePunchMonthData, setTimePunchMonthData] = useState<string[]>([]);
+  const [timePunchMonthData, setTimePunchMonthData] = useState<String[]>([]);
 
   async function getTimeEntryPerDay(datePara: string) {
     const apiUrlEndpoint = 'http://localhost:3000/api/fetchSql';
