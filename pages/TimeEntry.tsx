@@ -147,6 +147,7 @@ export default function TimeEntry() {
         </div>
       );
     }
+    return null;
   }
 
   useEffect(() => {
