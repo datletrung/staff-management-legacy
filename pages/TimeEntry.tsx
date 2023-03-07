@@ -8,30 +8,76 @@ import {Login as LoginIcon
 
 import Head from 'next/head';
 import { useState, useEffect } from 'react';
-import { useSession, getSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { toast } from 'react-toastify';
 import Calendar from 'react-calendar';
 
 import 'react-calendar/dist/Calendar.css';
 import stylesTimeEntry from '../components/css/TimeEntry.module.css';
 
+function notify(msg:String, type:String){
+  if (type == 'error'){
+    toast.error(msg, {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      progress: undefined,
+      theme: "light",
+    });
+  } else if (type == 'warn'){
+    toast.warn(msg, {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      progress: undefined,
+      theme: "light",
+    });
+  } else if (type == 'success'){
+    toast.success(msg, {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      progress: undefined,
+      theme: "light",
+    });
+  } else if (type == 'info'){
+  toast.info(msg, {
+    position: "bottom-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    progress: undefined,
+    theme: "light",
+  });
+  }
+}
+
 
 export default function TimeEntry() {
+  const { data: session } = useSession();
+  const [email] = useState(session?.user?.email);
   const [prevDate, setPrevDate] = useState('');
   const [date, setDate] = useState(new Date());
-  const [timePunchData, setTimePunchData] = useState([]);
+  const [timePunchData, setTimePunchData] = useState<any[]>([]);
   const [timePunchMonthData, setTimePunchMonthData] = useState<String[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [disabled, setDisabled] = useState(false);
-  const [currentDatetime, setCurrentDatetime] = useState(''); // display current date time
+  const [currentDate, setCurrentDate] = useState('');
+  const [currentTime, setCurrentTime] = useState('');
 
   useEffect(() => {
     refreshStatus();
     const r = setInterval(() => {
-      setCurrentDatetime(new Date().toLocaleString("en-US", {weekday: 'short', month: 'short', day: '2-digit', year: 'numeric',
-                                                            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
-                                                          }));
+      setCurrentDate(new Date().toLocaleString("en-US", {weekday: 'short', month: 'short', day: '2-digit', year: 'numeric'}));
+      setCurrentTime(new Date().toLocaleString("en-US", {hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false}));
     }, 1000);
     return () => { clearInterval(r) }
   }, []);
@@ -49,7 +95,7 @@ export default function TimeEntry() {
         body: JSON.stringify({
             action: 'fetch',
             query: 'fetchTimeEntryDayQuery',
-            para: ['brianle@lionrocktech.net', datePara]
+            para: [email, datePara]
         })
     }
     
@@ -77,7 +123,7 @@ export default function TimeEntry() {
         body: JSON.stringify({
             action: 'fetch',
             query: 'fetchTimeEntryMonthQuery',
-            para: ['brianle@lionrocktech.net', datePara]
+            para: [email, datePara]
         })
     }
     
@@ -90,6 +136,46 @@ export default function TimeEntry() {
       tmp.push(time);
     });
     setTimePunchMonthData(tmp);
+  }
+
+  
+  async function submitTimeEntry(action: string) {
+    let prevAction:string = 'OUT';
+    if (Object.keys(timePunchData).length !== 0){
+      prevAction = timePunchData[timePunchData.length - 1].ACTION;
+    }
+    if (!['IN', 'OUT', 'BREAK'].includes(action)){
+      notify('Invalid Action', 'error');
+      return;
+    }
+    if (action == 'IN' &&  prevAction != 'OUT'){
+      notify('You\'ve already clocked in', 'error');
+      return;
+    }
+    if (['OUT', 'BREAK'].includes(action) &&  prevAction == 'OUT'){
+      notify('You have to clock in first', 'error');
+      return;
+    }
+    setLoading(true);
+    const apiUrlEndpoint = 'api/fetchSql';
+    const postData = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json '},
+        body: JSON.stringify({
+            action: 'fetch',
+            query: 'submitTimeEntry',
+            para: [email, action]
+        })
+    }
+    
+    const response = await fetch(apiUrlEndpoint, postData);
+    const res = await response.json();
+    if (res.data.affectedRows == 0) {
+      setLoading(false);
+      notify('Something went wrong! Please try again later', 'error');
+      return;
+    }
+    refreshStatus();
   }
   
   function tileContent(datePara: any) {
@@ -108,29 +194,6 @@ export default function TimeEntry() {
     return null;
   }
 
-  async function submitTimeEntry(action: string) {
-    if (!['IN', 'OUT', 'BREAK'].includes(action)) return;
-    setLoading(true);
-    const apiUrlEndpoint = 'api/fetchSql';
-    const postData = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json '},
-        body: JSON.stringify({
-            action: 'fetch',
-            query: 'submitTimeEntry',
-            para: [action, 'brianle@lionrocktech.net']
-        })
-    }
-    
-    const response = await fetch(apiUrlEndpoint, postData);
-    const res = await response.json();
-    if (res.data.affectedRows == 0) {
-      console.log("Something went wrong");
-      return;
-    }
-    refreshStatus();
-  }
-
   return (
     <>
         <Head>
@@ -140,7 +203,12 @@ export default function TimeEntry() {
 
         <div className={stylesTimeEntry.SplitViewRow}>
           <div>
+            <div className={stylesTimeEntry.Clock}>
+              <div>{currentDate}</div>
+              <div className={stylesTimeEntry.ClockTime}>{currentTime}</div>
+            </div>
             <Calendar className={stylesTimeEntry.CalendarContainer}
+              locale='en-US'
               onChange={(datePara: any) => {
                 setLoading(true);
                 setDate(datePara);
@@ -155,9 +223,6 @@ export default function TimeEntry() {
             <div className={stylesTimeEntry.SplitViewColumn}>
               <div className={stylesTimeEntry.SplitViewColumnChild}>
               <div>
-                <div><i><b>Current Time: </b>{currentDatetime}</i></div>
-                <br/>
-
                 <div className={stylesTimeEntry.ButtonContainer}>
                   <div className={stylesTimeEntry.Button}>
                     <LoadingButton
@@ -193,7 +258,7 @@ export default function TimeEntry() {
                     </LoadingButton>
                   </div>
                 </div>
-
+                <div><i><small>*One break is 30 minutes.</small></i></div>
               </div>
               </div>
               <div className={`${stylesTimeEntry.SplitViewColumnChild} ${stylesTimeEntry.TimePunchView}`}>          

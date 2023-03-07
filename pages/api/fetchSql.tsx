@@ -13,6 +13,10 @@ export default async function handler(req: any, res: { status: (arg0: number) =>
     const queryName:string = req.body.query;
     const query = sqlQuery[queryName as keyof typeof sqlQuery];
     const para = req.body.para;
+    /*
+    const query = sqlQuery['submitTimeEntry'];
+    const para = ['brianle@lionrocktech.net', 'IN'];
+    */
     const [data] = await db.execute(query, para);
     db.end();
     
