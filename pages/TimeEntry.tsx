@@ -1,100 +1,29 @@
 'use client';
 
 import { LoadingButton } from '@mui/lab';
-import { TextField, ToggleButton } from '@mui/material';
-import { Save as SaveIcon, Send as SendIcon, Login as LoginIcon,
-        Logout  as LogoutIcon, Edit  as EditIcon,
-      } from '@mui/icons-material';
+import {Login as LoginIcon
+      ,Logout as LogoutIcon
+      ,AddAlarm as AddAlarmIcon
+} from '@mui/icons-material';
 
 import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import { useSession, getSession } from 'next-auth/react';
 import { toast } from 'react-toastify';
+import Calendar from 'react-calendar';
 
-import { fetchCalendarDateQuery } from '../components/sql/TimeEntry/fetchCalendarDate';
-import { fetchTimeClockQuery } from '../components/sql/TimeEntry/fetchTimeClock';
-
+import 'react-calendar/dist/Calendar.css';
 import stylesTimeEntry from '../components/css/TimeEntry.module.css';
 
-
-export default function TimeEntry({ calendarDate, timeClock }: {calendarDate: string, timeClock: string}) {
-  const session: any = useSession().data;
+function ButtonDisplay() {
   const [loading, setLoading] = useState(false);
-  const [disableEdit, setDisableEdit] = useState(true); // disable edit if not Manager
   const [currentDatetime, setCurrentDatetime] = useState(''); // display current date time
-  
-  const calendarDateData = JSON.parse(calendarDate); // retrieve and display date and month
-  const timeClockData = JSON.parse(timeClock); // timeclock data
 
-  const calculateFields = (date_id: string) => {
-    // if no timeclock data then default numFieldData to 1
-    const dateIdPos = timeClockData.findIndex((el: any) => el.DATE_ID === date_id);
-    if (dateIdPos === -1){
-      return 1;
-    }
-    const times = timeClockData[dateIdPos]['TIME'].split(',');
-    const len = times.length;
-    // calculate numbers of field
-    if (len % 2 === 0){ // if length is even means display just enough numbers of field
-      return len / 2;
-    } else { // if length is odd means display numbers of field + 1
-      return Math.floor(len / 2) + 1;
-    }
-  }
-
-  const dateData = (plus: number, date_id: string, timeIndex: number) => {
-    const dateIdPos = timeClockData.findIndex((el: any) => el.DATE_ID === date_id);
-    if (dateIdPos === -1){ // if no timeclock data then default to null
-      return null;
-    }
-    const times = timeClockData[dateIdPos]['TIME'].split(',');
-    return times[(timeIndex*2)+plus]; // using this formula to find out index: from: (i*2) | to: (i*2)+1
-  }
-
-  const [dateTime, setDateTime] = useState([
-          { date_id: calendarDateData[0]["DATE_ID"],
-            weekday: calendarDateData[0]["WEEKDAY"],
-            date: calendarDateData[0]["FORMATTED_DATE"],
-            time: calculateFields(calendarDateData[0]["DATE_ID"]), },
-          { date_id: calendarDateData[1]["DATE_ID"],
-            weekday: calendarDateData[1]["WEEKDAY"],
-            date: calendarDateData[1]["FORMATTED_DATE"],
-            time: calculateFields(calendarDateData[1]["DATE_ID"]), },
-          { date_id: calendarDateData[2]["DATE_ID"],
-            weekday: calendarDateData[2]["WEEKDAY"],
-            date: calendarDateData[2]["FORMATTED_DATE"],
-            time: calculateFields(calendarDateData[2]["DATE_ID"]), },
-          { date_id: calendarDateData[3]["DATE_ID"],
-            weekday: calendarDateData[3]["WEEKDAY"],
-            date: calendarDateData[3]["FORMATTED_DATE"],
-            time: calculateFields(calendarDateData[3]["DATE_ID"]), },
-          { date_id: calendarDateData[4]["DATE_ID"],
-            weekday: calendarDateData[4]["WEEKDAY"],
-            date: calendarDateData[4]["FORMATTED_DATE"],
-            time: calculateFields(calendarDateData[4]["DATE_ID"]), },
-          { date_id: calendarDateData[5]["DATE_ID"],
-            weekday: calendarDateData[5]["WEEKDAY"],
-            date: calendarDateData[5]["FORMATTED_DATE"],
-            time: calculateFields(calendarDateData[5]["DATE_ID"]), },
-          { date_id: calendarDateData[6]["DATE_ID"],
-            weekday: calendarDateData[6]["WEEKDAY"],
-            date: calendarDateData[6]["FORMATTED_DATE"],
-            time: calculateFields(calendarDateData[6]["DATE_ID"]), },
-        ]);
-    
   useEffect(() => {
     const r = setInterval(() => {
-      setCurrentDatetime(new Date().toLocaleString("en-US", {
-                                                    weekday: 'short',
-                                                    month: 'short',
-                                                    day: '2-digit',
-                                                    year: 'numeric',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit',
-                                                    second: '2-digit',
-                                                    hour12: false,
-                                                  }
-                ));
+      setCurrentDatetime(new Date().toLocaleString("en-US", {weekday: 'short', month: 'short', day: '2-digit', year: 'numeric',
+                                                            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+                                                          }));
     }, 1000);
     return () => { clearInterval(r) }
   }, []);
@@ -109,55 +38,15 @@ export default function TimeEntry({ calendarDate, timeClock }: {calendarDate: st
     setLoading(false);
   };
 
-  const handleDateTimeSubtract = (dateTimeItem: any) => {
-    const tmp: { date_id: string; weekday: string;  date: string; time: number; }[] = [];
-    dateTime.map((dateTimeItemTmp) => {
-      let timeTmp = dateTimeItemTmp.time;
-      if (dateTimeItem.weekday == dateTimeItemTmp.weekday) {
-          timeTmp -= 1;
-      }
-      tmp.push({ date_id: dateTimeItemTmp.date_id, weekday: dateTimeItemTmp.weekday,
-                  date: dateTimeItemTmp.date, time: timeTmp });
-    })
-    setDateTime(tmp);
-  };
-
-  const handleDateTimeAdd = (dateTimeItem: any) => {
-    const tmp: { date_id: string, weekday: string;  date: string; time: number; }[] = [];
-    dateTime.map((dateTimeItemTmp) => {
-      let timeTmp = dateTimeItemTmp.time;
-      if (dateTimeItem.weekday == dateTimeItemTmp.weekday) {
-        timeTmp += 1;
-      }
-      tmp.push({ date_id: dateTimeItemTmp.date_id, weekday: dateTimeItemTmp.weekday,
-                  date: dateTimeItemTmp.date, time: timeTmp });
-    })
-    setDateTime(tmp);
-  };
-
-  const checkTime = (idx: string) => {
-    let field = (document.getElementById(idx) as HTMLInputElement);
-    if (!field) return;
-    const isValid = /^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$/.test(field.value);
-    if (isValid) {
-      field.style.backgroundColor = '#bfa';
-      return true;
-    } else {
-      field.style.backgroundColor = '#fba';
-      return false;
-    }
-  }
-
-  return (
+  return(
     <>
-        <Head>
-            <title>{`Time Entry | ${process.env.websiteName}`}</title>
-        </Head>
-        <h1>Time Entry</h1>
-        <div><i><b>Current Time: </b>{currentDatetime}</i></div>
-        <br/>
-        <div>
-        <LoadingButton
+    <div>
+      <div><i><b>Current Time: </b>{currentDatetime}</i></div>
+      <br/>
+
+      <div className={stylesTimeEntry.ButtonContainer}>
+        <div className={stylesTimeEntry.Button}>
+          <LoadingButton
             size="large" variant="outlined" color="success" endIcon={<LoginIcon />}
             loading={loading} loadingPosition="end"
             className={stylesTimeEntry.Button}
@@ -165,138 +54,160 @@ export default function TimeEntry({ calendarDate, timeClock }: {calendarDate: st
           >
             Clock In
           </LoadingButton>
+        </div>
+        <div className={stylesTimeEntry.Button}>
           <LoadingButton
-            size="large" variant="outlined" color="success" endIcon={<LogoutIcon />}
+            size="large" variant="outlined" endIcon={<AddAlarmIcon />}
+            loading={loading} loadingPosition="end"
+            className={stylesTimeEntry.Button}
+            onClick={handleSubmit}
+          >
+            Add Break
+          </LoadingButton>
+        </div>
+        <div className={stylesTimeEntry.Button}>
+          <LoadingButton
+            size="large" variant="outlined" color="error" endIcon={<LogoutIcon />}
             loading={loading} loadingPosition="end"
             className={stylesTimeEntry.Button}
             onClick={handleSubmit}
           >
             Clock Out
           </LoadingButton>
-          <ToggleButton
-            size="small" color="success"
-            value="check"
-            selected={!disableEdit}
-            onChange={() => {
-              if (typeof window !== "undefined"){
-                if (!session || !session.user) return;
-                if (session.user.role != "EMPLOYEE") {
-                  setDisableEdit(!disableEdit);
-                } else {
-                  toast.error("You don't have permission to use this feature.", {
-                    position: "top-right",
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: false,
-                    theme: "colored",
-                  });
-                }
-              }
-            }}
-          >
-            <EditIcon />
-          </ToggleButton>
         </div>
-        <div style={{marginTop:'1rem', marginBottom:'1rem',}}>
-        {dateTime.map((dateTimeItem, dateTimeIndex) => (
-          <>
-          <div key={dateTimeIndex.toString()} className={stylesTimeEntry.DateDiv}>
-            <div>
-              <h4 className={stylesTimeEntry.DateLabel}>{dateTimeItem.weekday}</h4>
-              <h5 className={`${stylesTimeEntry.DateLabel} ${stylesTimeEntry.DateLabelNoBold}`}>{dateTimeItem.date}</h5>
-            </div>
-            <div className={stylesTimeEntry.TimeEntryDiv}>
-              {[...Array(dateTimeItem.time)].map((timeItem, timeIndex, times) => (
-                <>
-                <div key={'from-'+dateTimeIndex.toString()+timeIndex.toString()} className={stylesTimeEntry.TimeDiv}>
-                  <TextField className={stylesTimeEntry.Input}
-                              label={"From"+(dateTimeItem.time > 1 ? " (" + (timeIndex+1).toString() + ")": '')}
-                              variant="standard" type="text"
-                              disabled={disableEdit}
-                              id={"time-from-"+dateTimeItem.date_id+"-"+timeIndex}
-                              defaultValue={dateData(0, dateTimeItem.date_id, timeIndex)}
-                              onChange={() => checkTime("time-from-"+dateTimeItem.date_id+"-"+timeIndex)}
-                              onBlur={() => {
-                                const idx = "time-from-"+dateTimeItem.date_id+"-"+timeIndex;
-                                let field = (document.getElementById(idx) as HTMLInputElement);
-                                if (!field) return;
-                                if (checkTime(idx) || (!checkTime(idx) && field.value === '')){
-                                  field.style.backgroundColor = '';
-                                }
-                              }}
-                  />
-                </div>
-                <div key={'to-'+dateTimeIndex.toString()+timeIndex.toString()} className={stylesTimeEntry.TimeDiv}>
-                  <TextField className={stylesTimeEntry.Input}
-                              label={"To"+(dateTimeItem.time > 1 ? " (" + (timeIndex+1).toString() + ")": '')}
-                              variant="standard"
-                              type="text"
-                              disabled={disableEdit}
-                              id={"time-to-"+dateTimeItem.date_id+"-"+timeIndex}
-                              defaultValue={dateData(1, dateTimeItem.date_id, timeIndex)}
-                              onChange={() => checkTime("time-to-"+dateTimeItem.date_id+"-"+timeIndex)}
-                              onBlur={() => {
-                                const idx = "time-to-"+dateTimeItem.date_id+"-"+timeIndex;
-                                let field = (document.getElementById(idx) as HTMLInputElement);
-                                if (!field) return;
-                                if (checkTime(idx) || (!checkTime(idx) && field.value === '')){
-                                  field.style.backgroundColor = '';
-                                }
-                              }}
-                  />
-                </div>
-                </>
-              ))}
-            </div>
-           {(!disableEdit)
-            ? (<>
-            <div className={stylesTimeEntry.signDiv}>
-              <i className={`fa-solid fa-minus fa-xl ${stylesTimeEntry.FAIcon}`} style={{display: (dateTimeItem.time > 1 ? 'block' : 'none')}}
-                  onClick={() => handleDateTimeSubtract(dateTimeItem)}
-              ></i>
-              <i className={`fa-solid fa-plus fa-xl ${stylesTimeEntry.FAIcon}`} style={{display: (dateTimeItem.time < 5 ? 'block' : 'none')}}
-                  onClick={() => handleDateTimeAdd(dateTimeItem)}
-              ></i>
-            </div>
-            </>)
-            : (<></>)
-            }
+      </div>
+
+    </div>
+    </>
+  );
+};
+
+export default function TimeEntry() {
+  const [prevDate, setPrevDate] = useState('');
+  const [date, setDate] = useState(new Date());
+  const [timePunchData, setTimePunchData] = useState([]);
+  const [timePunchMonthData, setTimePunchMonthData] = useState<string[]>([]);
+
+  async function getTimeEntryPerDay(datePara: string) {
+    const apiUrlEndpoint = 'http://localhost:3000/api/fetchSql';
+    const postData = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json '},
+        body: JSON.stringify({
+            action: 'fetch',
+            query: 'fetchTimeEntryDayQuery',
+            para: ['brianle@lionrocktech.net', datePara]
+        })
+    }
+    
+    const response = await fetch(apiUrlEndpoint, postData);
+    const res = await response.json();
+    let data = res.data;
+    setTimePunchData(data);
+  }
+
+  async function getTimeEntryPerMonth(datePara: string) {
+    if (datePara == prevDate){
+      return;
+    } else {
+      setPrevDate(datePara);
+    }
+    const apiUrlEndpoint = 'http://localhost:3000/api/fetchSql';
+    const postData = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json '},
+        body: JSON.stringify({
+            action: 'fetch',
+            query: 'fetchTimeEntryMonthQuery',
+            para: ['brianle@lionrocktech.net', datePara]
+        })
+    }
+    
+    const response = await fetch(apiUrlEndpoint, postData);
+    const res = await response.json();
+    let data = res.data;
+    let tmp: Array<String> = [];
+    data.forEach((item: any) => {
+      let time = new Date(item.DATE).toLocaleString("en-US", {year: "numeric", month: "2-digit", day: "2-digit"});
+      tmp.push(time);
+    });
+    setTimePunchMonthData(tmp);
+  }
+  
+  function tileContent(datePara: any) {
+    if (timePunchMonthData.includes(new Intl.DateTimeFormat('en-US', {year: "numeric", month: "2-digit", day: "2-digit"}).format(datePara.date))) {
+      return (
+        <div
+          style={{
+            backgroundColor: 'green',
+            width: '100%',
+            height: '5px',
+          }}
+        >
+        </div>
+      );
+    }
+  }
+
+  useEffect(() => {
+    getTimeEntryPerDay(new Date().toLocaleString("en-US", {year: 'numeric', month: '2-digit', day: '2-digit'}));
+    getTimeEntryPerMonth(new Date().toLocaleString("en-US", {year: 'numeric', month: '2-digit'}));
+  }, []);
+
+  return (
+    <>
+        <Head>
+            <title>{`Time Entry | ${process.env.websiteName}`}</title>
+        </Head>
+        <h1>Time Entry</h1>
+
+        <div className={stylesTimeEntry.SplitViewRow}>
+          <div>
+            <Calendar className={stylesTimeEntry.CalendarContainer}
+              onChange={(datePara: any) => {setDate(datePara);
+                                          getTimeEntryPerDay(new Intl.DateTimeFormat('en-US', {year: "numeric", month: "2-digit", day: "2-digit"}).format(datePara));
+                                          getTimeEntryPerMonth(new Intl.DateTimeFormat('en-US', {year: "numeric", month: "2-digit"}).format(datePara));
+              }}
+              value={date}
+              tileContent={tileContent}
+            />
           </div>
-          </>
-        ))}
-        </div>
-        <div>
-          <LoadingButton
-            size="large" variant="outlined" color="success" endIcon={<SendIcon />}
-            loading={loading} loadingPosition="end"
-            className={stylesTimeEntry.Button}
-            onClick={handleSubmit}
-          >
-            Submit
-          </LoadingButton>
+          <div className={stylesTimeEntry.SplitViewRowChild}>
+            <div className={stylesTimeEntry.SplitViewColumn}>
+              <div className={stylesTimeEntry.SplitViewColumnChild}>
+                <ButtonDisplay/>
+              </div>
+              <div className={`${stylesTimeEntry.SplitViewColumnChild} ${stylesTimeEntry.TimePunchView}`}>          
+                {timePunchData.map((item: { TIME: any; ACTION: any; }) => {
+                    let time = new Date(item.TIME).toLocaleString("en-US", {hour: '2-digit', minute: '2-digit', hour12: true});
+                    let action = item.ACTION;
+                    if (action == 'IN'){
+                      return (
+                          <div key={item.TIME} className={`${stylesTimeEntry.TimeCard} ${stylesTimeEntry.TimeCardIn}`}>
+                            <b>Time IN</b> <i>{time}</i>
+                          </div>
+                      );
+                    } else if (action == 'OUT'){
+                        return (
+                          <div key={item.TIME} className={`${stylesTimeEntry.TimeCard} ${stylesTimeEntry.TimeCardOut}`}>
+                            <b>Time OUT</b> <i>{time}</i>
+                          </div>
+                        ); 
+                    } else if (action == 'BREAK') {
+                      return (
+                        <div key={item.TIME} className={`${stylesTimeEntry.TimeCard} ${stylesTimeEntry.TimeCardBreak}`}>
+                          <b>BREAK</b> 30 mins <i>{time}</i>
+                        </div>
+                      );
+                    }
+                })}
+                <hr/><b>• Total Time:</b> <i>+08:00:00</i>
+                <br/><b>• Total Break:</b> <i>-00:30:00</i>
+                <hr/><b>Total Working Time:</b> <i>07:30:00</i>
+              </div>
+            </div>
+          </div>
         </div>
     </>
   );
-}
-
-export async function getServerSideProps(context: any) {
-  const mysql = require('serverless-mysql')({
-    config: {
-      host     : process.env.sqlHostName,
-      database : process.env.sqlDatabase,
-      user     : process.env.sqlUsername,
-      password : process.env.sqlPassword
-    }
-  });
-  const session = await getSession(context);
-  // retrieve date from db
-  let calendarDate = await JSON.stringify(await mysql.query(fetchCalendarDateQuery));
-  // retrieve person's timeclock
-  let timeClock = await JSON.stringify(await mysql.query(fetchTimeClockQuery,
-                                                        [ session?.user?.email ]
-  ));
-  await mysql.end();
-  return { props: { calendarDate, timeClock } }
 }

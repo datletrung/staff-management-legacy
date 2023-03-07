@@ -1,6 +1,6 @@
 import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google";
-import { fetchRoleQuery } from '../../../components/sql/auth/fetchRole';
+
 
 export default NextAuth({
     providers: [
@@ -12,19 +12,20 @@ export default NextAuth({
     callbacks: {
         async session({ session }:{ session: any}) {
             //retrieve ROLE and assign to session after signed in
-            const mysql = require('serverless-mysql')({
-                config: {
-                    host     : process.env.sqlHostName,
-                    database : process.env.sqlDatabase,
-                    user     : process.env.sqlUsername,
-                    password : process.env.sqlPassword
-                }
-            });
-            let role = await JSON.stringify(await mysql.query(fetchRoleQuery,
-                                                                [ session.user.email ]
-            ));
-            await mysql.end();
-            session.user.role = await JSON.parse(role)[0]['ROLE'];
+            const apiUrlEndpoint = 'http://localhost:3000/api/fetchSql';
+            const postData = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json '},
+                body: JSON.stringify({
+                    action: 'fetch',
+                    query: 'fetchRoleQuery',
+                    para: ['brianle@lionrocktech.net']
+                })
+            }
+            const response = await fetch(apiUrlEndpoint, postData);
+            const res = await response.json();
+            let role = res.data[0].ROLE;
+            session.user.role = role;
             return session;
         },
     },
