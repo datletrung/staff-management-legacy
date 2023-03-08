@@ -271,7 +271,7 @@ export default function TimeEntry() {
                       loading={loading} loadingPosition="end"
                       className={stylesTimeEntry.Button}
                       onClick={() => submitTimeEntry('IN')}
-                      disabled={disabled}toLocaleString
+                      disabled={disabled}
                     >
                       Clock In
                     </LoadingButton>
