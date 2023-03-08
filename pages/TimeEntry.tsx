@@ -304,10 +304,10 @@ export default function TimeEntry() {
               </div>
               <div className={`${stylesTimeEntry.SplitViewColumnChild} ${stylesTimeEntry.TimePunchView}`}>
                 {timePunchData.map((item:any, idx:number) => {
-                    console.log("Time IN", item.TIME_IN);
-                    console.log("Time IN formatted", new Date(item.TIME_IN).toLocaleString("en-US", {timeZone: 'America/Halifax'}));
                     let timeIn = (item.TIME_IN) ? new Date(item.TIME_IN).toLocaleString("en-US", {timeZone: 'America/Halifax', hour: '2-digit', minute: '2-digit', hour12: true}) : '-';
                     let timeOut = (item.TIME_OUT) ? new Date(item.TIME_OUT).toLocaleString("en-US", {timeZone: 'America/Halifax', hour: '2-digit', minute: '2-digit', hour12: true}) : '-';
+                    console.log("Time IN", item.TIME_IN);
+                    console.log("Time IN formatted", timeIn);
                     return (
                       <div key={idx} className={stylesTimeEntry.TimeCard}>
                         <b className={stylesTimeEntry.TimeCardIn}>{timeIn}</b> <b className={stylesTimeEntry.TimeCardOut}>{timeOut}</b>
