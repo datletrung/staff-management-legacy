@@ -66,13 +66,16 @@ export default function TimeEntry() {
   const [prevDate, setPrevDate] = useState(new Date('0001-01-01'));
   const [date, setDate] = useState(new Date());
   const [timePunchData, setTimePunchData] = useState<any[]>([]);
-  const [breakData, setBreakData] = useState(0);
   const [timePunchMonthData, setTimePunchMonthData] = useState<number[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [disabled, setDisabled] = useState(false);
   const [currentDate, setCurrentDate] = useState('');
   const [currentTime, setCurrentTime] = useState('');
+
+  const [totalTime, setTotalTime] = useState(0);
+  const [totalBreakTime, setTotalBreakTime] = useState(0);
+  const [totalWorkingTime, setTotalWorkingTime] = useState(0);
 
   useEffect(() => {
     refreshStatus();
@@ -106,6 +109,18 @@ export default function TimeEntry() {
     let res = await response.json();
     setTimePunchData(res.data);
 
+    let n_totalTime = 0;
+    res.data.forEach((item: {TIME_IN: Date, TIME_OUT: Date}) => {
+      let timeIn = new Date(item.TIME_IN);
+      let timeOut = (item.TIME_OUT) ? new Date(item.TIME_OUT) : null;
+      if (timeOut != null){
+        n_totalTime += (timeOut.valueOf() - timeIn.valueOf())/60000;
+      } else {
+        n_totalTime += (new Date().valueOf() - timeIn.valueOf())/60000;
+      }
+    });
+    setTotalTime(Math.floor(n_totalTime));
+
     postData = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json '},
@@ -118,7 +133,11 @@ export default function TimeEntry() {
     
     response = await fetch(apiUrlEndpoint, postData);
     res = await response.json();
-    setBreakData(res.data[0].BREAK_NUM);
+    let n_breakTime = res.data[0].BREAK_NUM*30;
+    setTotalBreakTime(n_breakTime);
+
+    setTotalWorkingTime(Math.floor(n_totalTime-n_breakTime));
+    
 
     setLoading(false);
     if (datePara.setHours(0,0,0,0) == new Date().setHours(0,0,0,0)){
@@ -161,20 +180,20 @@ export default function TimeEntry() {
 
   
   async function submitTimeEntry(action: string) {
-    let prevAction:string = 'OUT';
+    let clockedIn:boolean = false;
     if (Object.keys(timePunchData).length !== 0){
-      prevAction = timePunchData[timePunchData.length - 1].ACTION;
+      clockedIn = (timePunchData[timePunchData.length - 1].TIME_OUT == null) ? true : false;
     }
     if (!['IN', 'OUT', 'BREAK'].includes(action)){
       notify('Invalid Action', 'error');
       return;
     }
-    if (action == 'IN' &&  prevAction != 'OUT'){
+    if (action == 'IN' &&  clockedIn === true){
       notify('You\'ve already clocked in', 'error');
       return;
     }
-    if (['OUT', 'BREAK'].includes(action) &&  prevAction == 'OUT'){
-      notify('You have to clock in first', 'error');
+    if (action == 'OUT' &&  clockedIn === false){
+      notify('You need to clock in first', 'error');
       return;
     }
     setLoading(true);
@@ -248,7 +267,7 @@ export default function TimeEntry() {
                 <div className={stylesTimeEntry.ButtonContainer}>
                   <div className={stylesTimeEntry.Button}>
                     <LoadingButton
-                      size="large" variant="outlined" color="success" endIcon={<LoginIcon />}
+                      size="large" variant="outlined" color="success" endIcon={<LoginIcon/>}
                       loading={loading} loadingPosition="end"
                       className={stylesTimeEntry.Button}
                       onClick={() => submitTimeEntry('IN')}
@@ -259,7 +278,7 @@ export default function TimeEntry() {
                   </div>
                   <div className={stylesTimeEntry.Button}>
                     <LoadingButton
-                      size="large" variant="outlined" color="error" endIcon={<LogoutIcon />}
+                      size="large" variant="outlined" color="error" endIcon={<LogoutIcon/>}
                       loading={loading} loadingPosition="end"
                       className={stylesTimeEntry.Button}
                       onClick={() => submitTimeEntry('OUT')}
@@ -270,7 +289,7 @@ export default function TimeEntry() {
                   </div>
                   <div className={stylesTimeEntry.Button}>
                     <LoadingButton
-                      size="large" variant="outlined" endIcon={<AddAlarmIcon />}
+                      size="large" variant="outlined" endIcon={<AddAlarmIcon/>}
                       loading={loading} loadingPosition="end"
                       className={stylesTimeEntry.Button}
                       onClick={() => submitTimeEntry('BREAK')}
@@ -284,35 +303,33 @@ export default function TimeEntry() {
               </div>
               </div>
               <div className={`${stylesTimeEntry.SplitViewColumnChild} ${stylesTimeEntry.TimePunchView}`}>
-                <hr/>
-                {timePunchData.map((item: { TIME: any; ACTION: any; }) => {
-                    let time = new Date(item.TIME).toLocaleString("en-US", {hour: '2-digit', minute: '2-digit', hour12: true});
-                    let action = item.ACTION;
-                    if (action == 'IN'){
-                      return (
-                          <div key={item.TIME} className={`${stylesTimeEntry.TimeCard} ${stylesTimeEntry.TimeCardIn}`}>
-                            <b>Time IN</b> <i>{time}</i>
-                          </div>
-                      );
-                    } else if (action == 'OUT'){
-                        return (
-                          <div key={item.TIME} className={`${stylesTimeEntry.TimeCard} ${stylesTimeEntry.TimeCardOut}`}>
-                            <b>Time OUT</b> <i>{time}</i>
-                          </div>
-                        );
-                    }
+                {timePunchData.map((item:any, idx:number) => {
+                    let timeIn = (item.TIME_IN) ? new Date(item.TIME_IN).toLocaleString("en-US", {hour: '2-digit', minute: '2-digit', hour12: true}) : '-';
+                    let timeOut = (item.TIME_OUT) ? new Date(item.TIME_OUT).toLocaleString("en-US", {hour: '2-digit', minute: '2-digit', hour12: true}) : '-';
+                    return (
+                      <div key={idx} className={stylesTimeEntry.TimeCard}>
+                        <b className={stylesTimeEntry.TimeCardIn}>{timeIn}</b> <b className={stylesTimeEntry.TimeCardOut}>{timeOut}</b>
+                      </div>
+                    );                    
                 })}
-                {(breakData != 0) ?
+                <hr/>
+                <div className={stylesTimeEntry.TimeCardSummary}>
+                  <b>Total Time</b>
+                  <b>{Math.floor(totalTime/60)}:{(totalTime%60).toString().padStart(2, '0')} hr</b>
+                </div>
+                {(totalBreakTime != 0) ?
                   <>
-                  <hr/>
-                  <div className={`${stylesTimeEntry.TimeCard} ${stylesTimeEntry.TimeCardBreak}`}>
-                    <b>BREAK</b> <i>30 minutess</i> x{breakData}
+                  <div className={stylesTimeEntry.TimeCardSummary}>
+                    <b>Break</b>
+                    <b>{Math.floor(totalBreakTime/60)}:{(totalBreakTime%60).toString().padStart(2, '0')} hr</b>
                   </div>
                   </> : null
                 }
-                <hr/><b>• Total Time:</b> <i>+08:00:00</i>
-                <br/><b>• Total Break:</b> <i>-00:30:00</i>
-                <hr/><b>Total Working Time:</b> <i>07:30:00</i>
+                <hr/>
+                <div className={stylesTimeEntry.TimeCardSummary}>
+                  <b>Total Working Time</b>
+                  <b>{Math.floor(totalWorkingTime/60)}:{(totalWorkingTime%60).toString().padStart(2, '0')} hr</b>
+                </div>
               </div>
             </div>
           </div>

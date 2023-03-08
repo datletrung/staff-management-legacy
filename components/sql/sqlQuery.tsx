@@ -7,16 +7,32 @@ export const sqlQuery = {
     `,
     //-----TIME ENTRY
     'fetchTimeEntryDayQuery': `
+        WITH TMP AS (
+            SELECT
+                TIMECLOCK.USER_ID
+                ,TIMECLOCK.ACTION
+                ,TIMECLOCK.TIME
+                ,ROW_NUMBER() OVER (PARTITION BY TIMECLOCK.USER_ID ORDER BY TIME) AS RN
+            FROM TIMECLOCK
+                ,USER
+            WHERE 1=1
+                AND USER.EMAIL = ?
+                AND TIMECLOCK.USER_ID = USER.USER_ID
+                AND TIMECLOCK.ACTION IN ('IN', 'OUT')
+                AND DATE_FORMAT(TIMECLOCK.TIME, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
+        )
+        
         SELECT
-            TIMECLOCK.TIME
-            ,TIMECLOCK.ACTION
-        FROM TIMECLOCK TIMECLOCK
-            ,USER
+            T1.TIME AS TIME_IN
+            ,T2.TIME AS TIME_OUT
+        FROM
+            TMP T1
+        LEFT JOIN TMP T2 ON 1=1
+            AND T1.USER_ID = T2.USER_ID
+            AND T2.RN = T1.RN + 1
+            AND T2.ACTION = 'OUT'
         WHERE 1=1
-            AND USER.EMAIL = ?
-            AND TIMECLOCK.USER_ID = USER.USER_ID
-            AND TIMECLOCK.ACTION IN ('IN', 'OUT')
-            AND DATE_FORMAT(TIMECLOCK.TIME, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
+            AND T1.ACTION = 'IN'
     `,
     'fetchBreakDayQuery': `
         SELECT
@@ -53,6 +69,7 @@ export const sqlQuery = {
                         ,ACTION
                         ,ROW_NUMBER() OVER (PARTITION BY USER_ID ORDER BY TIME DESC) AS RN
                     FROM TIMECLOCK
+                    WHERE ACTION IN ('IN', 'OUT')
                 ) TMP_PREV_ACT
                     ON TMP_PREV_ACT.USER_ID = USR.USER_ID
                     AND TMP_PREV_ACT.RN = 1
@@ -63,7 +80,9 @@ export const sqlQuery = {
             AND (
                     (CUR_ACTION = 'IN' AND PREV_ACTION = 'OUT')
                     OR
-                    (CUR_ACTION IN ('OUT', 'BREAK') AND PREV_ACTION != 'OUT')
+                    (CUR_ACTION = 'OUT' AND PREV_ACTION = 'IN')
+                    OR
+                    CUR_ACTION = 'BREAK'
             )
     `
 };

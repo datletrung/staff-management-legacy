@@ -94,21 +94,20 @@
     border-radius: 1rem;
     display: flex;
     justify-content: space-between;
+    border: 2px solid #000000;
 }
 
 .TimeCardIn {
     color: green;
-    border: 2px solid green;
 }
 
 .TimeCardOut {
-    color: #b41b1b;
-    border: 2px solid #b41b1b;
+    color: red;
 }
 
-.TimeCardBreak {
-    color: #9fa115;
-    border: 2px solid #9fa115;
+.TimeCardSummary {
+    display: flex;
+    justify-content: space-between;
 }
 
 .Clock {
