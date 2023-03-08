@@ -76,8 +76,6 @@ export default function TimeEntry() {
   const [totalTime, setTotalTime] = useState(0);
   const [totalBreakTime, setTotalBreakTime] = useState(0);
   const [totalWorkingTime, setTotalWorkingTime] = useState(0);
-  console.log("Date raw", new Date());
-  console.log("Date timezoned", new Date().toLocaleString("en-US", {timeZone: 'America/Halifax'}));
 
   useEffect(() => {
     refreshStatus();
@@ -112,7 +110,7 @@ export default function TimeEntry() {
     setTimePunchData(res.data);
 
     let n_totalTime = 0;
-    res.data.forEach((item: {TIME_IN: Date, TIME_OUT: Date}) => {
+    res.data.forEach((item: {TIME_IN: string, TIME_OUT: string}) => {
       let timeIn = new Date(item.TIME_IN);
       let timeOut = (item.TIME_OUT) ? new Date(item.TIME_OUT) : null;
       if (timeOut != null){
@@ -273,7 +271,7 @@ export default function TimeEntry() {
                       loading={loading} loadingPosition="end"
                       className={stylesTimeEntry.Button}
                       onClick={() => submitTimeEntry('IN')}
-                      disabled={disabled}
+                      disabled={disabled}toLocaleString
                     >
                       Clock In
                     </LoadingButton>
@@ -306,6 +304,8 @@ export default function TimeEntry() {
               </div>
               <div className={`${stylesTimeEntry.SplitViewColumnChild} ${stylesTimeEntry.TimePunchView}`}>
                 {timePunchData.map((item:any, idx:number) => {
+                    console.log("Time IN", item.TIME_IN);
+                    console.log("Time IN formatted", new Date(item.TIME_IN).toLocaleString("en-US", {timeZone: 'America/Halifax'}));
                     let timeIn = (item.TIME_IN) ? new Date(item.TIME_IN).toLocaleString("en-US", {timeZone: 'America/Halifax', hour: '2-digit', minute: '2-digit', hour12: true}) : '-';
                     let timeOut = (item.TIME_OUT) ? new Date(item.TIME_OUT).toLocaleString("en-US", {timeZone: 'America/Halifax', hour: '2-digit', minute: '2-digit', hour12: true}) : '-';
                     return (
