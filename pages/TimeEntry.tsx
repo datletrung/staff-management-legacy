@@ -61,7 +61,7 @@ function notify(msg:String, type:String){
 
 
 export default function TimeEntry() {
-  const { data: session } = useSession();
+  const {data: session} = useSession();
   const [email] = useState(session?.user?.email);
   const [prevDate, setPrevDate] = useState(new Date('0001-01-01'));
   const [date, setDate] = useState(new Date());
@@ -76,6 +76,9 @@ export default function TimeEntry() {
   const [totalTime, setTotalTime] = useState(0);
   const [totalBreakTime, setTotalBreakTime] = useState(0);
   const [totalWorkingTime, setTotalWorkingTime] = useState(0);
+  console.log("Date raw", new Date());
+  console.log("Date formatted", new Date().toLocaleString("en-US", {weekday: 'short', month: 'short', day: '2-digit', year: 'numeric'}));
+  console.log("Date timezoned", new Date().toLocaleString("en-US", {timeZone: 'America/Halifax', weekday: 'short', month: 'short', day: '2-digit', year: 'numeric'}));
 
   useEffect(() => {
     refreshStatus();
