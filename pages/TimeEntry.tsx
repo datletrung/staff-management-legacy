@@ -77,8 +77,7 @@ export default function TimeEntry() {
   const [totalBreakTime, setTotalBreakTime] = useState(0);
   const [totalWorkingTime, setTotalWorkingTime] = useState(0);
   console.log("Date raw", new Date());
-  console.log("Date formatted", new Date().toLocaleString("en-US", {weekday: 'short', month: 'short', day: '2-digit', year: 'numeric'}));
-  console.log("Date timezoned", new Date().toLocaleString("en-US", {timeZone: 'America/Halifax', weekday: 'short', month: 'short', day: '2-digit', year: 'numeric'}));
+  console.log("Date timezoned", new Date().toLocaleString("en-US", {timeZone: 'America/Halifax'}));
 
   useEffect(() => {
     refreshStatus();
