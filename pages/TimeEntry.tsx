@@ -119,7 +119,7 @@ export default function TimeEntry() {
         n_totalTime += (new Date().valueOf() - timeIn.valueOf())/60000;
       }
     });
-    setTotalTime(Math.floor(n_totalTime));
+    setTotalTime(Math.max(0, Math.floor(n_totalTime)));
 
     postData = {
         method: 'POST',
@@ -136,7 +136,7 @@ export default function TimeEntry() {
     let n_breakTime = res.data[0].BREAK_NUM*30;
     setTotalBreakTime(n_breakTime);
 
-    setTotalWorkingTime(Math.floor((n_totalTime-n_breakTime < 0) ? 0 : (n_totalTime-n_breakTime)));
+    setTotalWorkingTime(Math.max(0, Math.floor((n_totalTime-n_breakTime))));
     
 
     setLoading(false);
@@ -302,7 +302,7 @@ export default function TimeEntry() {
                 <div><i><small>*One break is 30 minutes.</small></i></div>
               </div>
               </div>
-              <div className={`${stylesTimeEntry.SplitViewColumnChild} ${stylesTimeEntry.TimePunchView}`}>
+              <div className={`${stylesTimeEntry.SplitViewColumnChild} ${stylesTimeEntry.TimePunchView} ${loading ? stylesTimeEntry.TimePunchViewBlur : ''} `}>
                 {timePunchData.map((item:any, idx:number) => {
                     let timeIn = (item.TIME_IN) ? new Date(item.TIME_IN).toLocaleString("en-US", {hour: '2-digit', minute: '2-digit', hour12: true}) : '-';
                     let timeOut = (item.TIME_OUT) ? new Date(item.TIME_OUT).toLocaleString("en-US", {hour: '2-digit', minute: '2-digit', hour12: true}) : '-';
