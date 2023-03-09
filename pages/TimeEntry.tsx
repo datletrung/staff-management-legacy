@@ -105,6 +105,7 @@ export default function TimeEntry() {
     let response = await fetch(apiUrlEndpoint, postData);
     let res = await response.json();
     setTimePunchData(res.data);
+    console.log(res.data);
 
     postData = {
         method: 'POST',
