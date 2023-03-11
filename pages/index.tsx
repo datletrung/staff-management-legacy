@@ -7,7 +7,6 @@ import stylesIndex from '../components/css/index.module.css';
 
 export default function Account() {
     const {data: session} = useSession();
-    console.log(session);
     const router = useRouter();
     if (router.query.returnUrl) router.push(router.query.returnUrl.toString());
 
