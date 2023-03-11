@@ -283,8 +283,9 @@ export default function TimeEntry() {
                     <LoadingButton
                       size="large" variant="outlined" color="success" endIcon={<LoginIcon/>}
                       loading={loading} loadingPosition="end"
-                      onClick={() => submitTimeEntry('IN')}
+                      style={{width:'100%'}}
                       disabled={disabled}
+                      onClick={() => submitTimeEntry('IN')}
                     >
                       Clock In
                     </LoadingButton>
@@ -293,8 +294,9 @@ export default function TimeEntry() {
                     <LoadingButton
                       size="large" variant="outlined" color="error" endIcon={<LogoutIcon/>}
                       loading={loading} loadingPosition="end"
-                      onClick={() => submitTimeEntry('OUT')}
+                      style={{width:'100%'}}
                       disabled={disabled}
+                      onClick={() => submitTimeEntry('OUT')}
                     >
                       Clock Out
                     </LoadingButton>
@@ -303,8 +305,9 @@ export default function TimeEntry() {
                     <LoadingButton
                       size="large" variant="outlined" endIcon={<AddAlarmIcon/>}
                       loading={loading} loadingPosition="end"
-                      onClick={() => submitTimeEntry('BREAK')}
+                      style={{width:'100%'}}
                       disabled={disabled}
+                      onClick={() => submitTimeEntry('BREAK')}
                     >
                       Add Break
                     </LoadingButton>
