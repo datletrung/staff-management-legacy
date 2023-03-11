@@ -1,5 +1,8 @@
+import { faHouse, faStopwatch, faUserShield, faUserGear } from '@fortawesome/free-solid-svg-icons';
+
 export const NavBarItems = [
-    { text: "Dashboard", icon: 'fa-solid fa-chart-line', href: "/Dashboard" },
-    { text: "Time Entry", icon: 'fa-solid fa-user-clock', href: "/TimeEntry" },
-    { text: "Assignments", icon: 'fa-solid fa-code', href: "/Assignments" },
+    { text: "Home Page", icon: faHouse, href: "/", permissionRequired: ["SYSADMIN", "MANAGER", "EMPLOYEE", "GUEST"] },
+    { text: "Time Entry", icon: faStopwatch, href: "/TimeEntry", permissionRequired: ["SYSADMIN", "MANAGER", "EMPLOYEE"]},
+    { text: "Manager Zone", icon: faUserShield, href: "/ManagerZone", permissionRequired: ["SYSADMIN", "MANAGER"] }, 
+    { text: "SysAdmin Zone", icon: faUserGear, href: "/SysAdminZone", permissionRequired: ["SYSADMIN"] },
 ];

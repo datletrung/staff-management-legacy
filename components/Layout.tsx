@@ -4,21 +4,44 @@ import styles from './css/layout.module.css';
 import { NavBarItems } from "./NavBarItems";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from 'next/router';
+import { useState, useEffect } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUserLock, faBars } from '@fortawesome/free-solid-svg-icons';
+
 
 export default function Layout({ children }:{ children: any}) {
     const { data: session } = useSession();
     const router = useRouter();
+
+    const [isOpen, setIsOpen] = useState(true);
+
+    function handleResize() {
+        if (window.innerWidth < 768) {
+            setIsOpen(false);
+        } else {
+            setIsOpen(true);
+        }
+    }
+
+    useEffect(() => {
+        handleResize();  
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
+
     return (
         <>
         <div className={styles.MainBody}>
             <div className={styles.HeaderContainer}> {/*Header*/}
                 <div className={styles.HeaderRowContainer}>
                     <div className={styles.HeaderLogo}>
-                        <i className={`fa-solid fa-bars fa-2xl ${styles.FAIcon}`}
-                            onClick={() => {/*handle Show/Hide NavBar*/ return }}
-                        ></i>
+                        <div className={styles.HeaderLogoButton}>
+                            <FontAwesomeIcon icon={faBars} size="2xl" onClick={() => {setIsOpen(!isOpen)}}/>
+                        </div>
                         <Link href={"/"}>
-                            <h1>{`${process.env.websiteName}`}</h1>
+                            <h1>{`${process.env.WebsiteName}`}</h1>
                         </Link>
                     </div>
                     <div className={styles.HeaderAccountButton}
@@ -41,19 +64,26 @@ export default function Layout({ children }:{ children: any}) {
                                 <span>{session.user.name}</span>
                             </div>
                         </div>)
-                        : (<><i className='fa-solid fa-user-lock'></i> Sign in</>)
+                        : (<><FontAwesomeIcon icon={faUserLock}/> Sign in</>)
                         }
                     </div>
                 </div>
             </div>
             <div className={styles.BodyContainer}> {/*Body container*/}
-                <div className={styles.NavBarContainer}> {/*NavBar*/}
+                <div className={styles.NavBarContainer}
+                        style={{ display: isOpen ? 'block' : 'none' }}> {/*NavBar*/}
                     <div className={styles.NavBarList}>
-                        {NavBarItems.map((menu, idx) => (
-                            <Link href={menu.href} key={idx.toString()} className={styles.NavBarItem}>
-                                <i className={menu.icon}></i>{' '}{menu.text}
-                            </Link>
-                        ))}
+                        {NavBarItems.map((menu, idx) => {
+                            if (menu.permissionRequired.includes(session?.user?.role!))
+                            return (
+                                <Link href={menu.href} key={idx.toString()} className={styles.NavBarItem}>
+                                    <div className={styles.NavBarItemChild1}>
+                                        <FontAwesomeIcon icon={menu.icon} className={styles.NavBarItemChild1}/>
+                                    </div>
+                                    <div className={styles.NavBarItemChild2}>{menu.text}</div>
+                                </Link>
+                            );
+                        })}
                     </div>
                 </div>
                 <div className={styles.ContentContainer}> {/*Body*/}

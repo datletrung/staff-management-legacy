@@ -1,6 +1,13 @@
-import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google";
+import NextAuth, { DefaultSession } from "next-auth"
 
+declare module "next-auth" {
+  interface Session {
+    user: {
+      role?: string
+    } & DefaultSession["user"]
+  }
+}
 
 export default NextAuth({
     providers: [
@@ -12,8 +19,7 @@ export default NextAuth({
     callbacks: {
         async session({ session }:{ session: any}) {
             //retrieve ROLE and assign to session after signed in
-            //const apiUrlEndpoint = 'http://localhost:3000/api/fetchSql';
-            const apiUrlEndpoint = 'https://company-management.vercel.app/api/fetchSql';
+            const apiUrlEndpoint = `${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/fetchSql`;
             const postData = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json '},

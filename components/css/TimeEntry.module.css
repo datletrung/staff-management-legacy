@@ -66,6 +66,7 @@
 .SplitViewRow {
     display: flex;
     flex-direction: row;
+    padding: 10px;
 }
 
 .SplitViewRowChild {
@@ -132,4 +133,10 @@
     padding: 0.5rem;
     width: 400px;
     border-radius: 0.5rem;
+}
+
+@media screen and (max-width: 768px) {
+    .SplitViewRow {
+        flex-direction: column;
+    }
 }

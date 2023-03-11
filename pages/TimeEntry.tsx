@@ -11,9 +11,12 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-toastify';
 import Calendar from 'react-calendar';
+import { checkPermissions } from '../components/CheckPermission';
 
 import 'react-calendar/dist/Calendar.css';
 import stylesTimeEntry from '../components/css/TimeEntry.module.css';
+
+
 
 function notify(msg:String, type:String){
   if (type == 'error'){
@@ -61,6 +64,17 @@ function notify(msg:String, type:String){
 
 
 export default function TimeEntry() {
+  if (!checkPermissions()) {
+    return (
+      <>
+        <Head>
+          <title>{`${process.env.WebsiteName}`}</title>
+        </Head>
+        <h3 style={{color: "red"}}>You do not have permission to view this page.</h3>
+      </>
+    );
+  }
+
   const { data: session } = useSession();
   const [email] = useState(session?.user?.email);
   const [prevDate, setPrevDate] = useState(new Date('0001-01-01'));
@@ -112,7 +126,7 @@ export default function TimeEntry() {
     let n_totalTime = 0;
     res.data.forEach((item: {TIME_IN: Date, TIME_OUT: Date}) => {
       let timeIn = new Date(new Date(item.TIME_IN).toLocaleString("en-US", {timeZone:'America/Halifax'}));
-      let timeOut = (item.TIME_OUT) ? new Date(new Date(item.TIME_IN).toLocaleString("en-US", {timeZone:'America/Halifax'})) : null;
+      let timeOut = (item.TIME_OUT) ? new Date(new Date(item.TIME_OUT).toLocaleString("en-US", {timeZone:'America/Halifax'})) : null;
       if (timeOut != null){
         n_totalTime += (timeOut.valueOf() - timeIn.valueOf())/60000;
       } else {
@@ -224,7 +238,7 @@ export default function TimeEntry() {
       return (
         <div
           style={{
-            backgroundColor: 'green',
+            backgroundColor: '#39FF14',
             width: '100%',
             height: '5px',
           }}
@@ -238,7 +252,7 @@ export default function TimeEntry() {
   return (
     <>
         <Head>
-            <title>{`Time Entry | ${process.env.websiteName}`}</title>
+            <title>{`Time Entry | ${process.env.WebsiteName}`}</title>
         </Head>
         <h1>Time Entry</h1>
 
@@ -269,7 +283,6 @@ export default function TimeEntry() {
                     <LoadingButton
                       size="large" variant="outlined" color="success" endIcon={<LoginIcon/>}
                       loading={loading} loadingPosition="end"
-                      className={stylesTimeEntry.Button}
                       onClick={() => submitTimeEntry('IN')}
                       disabled={disabled}
                     >
@@ -280,7 +293,6 @@ export default function TimeEntry() {
                     <LoadingButton
                       size="large" variant="outlined" color="error" endIcon={<LogoutIcon/>}
                       loading={loading} loadingPosition="end"
-                      className={stylesTimeEntry.Button}
                       onClick={() => submitTimeEntry('OUT')}
                       disabled={disabled}
                     >
@@ -291,7 +303,6 @@ export default function TimeEntry() {
                     <LoadingButton
                       size="large" variant="outlined" endIcon={<AddAlarmIcon/>}
                       loading={loading} loadingPosition="end"
-                      className={stylesTimeEntry.Button}
                       onClick={() => submitTimeEntry('BREAK')}
                       disabled={disabled}
                     >
@@ -299,7 +310,7 @@ export default function TimeEntry() {
                     </LoadingButton>
                   </div>
                 </div>
-                <div><i><small>*One break is 30 minutes.</small></i></div>
+                <div><i><small>*Apply one break will substract 30 minutes from your working time.</small></i></div>
               </div>
               </div>
               <div className={`${stylesTimeEntry.SplitViewColumnChild} ${stylesTimeEntry.TimePunchView} ${loading ? stylesTimeEntry.TimePunchViewBlur : ''} `}>
