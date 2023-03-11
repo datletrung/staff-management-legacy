@@ -6,7 +6,8 @@ export default async function handler(req: any, res: { status: (arg0: number) =>
     host     : process.env.SQL_HOSTNAME,
     database : process.env.SQL_DB,
     user     : process.env.SQL_USR,
-    password : process.env.SQL_PWD
+    password : process.env.SQL_PWD,
+    timezone : '-04:00'
   });
 
   try {

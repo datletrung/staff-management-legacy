@@ -65,7 +65,7 @@ export const sqlQuery = {
                     ON USR.EMAIL = PAR_EML.EMAIL
                 JOIN (SELECT ? AS ACTION FROM DUAL) PAR_ACT
                     ON 1=1
-                JOIN (SELECT USER_ID
+                LEFT JOIN (SELECT USER_ID
                         ,ACTION
                         ,ROW_NUMBER() OVER (PARTITION BY USER_ID ORDER BY TIME DESC) AS RN
                     FROM TIMECLOCK
@@ -78,7 +78,7 @@ export const sqlQuery = {
         ) t
         WHERE 1=1
             AND (
-                    (CUR_ACTION = 'IN' AND PREV_ACTION = 'OUT')
+                    (CUR_ACTION = 'IN' AND (PREV_ACTION = 'OUT' OR PREV_ACTION IS NULL))
                     OR
                     (CUR_ACTION = 'OUT' AND PREV_ACTION = 'IN')
                     OR

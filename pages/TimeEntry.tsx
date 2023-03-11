@@ -80,8 +80,8 @@ export default function TimeEntry() {
   useEffect(() => {
     refreshStatus();
     const r = setInterval(() => {
-      setCurrentDate(new Date().toLocaleString("en-US", {weekday: 'short', month: 'short', day: '2-digit', year: 'numeric'}));
-      setCurrentTime(new Date().toLocaleString("en-US", {hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false}));
+      setCurrentDate(new Date().toLocaleString("en-US", {timeZone:'America/Halifax', weekday: 'short', month: 'short', day: '2-digit', year: 'numeric'}));
+      setCurrentTime(new Date().toLocaleString("en-US", {timeZone:'America/Halifax', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false}));
     }, 1000);
     return () => { clearInterval(r) }
   }, []);
@@ -93,7 +93,7 @@ export default function TimeEntry() {
 
   async function getTimeEntryPerDay(datePara: Date) {
     if (typeof(datePara) === 'undefined') return;
-    let formattedDate = datePara.toLocaleString("en-US", {year: 'numeric', month: '2-digit', day: '2-digit'});
+    let formattedDate = datePara.toLocaleString("en-US", {timeZone:'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'});
     const apiUrlEndpoint = 'api/fetchSql';
     let postData = {
         method: 'POST',
@@ -108,13 +108,11 @@ export default function TimeEntry() {
     let response = await fetch(apiUrlEndpoint, postData);
     let res = await response.json();
     setTimePunchData(res.data);
-    
-    console.log(res.data);
 
     let n_totalTime = 0;
     res.data.forEach((item: {TIME_IN: Date, TIME_OUT: Date}) => {
-      let timeIn = new Date(item.TIME_IN);
-      let timeOut = (item.TIME_OUT) ? new Date(item.TIME_OUT) : null;
+      let timeIn = new Date(new Date(item.TIME_IN).toLocaleString("en-US", {timeZone:'America/Halifax'}));
+      let timeOut = (item.TIME_OUT) ? new Date(new Date(item.TIME_IN).toLocaleString("en-US", {timeZone:'America/Halifax'})) : null;
       if (timeOut != null){
         n_totalTime += (timeOut.valueOf() - timeIn.valueOf())/60000;
       } else {
@@ -157,7 +155,7 @@ export default function TimeEntry() {
     } else {
       setPrevDate(datePara);
     }
-    let formattedDate = datePara.toLocaleString("en-US", {year: 'numeric', month: '2-digit'});
+    let formattedDate = datePara.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit'});
     const apiUrlEndpoint = 'api/fetchSql';
     const postData = {
         method: 'POST',
@@ -173,8 +171,8 @@ export default function TimeEntry() {
     const res = await response.json();
     let data = res.data;
     let tmp: Array<number> = [];
-    data.forEach((item: any) => {
-      let time = new Date(item.DATE).setHours(0,0,0,0);
+    data.forEach((item: { DATE: Date }) => {
+      let time = new Date(new Date(item.DATE).toLocaleString("en-US", {timeZone: 'America/Halifax'})).setHours(0,0,0,0);
       tmp.push(time);
     });
     setTimePunchMonthData(tmp);
@@ -306,8 +304,8 @@ export default function TimeEntry() {
               </div>
               <div className={`${stylesTimeEntry.SplitViewColumnChild} ${stylesTimeEntry.TimePunchView} ${loading ? stylesTimeEntry.TimePunchViewBlur : ''} `}>
                 {timePunchData.map((item:any, idx:number) => {
-                    let timeIn = (item.TIME_IN) ? new Date(item.TIME_IN).toLocaleString("en-US", {hour: '2-digit', minute: '2-digit', hour12: true}) : '-';
-                    let timeOut = (item.TIME_OUT) ? new Date(item.TIME_OUT).toLocaleString("en-US", {hour: '2-digit', minute: '2-digit', hour12: true}) : '-';
+                    let timeIn = (item.TIME_IN) ? new Date(item.TIME_IN).toLocaleString("en-US", {timeZone: 'America/Halifax', hour: '2-digit', minute: '2-digit', hour12: true}) : '-';
+                    let timeOut = (item.TIME_OUT) ? new Date(item.TIME_OUT).toLocaleString("en-US", {timeZone: 'America/Halifax', hour: '2-digit', minute: '2-digit', hour12: true}) : '-';
                     return (
                       <div key={idx} className={stylesTimeEntry.TimeCard}>
                         <b className={stylesTimeEntry.TimeCardIn}>{timeIn}</b> <b className={stylesTimeEntry.TimeCardOut}>{timeOut}</b>
