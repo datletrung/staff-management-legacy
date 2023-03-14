@@ -9,43 +9,119 @@
     margin: 0.25rem;
 }
 
-.DropDownContainer {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-}
-
-.FormChild {
-    width: 50%;
-    min-width: 100px;
-    padding: 0.25rem;
-}
-
-.CalendarChildFlexColumn {
-    display: flex;
-    flex-direction: column;
-}
-
 .EmployeeList {
+    width: 100%;
+    max-width: 350px;
     display:flex;
     flex-direction: column;
 }
 
 .EmployeeCard {
-    display:flex;
-    flex-direction: column;
-    margin-bottom: 0.2rem;
-    padding: 0.2rem;
-    border-radius: 0.5rem;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    width: 100%;
+    background-color: inherit;
+    margin-bottom: 0.2rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
     border: 2px solid #ccc;
 }
 
+.TimeSheetContainer {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.CalendarChildFlexColumnLeft {
+    display: flex;
+    flex-direction: column;
+    width: 400px;
+    margin: 0 1rem 1rem 0;
+}
+
+.CalendarChildFlexColumnRight {
+    display: flex;
+    flex-direction: column;
+    flex: auto;
+    width: 50%;
+}
+
+.FormContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    width: 80%;
+    max-width: 500px;
+    padding: 20px;
+    border-radius: 1rem;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+}
+
+.BlurView {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.FormChild {
+    width: 100%;
+    padding: 0.25rem;
+}
+
+.CustomButton {
+    background-color: inherit;
+    border: 0px;
+    font-size: 1rem;
+}
+
+.TimePunchView {
+    margin: 0 1rem 0 1rem;
+    font-size: 1.2rem;
+}
+
+.TimePunchViewBlur {
+    filter: blur(3px);
+}
+
+.TimeCard {
+    margin-bottom: 0.8rem;
+    padding: 1rem;
+    border-radius: 1rem;
+    display: flex;
+    justify-content: space-between;
+    border: 2px solid #000000;
+}
+
+.TimeCardIn {
+    color: green;
+}
+
+.TimeCardOut {
+    color: red;
+}
+
+.TimeCardSummary {
+    display: flex;
+    justify-content: space-between;
+}
 
 /* Custom CSS for Calendar */
 .CalendarContainer {
     padding: 0.5rem;
-    width: 400px;
+    width: 100%;
+    max-width: 400px;
     border-radius: 0.5rem;
 }

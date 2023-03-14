@@ -56,10 +56,12 @@
     width: 100%;
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
 }
 
 .Button {
     width: 100%;
+    max-width: 250px;
     margin: 0.25rem;
 }
 
@@ -92,7 +94,6 @@
 .TimePunchViewBlur {
     filter: blur(3px);
 }
-
 
 .TimeCard {
     margin-bottom: 0.8rem;
@@ -128,10 +129,17 @@
     font-size: 2rem;
 }
 
+.CenterView {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 /* Custom CSS for Calendar */
 .CalendarContainer {
     padding: 0.5rem;
-    width: 400px;
+    width: 100%;
+    max-width: 400px;
     border-radius: 0.5rem;
 }
 

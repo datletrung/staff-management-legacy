@@ -11,7 +11,7 @@ export const sqlQuery = {
             SELECT
                 TIMECLOCK.USER_ID
                 ,TIMECLOCK.ACTION
-                ,TIME_FORMAT(TIMECLOCK.TIME, '%H:%i') AS TIME
+                ,TIME_FORMAT(TIMECLOCK.TIME, '%H:%i:%s') AS TIME
                 ,ROW_NUMBER() OVER (PARTITION BY TIMECLOCK.USER_ID ORDER BY TIMECLOCK.DATE, TIMECLOCK.TIME) AS RN
             FROM TIMECLOCK
                 ,USER

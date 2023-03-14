@@ -62,7 +62,6 @@ export default function TimeEntry() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json '},
         body: JSON.stringify({
-            action: 'fetch',
             query: 'fetchTimeEntryDayQuery',
             para: [email, formattedDate]
         })
@@ -74,14 +73,14 @@ export default function TimeEntry() {
 
     let n_totalTime = 0;
     res.data.forEach((item: {TIME_IN: String, TIME_OUT: String}) => {
-      const [hours1, minutes1] = item.TIME_IN.split(":").map(Number);
-      const [hours2, minutes2] = (item.TIME_OUT) ? item.TIME_OUT.split(":").map(Number) : [null, null, null];
+      const [hours1, minutes1, second1] = item.TIME_IN.split(":").map(Number);
+      const [hours2, minutes2, second2] = (item.TIME_OUT) ? item.TIME_OUT.split(":").map(Number) : [null, null, null];
       
-      if (hours2 !== null && minutes2 !== null){
-        n_totalTime += Math.abs(Math.floor((hours2 - hours1) * 60 + (minutes2 - minutes1)));
+      if (hours2 !== null && minutes2 !== null && second2 !== null){
+        n_totalTime += Math.abs(Math.floor((hours2 - hours1) * 60 + (minutes2 - minutes1) + (second2 - second1) / 60));
       } else {
-        const [hours3, minutes3] = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }).split(":").map(Number);
-        n_totalTime += Math.abs(Math.floor((hours3 - hours1) * 60 + (minutes3 - minutes1)));
+        const [hours3, minutes3, second3] = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }).split(":").map(Number);
+        n_totalTime += Math.abs(Math.floor((hours3 - hours1) * 60 + (minutes3 - minutes1) + (second3 - second1) / 60));
       }
     });
     
@@ -91,7 +90,6 @@ export default function TimeEntry() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json '},
         body: JSON.stringify({
-            action: 'fetch',
             query: 'fetchBreakDayQuery',
             para: [email, formattedDate]
         })
@@ -127,7 +125,6 @@ export default function TimeEntry() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json '},
         body: JSON.stringify({
-            action: 'fetch',
             query: 'fetchTimeEntryMonthQuery',
             para: [email, formattedDate]
         })
@@ -168,7 +165,6 @@ export default function TimeEntry() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json '},
         body: JSON.stringify({
-            action: 'fetch',
             query: 'submitTimeEntry',
             para: [email, action]
         })
@@ -210,7 +206,7 @@ export default function TimeEntry() {
         <h1>Time Entry</h1>
 
         <div className={stylesTimeEntry.SplitViewRow}>
-          <div>
+          <div className={stylesTimeEntry.CenterView}>
             <div className={stylesTimeEntry.Clock}>
               <div>{currentDate}</div>
               <div className={stylesTimeEntry.ClockTime}>{currentTime}</div>
@@ -271,13 +267,13 @@ export default function TimeEntry() {
               </div>
               <div className={`${stylesTimeEntry.SplitViewColumnChild} ${stylesTimeEntry.TimePunchView} ${loading ? stylesTimeEntry.TimePunchViewBlur : ''} `}>
                 {timePunchData.map((item:any, idx:number) => {
-                    let timeIn = (item.TIME_IN) ? item.TIME_IN : '-';
-                    let timeOut = (item.TIME_OUT) ? item.TIME_OUT : '-';
+                    let timeIn = (item.TIME_IN) ? item.TIME_IN.split(":").map(String)[0]+':'+item.TIME_IN.split(":").map(String)[1] : '-';
+                    let timeOut = (item.TIME_OUT) ? item.TIME_OUT.split(":").map(String)[0]+':'+item.TIME_OUT.split(":").map(String)[1] : '-';
                     return (
                       <div key={idx} className={stylesTimeEntry.TimeCard}>
                         <b className={stylesTimeEntry.TimeCardIn}>{timeIn}</b> <b className={stylesTimeEntry.TimeCardOut}>{timeOut}</b>
                       </div>
-                    );                    
+                    );
                 })}
                 <hr/>
                 <div className={stylesTimeEntry.TimeCardSummary}>
