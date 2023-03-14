@@ -84,6 +84,12 @@ export const sqlQuery = {
                     CUR_ACTION = 'BREAK'
             )
     `,
+    'fetchEmployeeList':`
+            SELECT USER_ID, FIRST_NAME, LAST_NAME, EMAIL
+            FROM USER
+            WHERE 1=1
+                AND (ROLE = 'EMPLOYEE' OR EMAIL = 'brianle@lionrocktech.net')
+    `,
     'submitAddEmployee': `
             INSERT INTO USER (FIRST_NAME, LAST_NAME, EMAIL, CREATED_BY)
             SELECT ?, ?, ?, USER.USER_ID

@@ -74,7 +74,7 @@ export default function Layout({ children }:{ children: any}) {
                         style={{ display: isOpen ? 'block' : 'none' }}> {/*NavBar*/}
                     <div className={styles.NavBarList}>
                         {NavBarItems.map((menu, idx) => {
-                            if (menu.permissionRequired.includes(session?.user?.role!))
+                            if (menu.permissionRequired.includes((session?.user?.role!)?session?.user?.role!:''))
                             return (
                                 <Link href={menu.href} key={idx.toString()} className={styles.NavBarItem}>
                                     <div className={styles.NavBarItemChild1}>

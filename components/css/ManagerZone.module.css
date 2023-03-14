@@ -9,21 +9,43 @@
     margin: 0.25rem;
 }
 
-.FormContainer {
+.DropDownContainer {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-
-    border-bottom: 1px solid black;
-    border-left: 1px solid black;
-    border-right: 1px solid black;
-    border-bottom-left-radius: 1rem;
-    border-bottom-right-radius: 1rem;
-    padding: 1.5rem;
 }
 
 .FormChild {
     width: 50%;
     min-width: 100px;
     padding: 0.25rem;
+}
+
+.CalendarChildFlexColumn {
+    display: flex;
+    flex-direction: column;
+}
+
+.EmployeeList {
+    display:flex;
+    flex-direction: column;
+}
+
+.EmployeeCard {
+    display:flex;
+    flex-direction: column;
+    margin-bottom: 0.2rem;
+    padding: 0.2rem;
+    border-radius: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    border: 2px solid #ccc;
+}
+
+
+/* Custom CSS for Calendar */
+.CalendarContainer {
+    padding: 0.5rem;
+    width: 400px;
+    border-radius: 0.5rem;
 }

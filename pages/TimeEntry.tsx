@@ -12,6 +12,7 @@ import { useSession } from 'next-auth/react';
 import Calendar from 'react-calendar';
 import Notify from '../components/Notify';
 import { checkPermissions } from '../components/CheckPermission';
+import AccessDenied from '../components/AccessDenied';
 
 import 'react-calendar/dist/Calendar.css';
 import stylesTimeEntry from '../components/css/TimeEntry.module.css';
@@ -20,14 +21,7 @@ import stylesTimeEntry from '../components/css/TimeEntry.module.css';
 
 export default function TimeEntry() {
   if (!checkPermissions()) {
-    return (
-    <>
-        <Head>
-        <title>{`${process.env.WebsiteName}`}</title>
-        </Head>
-        <h3 style={{color: "red"}}>You do not have permission to view this page.</h3>
-    </>
-    );
+    return <AccessDenied/>;
   }
 
   const { data: session } = useSession();

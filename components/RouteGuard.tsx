@@ -1,16 +1,17 @@
-
 import { useSession } from 'next-auth/react';
 
-const RouteGuard = ({ router, children }:{ router: any, children: any }) => {
-    const { data: session } = useSession();
-
-    if (typeof window !== "undefined" && !session && router.pathname != '/') {
-        router.push({
-            pathname: '/',
-        });
-        return null;
+export default function RouteGuard({ router, children }:{ router: any, children: any }) {
+    const { data: session, status } = useSession();
+    const loading = status === 'loading';
+    
+    if (typeof window !== 'undefined'){
+        if (loading) {
+            return null;
+        } else if (!session && router.pathname != "/") {
+            router.push({pathname: '/'});
+            return null;
+        } else {
+            return children;
+        }
     }
-    return children;
-};
-
-export default RouteGuard;
+}
