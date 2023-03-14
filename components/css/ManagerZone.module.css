@@ -1,14 +1,29 @@
-.ChartContainer {
-    display: flex;
-    flex-wrap: wrap;
-    flex-grow: 2;
+.ButtonContainer {
     width: 100%;
-    height: 100%;
-    justify-content: space-around;
-    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: row;
 }
 
-.Chart {
-    margin: 1rem;
-    padding: 1rem;
+.Button {
+    width: 100%;
+    margin: 0.25rem;
+}
+
+.FormContainer {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    border-bottom: 1px solid black;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
+    padding: 1.5rem;
+}
+
+.FormChild {
+    width: 50%;
+    min-width: 100px;
+    padding: 0.25rem;
 }

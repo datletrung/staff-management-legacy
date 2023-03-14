@@ -1,4 +1,6 @@
 import mysql from 'mysql2/promise';
+import moment from "moment-timezone";
+
 import { sqlQuery } from '../../components/sql/sqlQuery';
 
 export default async function handler(req: any, res: { status: (arg0: number) => { (): any; new(): any; json: { (arg0: { data?: mysql.RowDataPacket[] | mysql.RowDataPacket[][] | mysql.OkPacket | mysql.OkPacket[] | mysql.ResultSetHeader; error?: any; }): void; new(): any; }; }; }){
@@ -7,7 +9,7 @@ export default async function handler(req: any, res: { status: (arg0: number) =>
     database : process.env.SQL_DB,
     user     : process.env.SQL_USR,
     password : process.env.SQL_PWD,
-    timezone : '-04:00'
+    timezone : moment.utc().utcOffset(moment().tz("America/Halifax").utcOffset()).format("Z"),
   });
 
   try {

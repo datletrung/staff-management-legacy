@@ -7,8 +7,8 @@ const RouteGuard = ({ router, children }:{ router: any, children: any }) => {
     if (typeof window !== "undefined" && !session && router.pathname != '/') {
         router.push({
             pathname: '/',
-            query: { returnUrl: router.asPath },
         });
+        return null;
     }
     return children;
 };

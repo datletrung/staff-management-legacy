@@ -9,8 +9,8 @@ import {Login as LoginIcon
 import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { toast } from 'react-toastify';
 import Calendar from 'react-calendar';
+import Notify from '../components/Notify';
 import { checkPermissions } from '../components/CheckPermission';
 
 import 'react-calendar/dist/Calendar.css';
@@ -18,60 +18,15 @@ import stylesTimeEntry from '../components/css/TimeEntry.module.css';
 
 
 
-function notify(msg:String, type:String){
-  if (type == 'error'){
-    toast.error(msg, {
-      position: "bottom-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      progress: undefined,
-      theme: "light",
-    });
-  } else if (type == 'warn'){
-    toast.warn(msg, {
-      position: "bottom-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      progress: undefined,
-      theme: "light",
-    });
-  } else if (type == 'success'){
-    toast.success(msg, {
-      position: "bottom-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      progress: undefined,
-      theme: "light",
-    });
-  } else if (type == 'info'){
-  toast.info(msg, {
-    position: "bottom-right",
-    autoClose: 5000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    progress: undefined,
-    theme: "light",
-  });
-  }
-}
-
-
 export default function TimeEntry() {
   if (!checkPermissions()) {
     return (
-      <>
+    <>
         <Head>
-          <title>{`${process.env.WebsiteName}`}</title>
+        <title>{`${process.env.WebsiteName}`}</title>
         </Head>
         <h3 style={{color: "red"}}>You do not have permission to view this page.</h3>
-      </>
+    </>
     );
   }
 
@@ -80,7 +35,7 @@ export default function TimeEntry() {
   const [prevDate, setPrevDate] = useState(new Date('0001-01-01'));
   const [date, setDate] = useState(new Date());
   const [timePunchData, setTimePunchData] = useState<any[]>([]);
-  const [timePunchMonthData, setTimePunchMonthData] = useState<number[]>([]);
+  const [timePunchMonthData, setTimePunchMonthData] = useState<String[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [disabled, setDisabled] = useState(false);
@@ -124,15 +79,18 @@ export default function TimeEntry() {
     setTimePunchData(res.data);
 
     let n_totalTime = 0;
-    res.data.forEach((item: {TIME_IN: Date, TIME_OUT: Date}) => {
-      let timeIn = new Date(new Date(item.TIME_IN).toLocaleString("en-US", {timeZone:'America/Halifax'}));
-      let timeOut = (item.TIME_OUT) ? new Date(new Date(item.TIME_OUT).toLocaleString("en-US", {timeZone:'America/Halifax'})) : null;
-      if (timeOut != null){
-        n_totalTime += (timeOut.valueOf() - timeIn.valueOf())/60000;
+    res.data.forEach((item: {TIME_IN: String, TIME_OUT: String}) => {
+      const [hours1, minutes1] = item.TIME_IN.split(":").map(Number);
+      const [hours2, minutes2] = (item.TIME_OUT) ? item.TIME_OUT.split(":").map(Number) : [null, null, null];
+      
+      if (hours2 !== null && minutes2 !== null){
+        n_totalTime += Math.abs(Math.floor((hours2 - hours1) * 60 + (minutes2 - minutes1)));
       } else {
-        n_totalTime += (new Date().valueOf() - timeIn.valueOf())/60000;
+        const [hours3, minutes3] = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }).split(":").map(Number);
+        n_totalTime += Math.abs(Math.floor((hours3 - hours1) * 60 + (minutes3 - minutes1)));
       }
     });
+    
     setTotalTime(Math.max(0, Math.floor(n_totalTime)));
 
     postData = {
@@ -184,9 +142,9 @@ export default function TimeEntry() {
     const response = await fetch(apiUrlEndpoint, postData);
     const res = await response.json();
     let data = res.data;
-    let tmp: Array<number> = [];
-    data.forEach((item: { DATE: Date }) => {
-      let time = new Date(new Date(item.DATE).toLocaleString("en-US", {timeZone: 'America/Halifax'})).setHours(0,0,0,0);
+    let tmp: Array<String> = [];
+    data.forEach((item: { DATE: String }) => {
+      let time = item.DATE;
       tmp.push(time);
     });
     setTimePunchMonthData(tmp);
@@ -199,15 +157,15 @@ export default function TimeEntry() {
       clockedIn = (timePunchData[timePunchData.length - 1].TIME_OUT == null) ? true : false;
     }
     if (!['IN', 'OUT', 'BREAK'].includes(action)){
-      notify('Invalid Action', 'error');
+      Notify('Invalid Action', 'error');
       return;
     }
     if (action == 'IN' &&  clockedIn === true){
-      notify('You\'ve already clocked in', 'error');
+      Notify('You\'ve already clocked in', 'error');
       return;
     }
     if (action == 'OUT' &&  clockedIn === false){
-      notify('You need to clock in first', 'error');
+      Notify('You need to clock in first', 'error');
       return;
     }
     setLoading(true);
@@ -224,16 +182,17 @@ export default function TimeEntry() {
     
     const response = await fetch(apiUrlEndpoint, postData);
     const res = await response.json();
-    if (res.data.affectedRows == 0) {
-      setLoading(false);
-      notify('Something went wrong! Please try again later', 'error');
-      return;
+    setLoading(false);
+    if (res.error){
+      Notify(res.error, 'error');
+    } else if (res.data.affectedRows == 0) {
+      Notify('Something went wrong! Please try again later', 'error');
     }
     refreshStatus();
   }
   
   function tileContent(datePara: any) {
-    let formattedDate = datePara.date.setHours(0,0,0,0);
+    let formattedDate = datePara.date.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'});
     if (timePunchMonthData.includes(formattedDate)) {
       return (
         <div
@@ -313,13 +272,13 @@ export default function TimeEntry() {
                     </LoadingButton>
                   </div>
                 </div>
-                <div><i><small>*Apply one break will substract 30 minutes from your working time.</small></i></div>
+                <div><i><small>*Applying one break will substract 30 minutes from your working time.</small></i></div>
               </div>
               </div>
               <div className={`${stylesTimeEntry.SplitViewColumnChild} ${stylesTimeEntry.TimePunchView} ${loading ? stylesTimeEntry.TimePunchViewBlur : ''} `}>
                 {timePunchData.map((item:any, idx:number) => {
-                    let timeIn = (item.TIME_IN) ? new Date(item.TIME_IN).toLocaleString("en-US", {timeZone: 'America/Halifax', hour: '2-digit', minute: '2-digit', hour12: true}) : '-';
-                    let timeOut = (item.TIME_OUT) ? new Date(item.TIME_OUT).toLocaleString("en-US", {timeZone: 'America/Halifax', hour: '2-digit', minute: '2-digit', hour12: true}) : '-';
+                    let timeIn = (item.TIME_IN) ? item.TIME_IN : '-';
+                    let timeOut = (item.TIME_OUT) ? item.TIME_OUT : '-';
                     return (
                       <div key={idx} className={stylesTimeEntry.TimeCard}>
                         <b className={stylesTimeEntry.TimeCardIn}>{timeIn}</b> <b className={stylesTimeEntry.TimeCardOut}>{timeOut}</b>

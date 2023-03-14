@@ -16,7 +16,7 @@ export default function SystemMaintenance() {
         </>
         );
     }
-
+    
     const {data: session} = useSession();
     const router = useRouter();
     if (router.query.returnUrl) router.push(router.query.returnUrl.toString())
