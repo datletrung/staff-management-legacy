@@ -56,6 +56,7 @@ export default function TimeEntry() {
 
   async function getTimeEntryPerDay(datePara: Date) {
     if (typeof(datePara) === 'undefined') return;
+    setLoading(true);
     let formattedDate = datePara.toLocaleString("en-US", {timeZone:'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'});
     const apiUrlEndpoint = 'api/fetchSql';
     let postData = {
@@ -214,7 +215,6 @@ export default function TimeEntry() {
             <Calendar className={stylesTimeEntry.CalendarContainer}
               locale='en-US'
               onChange={(datePara: any) => {
-                setLoading(true);
                 setDate(datePara);
                 getTimeEntryPerDay(datePara);
                 getTimeEntryPerMonth(datePara, false);

@@ -55,10 +55,10 @@ export const sqlQuery = {
             AND DATE_FORMAT(TIMECLOCK.DATE, '%Y-%m') = DATE_FORMAT(STR_TO_DATE(?, '%m/%Y'), '%Y-%m')
     `,
     'submitTimeEntry': `
-        INSERT INTO TIMECLOCK (USER_ID, ACTION, DATE, TIME)
-        SELECT USER_ID, CUR_ACTION, NOW(), NOW()
+        INSERT INTO TIMECLOCK (USER_ID, ACTION, DATE, TIME, APPROVED)
+        SELECT USER_ID, CUR_ACTION, NOW(), NOW(), SETTING_VALUE
         FROM (
-            SELECT USR.USER_ID, PAR_ACT.ACTION AS CUR_ACTION, TMP_PREV_ACT.ACTION AS PREV_ACTION
+            SELECT USR.USER_ID, PAR_ACT.ACTION AS CUR_ACTION, TMP_PREV_ACT.ACTION AS PREV_ACTION, APP_SET.SETTING_VALUE
             FROM USER USR
                 JOIN (SELECT ? AS EMAIL FROM DUAL) PAR_EML
                     ON USR.EMAIL = PAR_EML.EMAIL
@@ -72,6 +72,11 @@ export const sqlQuery = {
                 ) TMP_PREV_ACT
                     ON TMP_PREV_ACT.USER_ID = USR.USER_ID
                     AND TMP_PREV_ACT.RN = 1
+                LEFT JOIN (SELECT SETTING_VALUE
+                    FROM APP_SETTING
+                    WHERE SETTING_NAME = 'AUTO_APPROVE'
+                ) APP_SET
+                    ON 1=1
             WHERE 1=1
                 AND PAR_ACT.ACTION IN ('IN', 'OUT', 'BREAK')
         ) t
@@ -96,7 +101,22 @@ export const sqlQuery = {
             FROM USER
             WHERE USER.EMAIL = ?
     `,
-    'submitApproveTimeSheet': `
+    'approveTimeSheet': `
+            UPDATE TIMECLOCK
+            SET APPROVED = 'Y', APPROVED_BY = (SELECT USER_ID FROM USER WHERE EMAIL = ?)
+            WHERE 1=1
+            AND USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ?)
+            AND DATE_FORMAT(DATE, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
     `,
+    'fetchAutoApproveSetting':`
+            SELECT SETTING_VALUE
+            FROM APP_SETTING
+            WHERE SETTING_NAME = 'AUTO_APPROVE'
+    `,
+    'updateAutoApproveSetting':`
+            UPDATE APP_SETTING
+            SET SETTING_VALUE = ?
+            WHERE SETTING_NAME = 'AUTO_APPROVE'
+    `
 };
 

@@ -9,7 +9,9 @@ import { checkPermissions } from '../components/CheckPermission';
 import AccessDenied from '../components/AccessDenied';
 
 import { LoadingButton } from '@mui/lab';
-import { TextField } from '@mui/material';
+import { TextField
+        ,Switch
+} from '@mui/material';
 import {Add as AddIcon
       ,Check as CheckIcon
 } from '@mui/icons-material';
@@ -29,27 +31,24 @@ export default function ManagerZone() {
     const [loading, setLoading] = useState(false);
     const [disabled, setDisabled] = useState(false);
     const [disableSubmitButton, setDisableSubmitButton] = useState(true);
-    const [disableApproveButton, setDisableApproveButton] = useState(false);
-    
+    const [disableApproveButton, setDisableApproveButton] = useState(true);
     const [efirstName, setFirstName] = useState('');
     const [elastName, setLastName] = useState('');
     const [eemail, setEmail] = useState('');
     const [employeeList, setEmployeeList] = useState<String[]>([]);
     const [date, setDate] = useState(new Date());
-
     const [addNewEmployee, setAddNewEmployee] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
     const [currentView, setCurrentView] = useState<String[]>([]);
-
     const [prevDate, setPrevDate] = useState(new Date('0001-01-01'));
     const [timePunchData, setTimePunchData] = useState<any[]>([]);
     const [timePunchMonthData, setTimePunchMonthData] = useState<String[]>([]);
-
     const [totalTime, setTotalTime] = useState(0);
     const [totalBreakTime, setTotalBreakTime] = useState(0);
     const [totalWorkingTime, setTotalWorkingTime] = useState(0);
-
     const [calendarIsSelected, setCalendarIsSelected] = useState(false);
+    const [checkedAutoApprove, setCheckedAutoApprove] = useState(false);
+    const [disableAutoApprove, setDisableAutoApprove] = useState(false);
 
     function validateForm() {
         if (eemail.match(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/) && efirstName && elastName && eemail) {
@@ -100,8 +99,9 @@ export default function ManagerZone() {
         setEmployeeList(res.data);
     }
     
-    async function getTimeEntryPerDay(eemail: any,datePara: Date) {
+    async function getTimeEntryPerDay(eemail: any, datePara: Date) {
         if (typeof(datePara) === 'undefined') return;
+        setLoading(true);
         let formattedDate = datePara.toLocaleString("en-US", {timeZone:'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'});
         const apiUrlEndpoint = 'api/fetchSql';
         let postData = {
@@ -157,7 +157,7 @@ export default function ManagerZone() {
         }
     }
 
-    async function getTimeEntryPerMonth(datePara: Date, forceRefresh: boolean) {
+    async function getTimeEntryPerMonth(eemail: any, datePara: Date, forceRefresh: boolean) {
         if (!forceRefresh
             && (datePara.getMonth() === prevDate.getMonth() && datePara.getFullYear() === prevDate.getFullYear())
         ){
@@ -172,7 +172,7 @@ export default function ManagerZone() {
             headers: { 'Content-Type': 'application/json '},
             body: JSON.stringify({
                 query: 'fetchTimeEntryMonthQuery',
-                para: [email, formattedDate]
+                para: [eemail, formattedDate]
             })
         }
         
@@ -186,10 +186,104 @@ export default function ManagerZone() {
         });
         setTimePunchMonthData(tmp);
     }
+    
+    async function getAutoApproveSetting() {
+        const apiUrlEndpoint = 'api/fetchSql';
+        const postData = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json '},
+            body: JSON.stringify({
+                query: 'fetchAutoApproveSetting',
+                para: []
+            })
+        }
+        
+        const response = await fetch(apiUrlEndpoint, postData);
+        const res = await response.json();
+        let data = res.data[0].SETTING_VALUE;
+        setCheckedAutoApprove((data == 'Y') ? true : false);
+    }
+
+    async function setAutoApproveSetting(state: any) {
+        setDisableAutoApprove(true);
+        const apiUrlEndpoint = 'api/fetchSql';
+        const postData = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json '},
+            body: JSON.stringify({
+                query: 'updateAutoApproveSetting',
+                para: [(state) ? 'Y' : 'N']
+            })
+        }
+        
+        const response = await fetch(apiUrlEndpoint, postData);
+        const res = await response.json();
+        setDisableAutoApprove(false);
+        if (res.error){
+            Notify(res.error, 'error');
+        } else if (res.data.affectedRows == 1) {
+            Notify(`Setting updated successfully`, 'info');
+        } else {
+            Notify('Something went wrong! Please try again later', 'error');
+        }
+    }
+
+    async function handleApprove(eemail: any, datePara: Date) {
+        if (typeof(datePara) === 'undefined') return;
+        setLoading(true);
+        let formattedDate = datePara.toLocaleString("en-US", {timeZone:'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'});
+        const apiUrlEndpoint = 'api/fetchSql';
+        let postData = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json '},
+            body: JSON.stringify({
+                query: 'approveTimeSheet',
+                para: [email, eemail, formattedDate]
+            })
+        }
+        
+        let response = await fetch(apiUrlEndpoint, postData);
+        let res = await response.json();
+
+        setLoading(false);
+        if (res.error){
+            Notify(res.error, 'error');
+        } else {
+            Notify(`Approved`, 'info');
+        }
+    }
+
+    function tileContent(datePara: any) {
+        let formattedDate = datePara.date.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'});
+        if (timePunchMonthData.includes(formattedDate)) {
+          return (
+            <div
+              style={{
+                backgroundColor: '#39FF14',
+                width: '100%',
+                height: '5px',
+              }}
+            >
+            </div>
+          );
+        }
+        return null;
+    }
+
+    function handleChangeState(state: any) {
+        (state)
+        ? setDisableApproveButton(true)
+        : ((calendarIsSelected)
+            ? setDisableApproveButton(false)
+            : setDisableApproveButton(true)
+        );
+        setCheckedAutoApprove(state);
+        setAutoApproveSetting(state);
+    }
 
     useEffect(() => {
+        getAutoApproveSetting();
         getEmployeeList();
-        console.log(addNewEmployee);
     }, [])
 
     return (
@@ -205,6 +299,14 @@ export default function ManagerZone() {
             <div>
                 <div className={stylesManagerZone.TimeSheetContainer}>
                     <div className={stylesManagerZone.CalendarChildFlexColumnLeft}>
+                        <div className={stylesManagerZone.AutoApproveContainer}>
+                            <label>Auto Approve</label>
+                            <Switch
+                                checked={checkedAutoApprove}
+                                disabled={disableAutoApprove}
+                                onChange={(event) => { handleChangeState(event.target.checked) }}
+                            />
+                        </div>
                         <div className={stylesManagerZone.EmployeeList} style={{ display: (currentStep == 1) ? 'block' : 'none' }}>  {/* Step 1 */}
                             {employeeList.map((item:any, idx:number) => {
                                 let ename = item.FIRST_NAME + ' ' + item.LAST_NAME;
@@ -212,7 +314,11 @@ export default function ManagerZone() {
                                 return (
                                 <div key={idx}
                                     className={`${stylesManagerZone.EmployeeCard}`}
-                                    onClick={() => {setCurrentView([eemail, ename]); setCurrentStep(2);}}
+                                    onClick={() => {
+                                        setCurrentView([eemail, ename]);
+                                        getTimeEntryPerMonth(eemail, new Date(), true);
+                                        setCurrentStep(2);
+                                    }}
                                 >
                                     <b>{ename}</b>
                                     <i><small>{eemail}</small></i>
@@ -235,6 +341,7 @@ export default function ManagerZone() {
                             <button
                                 className={stylesManagerZone.CustomButton}
                                 onClick={() => {
+                                    if (!checkedAutoApprove) setDisableApproveButton(true);
                                     setCalendarIsSelected(false);
                                     setCurrentStep(1);
                                 }}
@@ -244,14 +351,28 @@ export default function ManagerZone() {
                             <Calendar className={stylesManagerZone.CalendarContainer}
                                 locale='en-US'
                                 onChange={(datePara: any) => {
-                                        setLoading(true);
                                         setDate(datePara);
                                         setCalendarIsSelected(true);
+                                        if (!checkedAutoApprove) setDisableApproveButton(false);
                                         getTimeEntryPerDay(currentView[0], datePara);
+                                        getTimeEntryPerMonth(currentView[0], datePara, false);
                                     }}
                                 value={date}
-                                //tileContent={tileContent}
+                                tileContent={tileContent}
                             />
+                            <div className={stylesManagerZone.ButtonContainer}>
+                                <div className={stylesManagerZone.Button}>
+                                    <LoadingButton
+                                        size="large" variant="outlined" endIcon={<CheckIcon/>}
+                                        loading={loading} loadingPosition="end"
+                                        style={{width:'100%'}}
+                                        disabled={disableApproveButton}
+                                        onClick={() => handleApprove(currentView[0], date)}
+                                    >
+                                        Approve
+                                    </LoadingButton>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div className={stylesManagerZone.CalendarChildFlexColumnRight} style={{ display: (calendarIsSelected) ? 'block' : 'none' }}>
@@ -282,19 +403,6 @@ export default function ManagerZone() {
                             <div className={stylesManagerZone.TimeCardSummary}>
                             <b>Total Working Time</b>
                             <b>{Math.floor(totalWorkingTime/60)}:{(totalWorkingTime%60).toString().padStart(2, '0')} hr</b>
-                            </div>
-                        </div>
-                        <div className={stylesManagerZone.ButtonContainer}>
-                            <div className={stylesManagerZone.Button}>
-                                <LoadingButton
-                                    size="large" variant="outlined" endIcon={<CheckIcon/>}
-                                    loading={loading} loadingPosition="end"
-                                    style={{width:'100%'}}
-                                    disabled={disableApproveButton}
-                                    onClick={() => handleAddEmployee()}
-                                >
-                                    Approve
-                                </LoadingButton>
                             </div>
                         </div>
                     </div>
