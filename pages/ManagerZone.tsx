@@ -9,15 +9,25 @@ import { checkPermissions } from '../components/CheckPermission';
 import AccessDenied from '../components/AccessDenied';
 
 import { LoadingButton } from '@mui/lab';
-import { TextField
-        ,Switch
-} from '@mui/material';
+import { TextField, Switch, MenuItem } from '@mui/material';
+import Select from '@mui/material/Select';
+import dayjs, { Dayjs } from 'dayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+
 import {Add as AddIcon
       ,Check as CheckIcon
+      ,Send as SendIcon
 } from '@mui/icons-material';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft
+        ,faBars
+        ,faLock
+        ,faTrash
+        ,faUsersGear
+} from '@fortawesome/free-solid-svg-icons';
 
 import 'react-calendar/dist/Calendar.css';
 import stylesManagerZone from '../components/css/ManagerZone.module.css';
@@ -30,7 +40,7 @@ export default function ManagerZone() {
     const [email] = useState(session?.user?.email);
     const [loading, setLoading] = useState(false);
     const [disabled, setDisabled] = useState(false);
-    const [disableSubmitButton, setDisableSubmitButton] = useState(true);
+    const [disableAddEmployeeSubmitButton, setDisableAddEmployeeSubmitButton] = useState(true);
     const [disableApproveButton, setDisableApproveButton] = useState(true);
     const [efirstName, setFirstName] = useState('');
     const [elastName, setLastName] = useState('');
@@ -38,6 +48,7 @@ export default function ManagerZone() {
     const [employeeList, setEmployeeList] = useState<String[]>([]);
     const [date, setDate] = useState(new Date());
     const [addNewEmployee, setAddNewEmployee] = useState(false);
+    const [employeeOption, setEmployeeOption] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
     const [currentView, setCurrentView] = useState<String[]>([]);
     const [prevDate, setPrevDate] = useState(new Date('0001-01-01'));
@@ -47,14 +58,20 @@ export default function ManagerZone() {
     const [totalBreakTime, setTotalBreakTime] = useState(0);
     const [totalWorkingTime, setTotalWorkingTime] = useState(0);
     const [calendarIsSelected, setCalendarIsSelected] = useState(false);
-    const [checkedAutoApprove, setCheckedAutoApprove] = useState(false);
-    const [disableAutoApprove, setDisableAutoApprove] = useState(false);
+    const [checkedAutoApproveSwitch, setCheckedAutoApproveSwitch] = useState(false);
+    const [checkedLockSwitch, setCheckedLockSwitch] = useState(false);
+    const [checkedRemoveSwitch, setCheckedRemoveSwitch] = useState(false);
+    const [disableAutoApproveSwitch, setDisableAutoApproveSwitch] = useState(false);
+    const [disableLockSwitch, setDisableLockSwitch] = useState(false);
+    const [disableRemoveSwitch, setDisableRemoveSwitch] = useState(false);
+    const [effectiveDate, setEffectiveDate] = useState(dayjs());
+    const [selectedRole, setSelectedRole] = useState('EMPLOYEE');
 
-    function validateForm() {
+    function validateAddEmployeeForm() {
         if (eemail.match(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/) && efirstName && elastName && eemail) {
-            setDisableSubmitButton(false);
+            setDisableAddEmployeeSubmitButton(false);
         } else {
-            setDisableSubmitButton(true);
+            setDisableAddEmployeeSubmitButton(true);
         }
     }
 
@@ -105,12 +122,12 @@ export default function ManagerZone() {
         let formattedDate = datePara.toLocaleString("en-US", {timeZone:'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'});
         const apiUrlEndpoint = 'api/fetchSql';
         let postData = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json '},
-            body: JSON.stringify({
-                query: 'fetchTimeEntryDayQuery',
-                para: [eemail, formattedDate]
-            })
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json '},
+                body: JSON.stringify({
+                        query: 'fetchTimeEntryDayQuery',
+                        para: [formattedDate, eemail]
+                })
         }
         
         let response = await fetch(apiUrlEndpoint, postData);
@@ -118,27 +135,32 @@ export default function ManagerZone() {
         setTimePunchData(res.data);
 
         let n_totalTime = 0;
-        res.data.forEach((item: {TIME_IN: String, TIME_OUT: String}) => {
-        const [hours1, minutes1, second1] = item.TIME_IN.split(":").map(Number);
-        const [hours2, minutes2, second2] = (item.TIME_OUT) ? item.TIME_OUT.split(":").map(Number) : [null, null, null];
-        
-        if (hours2 !== null && minutes2 !== null && second2 !== null){
-            n_totalTime += Math.abs(Math.floor((hours2 - hours1) * 60 + (minutes2 - minutes1) + (second2 - second1) / 60));
-        } else {
-            const [hours3, minutes3, second3] = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }).split(":").map(Number);
-            n_totalTime += Math.abs(Math.floor((hours3 - hours1) * 60 + (minutes3 - minutes1) + (second3 - second1) / 60));
-        }
+        res.data.forEach((item: {DATE: String, TIME_IN: String, TIME_OUT: String}) => {
+            const [hours1, minutes1, second1] = (item.TIME_IN) ? item.TIME_IN.split(":").map(Number) : [0, 0, 0];
+            const [hours2, minutes2, second2] = (item.TIME_OUT) ? item.TIME_OUT.split(":").map(Number) : [null, null, null];
+            
+            if (hours2 !== null && minutes2 !== null && second2 !== null){       // normal TIME_IN and TIME_OUT
+                n_totalTime += Math.abs(Math.floor((hours2 - hours1) * 60 + (minutes2 - minutes1) + (second2 - second1) / 60));
+            } else {                                                             // if TIME_OUT missing
+                let [hours3, minutes3, second3] = [0, 0, 0];
+                if (item.DATE != new Date().toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'})) {    // if not today (in the past) means the day has pass and no more time out
+                    [hours3, minutes3, second3] = [23, 59, 59];
+                } else {                                                                                                                                    // if not end of the day then calculate to the current time
+                    [hours3, minutes3, second3] = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }).split(":").map(Number);
+                }
+                n_totalTime += Math.abs(Math.floor((hours3 - hours1) * 60 + (minutes3 - minutes1) + (second3 - second1) / 60));
+            }
         });
         
         setTotalTime(Math.max(0, Math.floor(n_totalTime)));
 
         postData = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json '},
-            body: JSON.stringify({
-                query: 'fetchBreakDayQuery',
-                para: [eemail, formattedDate]
-            })
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json '},
+                body: JSON.stringify({
+                        query: 'fetchBreakDayQuery',
+                        para: [email, formattedDate]
+                })
         }
         
         response = await fetch(apiUrlEndpoint, postData);
@@ -151,9 +173,9 @@ export default function ManagerZone() {
 
         setLoading(false);
         if (datePara.setHours(0,0,0,0) == new Date().setHours(0,0,0,0)){
-        setDisabled(false);
+            setDisabled(false);
         } else {
-        setDisabled(true);
+            setDisabled(true);
         }
     }
 
@@ -201,11 +223,11 @@ export default function ManagerZone() {
         const response = await fetch(apiUrlEndpoint, postData);
         const res = await response.json();
         let data = res.data[0].SETTING_VALUE;
-        setCheckedAutoApprove((data == 'Y') ? true : false);
+        setCheckedAutoApproveSwitch((data == 'Y') ? true : false);
     }
 
     async function setAutoApproveSetting(state: any) {
-        setDisableAutoApprove(true);
+        setDisableAutoApproveSwitch(true);
         const apiUrlEndpoint = 'api/fetchSql';
         const postData = {
             method: 'POST',
@@ -218,7 +240,7 @@ export default function ManagerZone() {
         
         const response = await fetch(apiUrlEndpoint, postData);
         const res = await response.json();
-        setDisableAutoApprove(false);
+        setDisableAutoApproveSwitch(false);
         if (res.error){
             Notify(res.error, 'error');
         } else if (res.data.affectedRows == 1) {
@@ -270,16 +292,21 @@ export default function ManagerZone() {
         return null;
     }
 
-    function handleChangeState(state: any) {
+    function handleChangeAutoApprove(state: any) {
         (state)
         ? setDisableApproveButton(true)
         : ((calendarIsSelected)
             ? setDisableApproveButton(false)
             : setDisableApproveButton(true)
         );
-        setCheckedAutoApprove(state);
+        setCheckedAutoApproveSwitch(state);
         setAutoApproveSetting(state);
     }
+
+    function setItemSelected(role: String) {
+      setSelectedRole(role as string);
+      console.log(role);
+    };
 
     useEffect(() => {
         getAutoApproveSetting();
@@ -292,6 +319,7 @@ export default function ManagerZone() {
                 <title>{`Manager Zone | ${process.env.WebsiteName}`}</title>
             </Head>
             {addNewEmployee && <div className={stylesManagerZone.BlurView} onClick={() => setAddNewEmployee(false)} />}
+            {employeeOption && <div className={stylesManagerZone.BlurView} onClick={() => setEmployeeOption(false)} />}
 
             <h1>Manager Zone</h1>
             <h3>Approve Time Sheet</h3>
@@ -299,12 +327,12 @@ export default function ManagerZone() {
             <div>
                 <div className={stylesManagerZone.TimeSheetContainer}>
                     <div className={stylesManagerZone.CalendarChildFlexColumnLeft}>
-                        <div className={stylesManagerZone.AutoApproveContainer}>
+                        <div className={stylesManagerZone.SwitchContainer}>
                             <label>Auto Approve</label>
                             <Switch
-                                checked={checkedAutoApprove}
-                                disabled={disableAutoApprove}
-                                onChange={(event) => { handleChangeState(event.target.checked) }}
+                                checked={checkedAutoApproveSwitch}
+                                disabled={disableAutoApproveSwitch}
+                                onChange={(event) => { handleChangeAutoApprove(event.target.checked) }}
                             />
                         </div>
                         <div className={stylesManagerZone.EmployeeList} style={{ display: (currentStep == 1) ? 'block' : 'none' }}>  {/* Step 1 */}
@@ -312,16 +340,25 @@ export default function ManagerZone() {
                                 let ename = item.FIRST_NAME + ' ' + item.LAST_NAME;
                                 let eemail = item.EMAIL;
                                 return (
-                                <div key={idx}
-                                    className={`${stylesManagerZone.EmployeeCard}`}
-                                    onClick={() => {
-                                        setCurrentView([eemail, ename]);
-                                        getTimeEntryPerMonth(eemail, new Date(), true);
-                                        setCurrentStep(2);
-                                    }}
-                                >
-                                    <b>{ename}</b>
-                                    <i><small>{eemail}</small></i>
+                                <div key={idx} className={`${stylesManagerZone.EmployeeCardContainer}`}>
+                                    <div className={`${stylesManagerZone.EmployeeCard}`}
+                                        onClick={() => {
+                                            setCurrentView([eemail, ename]);
+                                            getTimeEntryPerMonth(eemail, new Date(), true);
+                                            setCurrentStep(2);
+                                        }}
+                                    >
+                                        <b>{ename}</b>
+                                        <i><small>{eemail}</small></i>
+                                    </div>
+                                    <div className={`${stylesManagerZone.EmployeeCardOption}`}
+                                        onClick={() => {
+                                            setCurrentView([eemail, ename]);
+                                            setEmployeeOption(true);
+                                        }}
+                                    >
+                                        <FontAwesomeIcon icon={faBars}/>
+                                    </div>
                                 </div>
                                 );                    
                             })}
@@ -341,7 +378,7 @@ export default function ManagerZone() {
                             <button
                                 className={stylesManagerZone.CustomButton}
                                 onClick={() => {
-                                    if (!checkedAutoApprove) setDisableApproveButton(true);
+                                    if (!checkedAutoApproveSwitch) setDisableApproveButton(true);
                                     setCalendarIsSelected(false);
                                     setCurrentStep(1);
                                 }}
@@ -353,7 +390,7 @@ export default function ManagerZone() {
                                 onChange={(datePara: any) => {
                                         setDate(datePara);
                                         setCalendarIsSelected(true);
-                                        if (!checkedAutoApprove) setDisableApproveButton(false);
+                                        if (!checkedAutoApproveSwitch) setDisableApproveButton(false);
                                         getTimeEntryPerDay(currentView[0], datePara);
                                         getTimeEntryPerMonth(currentView[0], datePara, false);
                                     }}
@@ -408,6 +445,7 @@ export default function ManagerZone() {
                     </div>
                 </div>
             </div>
+
             <div style={{ display: (addNewEmployee) ? 'block' : 'none' }}>
                 <div className={stylesManagerZone.FormContainer}>
                     <div className={stylesManagerZone.FormChild}>
@@ -417,7 +455,7 @@ export default function ManagerZone() {
                             variant="standard"
                             style={{width:'100%'}}
                             disabled={disabled}
-                            onChange={(event) => {setFirstName(event.target.value); validateForm();}}
+                            onChange={(event) => {setFirstName(event.target.value); validateAddEmployeeForm();}}
                         />
                     </div>
                     <div className={stylesManagerZone.FormChild}>
@@ -427,7 +465,7 @@ export default function ManagerZone() {
                             variant="standard"
                             style={{width:'100%'}}
                             disabled={disabled}
-                            onChange={(event) => {setLastName(event.target.value); validateForm();}}
+                            onChange={(event) => {setLastName(event.target.value); validateAddEmployeeForm();}}
                         />
                     </div>
                     <div className={stylesManagerZone.FormChild}>
@@ -437,7 +475,7 @@ export default function ManagerZone() {
                             variant="standard"
                             style={{width:'100%'}}
                             disabled={disabled}
-                            onChange={(event) => {setEmail(event.target.value); validateForm();}}
+                            onChange={(event) => {setEmail(event.target.value); validateAddEmployeeForm();}}
                         />
                     </div>
                     <div className={stylesManagerZone.FormChild}>
@@ -447,10 +485,79 @@ export default function ManagerZone() {
                                     size="large" variant="outlined" endIcon={<AddIcon/>}
                                     loading={loading} loadingPosition="end"
                                     style={{width:'100%'}}
-                                    disabled={disableSubmitButton}
+                                    disabled={disableAddEmployeeSubmitButton}
                                     onClick={() => handleAddEmployee()}
                                 >
                                     Add
+                                </LoadingButton>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div style={{ display: (employeeOption) ? 'block' : 'none' }}>
+                <div className={stylesManagerZone.FormContainer}>
+                    <h3>{currentView[1]}</h3>
+                    <div className={stylesManagerZone.FormChild}>
+                        <div className={`${stylesManagerZone.SwitchContainer} ${stylesManagerZone.SwitchSpace}`}>
+                            <label><FontAwesomeIcon icon={faUsersGear}/> Change Role</label>
+                            <Select
+                                value={selectedRole}
+                                onChange={(event) => { setItemSelected(event.target.value as string); }}
+                                >
+                                <MenuItem value='EMPLOYEE'>Employee</MenuItem>
+                                <MenuItem value='MANAGER'>Manager</MenuItem>
+                                <MenuItem value='SYSADMIN'>SysAdmin</MenuItem>
+                            </Select>
+                        </div>
+                    </div>
+                    <div className={stylesManagerZone.FormChild}>
+                        <div className={`${stylesManagerZone.SwitchContainer} ${stylesManagerZone.SwitchSpace}`}>
+                            <label><FontAwesomeIcon icon={faLock}/> Lock Account</label>
+                            <Switch
+                                checked={checkedLockSwitch}
+                                disabled={disableLockSwitch}
+                                onChange={(event) => { setCheckedLockSwitch(event.target.checked) }}
+                            />
+                        </div>
+                    </div>
+                    <div className={stylesManagerZone.FormChild}>
+                        <div className={`${stylesManagerZone.SwitchContainer} ${stylesManagerZone.SwitchSpace}`}>
+                        <label><FontAwesomeIcon icon={faTrash}/> Remove Account</label>
+                            <Switch
+                                checked={checkedRemoveSwitch}
+                                disabled={disableRemoveSwitch}
+                                onChange={(event) => {
+                                    const state = event.target.checked;
+                                    setCheckedRemoveSwitch(state);
+                                    setDisableLockSwitch(state);
+                                    setCheckedLockSwitch(state);
+                                }}
+                            />
+                        </div>
+                    </div>
+                    <div className={stylesManagerZone.FormChild}>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DatePicker 
+                                label="Effective Date"
+                                value={effectiveDate}
+                                onChange={(value) => { setEffectiveDate(value as Dayjs); }}
+                            />
+                        </LocalizationProvider>
+                    </div>
+                    <div className={stylesManagerZone.FormChild}>
+                        <div className={stylesManagerZone.ButtonContainer}>
+                            <div className={stylesManagerZone.Button}>
+                                <LoadingButton
+                                    size="large" variant="outlined" endIcon={<SendIcon/>}
+                                    loading={loading} loadingPosition="end"
+                                    style={{width:'100%'}}
+                                    disabled={disableAddEmployeeSubmitButton}
+                                    onClick={() => handleAddEmployee()}
+                                >
+                                    Submit
                                 </LoadingButton>
                             </div>
                         </div>
@@ -463,3 +570,13 @@ export default function ManagerZone() {
         </>
     );
 }
+
+/*
+TODO:
+    -   Add function check if employee exist when added
+        -> If no then add
+        -> If yes then check if employee is ACTIVE, LOCKED.
+            -> If LOCKED then throw error, prompt to unlock
+            -> If not ACTIVE then create new record with the same USER_ID, but different EFFECTIVE_START_DATE, EFFECTIVE_END_DATE. And use the new FIRST_NAME, LAST_NAME
+    -   Handle ROLE, LOCK, REMOVE employee. Dynamics check status for these fields for each employee.
+*/

@@ -16,6 +16,14 @@
     flex-direction: column;
 }
 
+.EmployeeCardContainer {
+    display: flex;
+    flex-direction: row;
+    border-radius: 0.5rem;
+    border: 2px solid #ccc;
+
+}
+
 .EmployeeCard {
     display: flex;
     flex-direction: column;
@@ -23,8 +31,14 @@
     background-color: inherit;
     margin-bottom: 0.2rem;
     padding: 0.5rem;
-    border-radius: 0.5rem;
-    border: 2px solid #ccc;
+}
+
+.EmployeeCardOption {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding-right: 1rem;
 }
 
 .TimeSheetContainer {
@@ -78,7 +92,7 @@
 
 .FormChild {
     width: 100%;
-    padding: 0.25rem;
+    padding: 0.5rem;
 }
 
 .CustomButton {
@@ -118,11 +132,15 @@
     justify-content: space-between;
 }
 
-.AutoApproveContainer {
+.SwitchContainer {
     display: flex;
     flex-direction: row;
     align-items: center;
     padding: 0 0.5rem 0 0.5rem;
+}
+
+.SwitchSpace {
+    justify-content: space-between;
 }
 
 
