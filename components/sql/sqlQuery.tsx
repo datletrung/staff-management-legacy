@@ -5,7 +5,7 @@ export const sqlQuery = {
         FROM USER
         WHERE EMAIL = ?
         AND ACTIVE_FLAG = 'Y'
-        AND NOW() BETWEEN EFFECTIVE_START_DATE AND EFFECTIVE_END_DATE
+        AND LOCKED_FLAG = 'N'
     `,
     //-----TIME ENTRY
     'fetchTimeEntryDayQuery': `
@@ -48,14 +48,14 @@ export const sqlQuery = {
                 AND T2.ACTION = 'OUT'
         ) t
         WHERE 1=1
-            AND t.USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y' AND NOW() BETWEEN EFFECTIVE_START_DATE AND EFFECTIVE_END_DATE)
+            AND t.USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
     `,
     'fetchBreakDayQuery': `
         SELECT
             COUNT(*) AS BREAK_NUM
         FROM TIMECLOCK
         WHERE 1=1
-            AND TIMECLOCK.USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y' AND NOW() BETWEEN EFFECTIVE_START_DATE AND EFFECTIVE_END_DATE)
+            AND TIMECLOCK.USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
             AND TIMECLOCK.ACTION = 'BREAK'
             AND DATE_FORMAT(TIMECLOCK.DATE, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
     `,
@@ -64,7 +64,7 @@ export const sqlQuery = {
             DISTINCT DATE_FORMAT(TIMECLOCK.DATE, '%m/%d/%Y') AS DATE
         FROM TIMECLOCK
         WHERE 1=1
-            AND TIMECLOCK.USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y' AND NOW() BETWEEN EFFECTIVE_START_DATE AND EFFECTIVE_END_DATE)
+            AND TIMECLOCK.USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
             AND DATE_FORMAT(TIMECLOCK.DATE, '%Y-%m') = DATE_FORMAT(STR_TO_DATE(?, '%m/%Y'), '%Y-%m')
     `,
     'submitTimeEntry': `
@@ -73,7 +73,7 @@ export const sqlQuery = {
         FROM (
             SELECT USER.USER_ID, GET_ACTION.ACTION AS CUR_ACTION, PREV_ACT.ACTION AS PREV_ACTION, IFNULL(APP_SET.SETTING_VALUE, 'N') AS APPROVED
             FROM USER
-            JOIN (SELECT USER_ID FROM USER WHERE USER.EMAIL = ? AND ACTIVE_FLAG = 'Y' AND NOW() BETWEEN EFFECTIVE_START_DATE AND EFFECTIVE_END_DATE) GET_USER_ID
+            JOIN (SELECT USER_ID FROM USER WHERE USER.EMAIL = ? AND ACTIVE_FLAG = 'Y') GET_USER_ID
                 ON USER.USER_ID = GET_USER_ID.USER_ID
             JOIN (SELECT ? AS ACTION FROM DUAL) GET_ACTION
                 ON GET_ACTION.ACTION IN ('IN', 'OUT', 'BREAK')
@@ -96,44 +96,56 @@ export const sqlQuery = {
         )
     `,
     'fetchEmployeeList':`
-            SELECT USER_ID, FIRST_NAME, LAST_NAME, EMAIL
-            FROM USER
-            WHERE 1=1
-                AND (ROLE = 'EMPLOYEE' OR EMAIL = 'brianle@lionrocktech.net')
-                AND ACTIVE_FLAG = 'Y'
-                AND NOW() BETWEEN EFFECTIVE_START_DATE AND EFFECTIVE_END_DATE
-    `,
-    'submitAddEmployee': `
-            INSERT INTO USER (FIRST_NAME, LAST_NAME, EMAIL, CREATED_BY)
-            SELECT ?, ?, ?, USER.USER_ID
-            FROM USER
-            WHERE USER.EMAIL = ?
+        SELECT USER_ID, FIRST_NAME, LAST_NAME, EMAIL
+        FROM USER
+        WHERE 1=1
+            AND (ROLE = 'EMPLOYEE' OR EMAIL = 'brianle@lionrocktech.net')
             AND ACTIVE_FLAG = 'Y'
-            AND NOW() BETWEEN EFFECTIVE_START_DATE AND EFFECTIVE_END_DATE
     `,
-    'approveTimeSheet': `
-            UPDATE TIMECLOCK
-            SET APPROVED = 'Y', APPROVED_BY = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y' AND NOW() BETWEEN EFFECTIVE_START_DATE AND EFFECTIVE_END_DATE)
-            WHERE 1=1
-            AND USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y' AND NOW() BETWEEN EFFECTIVE_START_DATE AND EFFECTIVE_END_DATE)
-            AND DATE_FORMAT(DATE, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
-    `,
-    'fetchAutoApproveSetting':`
-            SELECT SETTING_VALUE
-            FROM APP_SETTING
-            WHERE SETTING_NAME = 'AUTO_APPROVE'
-    `,
-    'updateAutoApproveSetting':`
-            UPDATE APP_SETTING
-            SET SETTING_VALUE = ?
-            WHERE SETTING_NAME = 'AUTO_APPROVE'
-    `,
-    'fetchEmployeeOption':`
-            SELECT ROLE, LOCKED_FLAG
+    'checkAddEmployee':`
+            SELECT USER_ID, ACTIVE_FLAG, LOCKED_FLAG
             FROM USER
             WHERE EMAIL = ?
-            AND ACTIVE_FLAG = 'Y'
-            AND NOW() BETWEEN EFFECTIVE_START_DATE AND EFFECTIVE_END_DATE
+    `,
+    'submitAddEmployee': `
+        INSERT INTO USER (FIRST_NAME, LAST_NAME, EMAIL, LAST_UPDATED_BY, CREATED_BY)
+        SELECT ?, ?, ?, USER.USER_ID, USER.USER_ID
+        FROM USER
+        WHERE EMAIL = ?
+        AND ACTIVE_FLAG = 'Y'
+    `,
+    'submitRehireEmployee': `
+        UPDATE USER AS USR, (SELECT USER_ID FROM USER WHERE EMAIL = ?) AS USR_ID
+        SET USR.FIRST_NAME = ?, USR.LAST_NAME = ?, USR.ACTIVE_FLAG = 'Y', USR.LOCKED_FLAG = 'N', USR.LAST_UPDATED_BY = USR_ID.USER_ID
+        WHERE USR.USER_ID = ?
+    `,
+    'approveTimeSheet': `
+        UPDATE TIMECLOCK
+        SET APPROVED = 'Y', APPROVED_BY = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
+        WHERE 1=1
+        AND USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
+        AND DATE_FORMAT(DATE, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
+    `,
+    'fetchAutoApproveSetting':`
+        SELECT SETTING_VALUE
+        FROM APP_SETTING
+        WHERE SETTING_NAME = 'AUTO_APPROVE'
+    `,
+    'updateAutoApproveSetting':`
+        UPDATE APP_SETTING
+        SET SETTING_VALUE = ?
+        WHERE SETTING_NAME = 'AUTO_APPROVE'
+    `,
+    'fetchEmployeeOption':`
+        SELECT ROLE, LOCKED_FLAG
+        FROM USER
+        WHERE EMAIL = ?
+        AND ACTIVE_FLAG = 'Y'
+    `,
+    'setEmployeeOption':`
+        UPDATE USER AS USR, (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y') AS USR_ID
+        SET USR.ROLE = ?, USR.ACTIVE_FLAG = ?, USR.LOCKED_FLAG = ?
+        WHERE USR.USER_ID = USR_ID.USER_ID
     `
 };
 
