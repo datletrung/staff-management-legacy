@@ -292,6 +292,33 @@ export default function ManagerZone() {
         return null;
     }
 
+    async function retrieveEmployeeOption(eemail: String) {
+        setLoading(true);
+        const apiUrlEndpoint = 'api/fetchSql';
+        let postData = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json '},
+            body: JSON.stringify({
+                query: 'fetchEmployeeOption',
+                para: [eemail]
+            })
+        }
+        
+        let response = await fetch(apiUrlEndpoint, postData);
+        let res = await response.json();
+        const role = res.data[0].ROLE;
+        const locked = res.data[0].LOCKED_FLAG;
+        console.log(role, locked);
+
+        setSelectedRole(role as string);
+        if (locked === 'Y'){
+            setCheckedLockSwitch(true);
+        } else {
+            setCheckedLockSwitch(false);
+        }
+        setLoading(false);
+    }
+
     function handleChangeAutoApprove(state: any) {
         (state)
         ? setDisableApproveButton(true)
@@ -354,6 +381,7 @@ export default function ManagerZone() {
                                     <div className={`${stylesManagerZone.EmployeeCardOption}`}
                                         onClick={() => {
                                             setCurrentView([eemail, ename]);
+                                            retrieveEmployeeOption(eemail);
                                             setEmployeeOption(true);
                                         }}
                                     >
@@ -533,7 +561,7 @@ export default function ManagerZone() {
                                     const state = event.target.checked;
                                     setCheckedRemoveSwitch(state);
                                     setDisableLockSwitch(state);
-                                    setCheckedLockSwitch(state);
+                                    setCheckedLockSwitch(true);
                                 }}
                             />
                         </div>
@@ -554,8 +582,7 @@ export default function ManagerZone() {
                                     size="large" variant="outlined" endIcon={<SendIcon/>}
                                     loading={loading} loadingPosition="end"
                                     style={{width:'100%'}}
-                                    disabled={disableAddEmployeeSubmitButton}
-                                    onClick={() => handleAddEmployee()}
+                                    onClick={() => {}}
                                 >
                                     Submit
                                 </LoadingButton>
@@ -578,5 +605,5 @@ TODO:
         -> If yes then check if employee is ACTIVE, LOCKED.
             -> If LOCKED then throw error, prompt to unlock
             -> If not ACTIVE then create new record with the same USER_ID, but different EFFECTIVE_START_DATE, EFFECTIVE_END_DATE. And use the new FIRST_NAME, LAST_NAME
-    -   Handle ROLE, LOCK, REMOVE employee. Dynamics check status for these fields for each employee.
+    -   Handle ROLE, LOCK, REMOVE employee.
 */
