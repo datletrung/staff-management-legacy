@@ -1,5 +1,5 @@
 # Company Management
-A website to manage time punch of employee. Designed for my own company.😎
+A website to manage time punch of employee. Designed for my own company.😎  
 The website is deployed on Vercel.
 
 ## Screenshots
