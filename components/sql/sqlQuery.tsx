@@ -99,7 +99,6 @@ export const sqlQuery = {
         SELECT USER_ID, FIRST_NAME, LAST_NAME, EMAIL
         FROM USER
         WHERE 1=1
-            AND (ROLE = 'EMPLOYEE' OR EMAIL = 'brianle@lionrocktech.net')
             AND ACTIVE_FLAG = 'Y'
     `,
     'checkAddEmployee':`
@@ -146,6 +145,53 @@ export const sqlQuery = {
         UPDATE USER AS USR, (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y') AS USR_ID
         SET USR.ROLE = ?, USR.ACTIVE_FLAG = ?, USR.LOCKED_FLAG = ?
         WHERE USR.USER_ID = USR_ID.USER_ID
-    `
+    `,
+    'fetchTotalWorkingTime':`
+        SELECT
+            DATE
+            ,ROUND(
+                    CAST(TIMESTAMPDIFF(HOUR, DATETIME_IN, DATETIME_OUT) AS UNSIGNED)
+                    + ((CAST(TIMESTAMPDIFF(MINUTE, DATETIME_IN, DATETIME_OUT) AS UNSIGNED)%60)/60)
+                    , 2) AS 'TIME_WORK'
+        FROM (
+            SELECT
+                USER_ID
+                ,DATE_IN AS DATE
+                ,STR_TO_DATE(CONCAT(DATE_IN, ' ', TIME_IN), '%Y-%m-%d %H:%i:%s') AS 'DATETIME_IN'
+                ,STR_TO_DATE(CONCAT(DATE_OUT, ' ', TIME_OUT), '%Y-%m-%d %H:%i:%s') AS 'DATETIME_OUT'
+            FROM (
+                SELECT
+                    t1.USER_ID
+                    ,t1.DATE AS 'DATE_IN'
+                    ,t1.TIME AS 'TIME_IN'
+                    ,IFNULL((SELECT DATE
+                        FROM TIMECLOCK t2
+                        WHERE 1=1
+                            AND t2.DATE >= t1.DATE
+                            AND t2.TIME > t1.TIME
+                            AND t2.ACTION = 'OUT'
+                        ORDER BY t2.DATE, t2.TIME
+                        LIMIT 1
+                    ), CURDATE()) AS 'DATE_OUT'
+                    ,IFNULL((SELECT TIME
+                        FROM TIMECLOCK t2
+                        WHERE 1=1
+                            AND t2.DATE >= t1.DATE
+                            AND t2.TIME > t1.TIME
+                            AND t2.ACTION = 'OUT'
+                        ORDER BY t2.DATE, t2.TIME
+                        LIMIT 1
+                    ), CURTIME()) AS 'TIME_OUT'
+                FROM 
+                    TIMECLOCK t1
+                WHERE 
+                    ACTION = 'IN'
+            ) t
+            WHERE DATE_OUT IS NOT NULL
+        ) t
+        WHERE 1=1
+            AND USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ?)
+            AND DATE >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+    `,
 };
 

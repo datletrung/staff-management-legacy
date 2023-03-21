@@ -11,11 +11,14 @@ import AccessDenied from '../components/AccessDenied';
 import { LoadingButton } from '@mui/lab';
 import { TextField, Switch, MenuItem } from '@mui/material';
 import Select from '@mui/material/Select';
-
 import {Add as AddIcon
       ,Check as CheckIcon
       ,Send as SendIcon
 } from '@mui/icons-material';
+
+import { Chart, registerables } from 'chart.js';
+import {Bar} from 'react-chartjs-2';
+Chart.register(...registerables);
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft
@@ -42,6 +45,7 @@ export default function ManagerZone() {
     const [elastName, setLastName] = useState('');
     const [eemail, setEmail] = useState('');
     const [employeeList, setEmployeeList] = useState<String[]>([]);
+    const [employeeNameList, setEmployeeNameList] = useState<String[]>([]);
     const [date, setDate] = useState(new Date());
     const [addNewEmployeeView, setAddNewEmployeeView] = useState(false);
     const [employeeOptionView, setEmployeeOptionView] = useState(false);
@@ -76,6 +80,12 @@ export default function ManagerZone() {
         let response = await fetch(apiUrlEndpoint, postData);
         let res = await response.json();
         setEmployeeList(res.data);
+
+        let tmp: Array<String> = [];
+        res.data.map((item:any, idx:number) => {
+            tmp.push(item.FIRST_NAME + ' ' + item.LAST_NAME);
+        });
+        setEmployeeNameList(tmp);
     }
     
     function validateAddEmployeeForm() {
@@ -380,6 +390,23 @@ export default function ManagerZone() {
         return null;
     }
 
+    async function getTotalWorkingTime(eemail: String, duration: Number) {
+        const apiUrlEndpoint = 'api/fetchSql';
+        let postData = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json '},
+            body: JSON.stringify({
+                query: 'fetchTotalWorkingTime',
+                para: [eemail, duration]
+            })
+        }
+        
+        let response = await fetch(apiUrlEndpoint, postData);
+        let res = await response.json();
+        const data = res.data;
+        console.log(data);
+    }
+
     useEffect(() => {
         getAutoApproveSetting();
         getEmployeeList();
@@ -641,7 +668,23 @@ export default function ManagerZone() {
             </div>
             
             <h3>Overall Performance</h3>
-            <p>Charts goes here</p>
+            <div style={{height:'280px',width:'450px'}}>
+                <Bar
+                    data={{
+                        labels: employeeNameList,
+                        datasets: [{
+                            label: 'Working Hours a week',
+                            data: [6, 7, 6.5],
+                            backgroundColor: 'rgb(255, 99, 132)',
+                        }]
+                    }}
+                    height={280}
+                    width={450}
+                    options={{
+                        responsive: true
+                    }}
+                />
+            </div>
         </>
     );
 }
