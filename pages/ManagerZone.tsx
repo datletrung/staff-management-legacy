@@ -16,13 +16,9 @@ import {Add as AddIcon
       ,Send as SendIcon
 } from '@mui/icons-material';
 
-import { Chart, registerables } from 'chart.js';
-import {Bar} from 'react-chartjs-2';
-Chart.register(...registerables);
-
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft
-        ,faBars
+        ,faEllipsisVertical
         ,faLock
         ,faTrash
         ,faUsersGear
@@ -45,7 +41,6 @@ export default function ManagerZone() {
     const [elastName, setLastName] = useState('');
     const [eemail, setEmail] = useState('');
     const [employeeList, setEmployeeList] = useState<String[]>([]);
-    const [employeeNameList, setEmployeeNameList] = useState<String[]>([]);
     const [date, setDate] = useState(new Date());
     const [addNewEmployeeView, setAddNewEmployeeView] = useState(false);
     const [employeeOptionView, setEmployeeOptionView] = useState(false);
@@ -80,12 +75,6 @@ export default function ManagerZone() {
         let response = await fetch(apiUrlEndpoint, postData);
         let res = await response.json();
         setEmployeeList(res.data);
-
-        let tmp: Array<String> = [];
-        res.data.map((item:any, idx:number) => {
-            tmp.push(item.FIRST_NAME + ' ' + item.LAST_NAME);
-        });
-        setEmployeeNameList(tmp);
     }
     
     function validateAddEmployeeForm() {
@@ -433,12 +422,7 @@ export default function ManagerZone() {
                                 disabled={disableAutoApproveSwitch}
                                 onChange={(event) => {
                                     const state = event.target.checked;
-                                    (state)
-                                    ? setDisableApproveButton(true)
-                                    : ((calendarIsSelected)
-                                        ? setDisableApproveButton(false)
-                                        : setDisableApproveButton(true)
-                                    );
+                                    (state) ? setDisableApproveButton(true) : setDisableApproveButton(false);
                                     setCheckedAutoApproveSwitch(state);
                                     setAutoApproveSetting(state);
                                 }}
@@ -467,7 +451,7 @@ export default function ManagerZone() {
                                             setEmployeeOptionView(true);
                                         }}
                                     >
-                                        <FontAwesomeIcon icon={faBars}/>
+                                        <div style={{margin: "0 10px 0 10px"}}><FontAwesomeIcon icon={faEllipsisVertical}/></div>
                                     </div>
                                 </div>
                                 );                    
@@ -488,7 +472,6 @@ export default function ManagerZone() {
                             <button
                                 className={stylesManagerZone.CustomButton}
                                 onClick={() => {
-                                    if (!checkedAutoApproveSwitch) setDisableApproveButton(true);
                                     setCalendarIsSelected(false);
                                     setCurrentStep(1);
                                 }}
@@ -500,7 +483,6 @@ export default function ManagerZone() {
                                 onChange={(datePara: any) => {
                                         setDate(datePara);
                                         setCalendarIsSelected(true);
-                                        if (!checkedAutoApproveSwitch) setDisableApproveButton(false);
                                         getTimeEntryPerDay(currentView[0], datePara);
                                         getTimeEntryPerMonth(currentView[0], datePara, false);
                                     }}
@@ -665,25 +647,6 @@ export default function ManagerZone() {
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <h3>Overall Performance</h3>
-            <div style={{height:'280px',width:'450px'}}>
-                <Bar
-                    data={{
-                        labels: employeeNameList,
-                        datasets: [{
-                            label: 'Working Hours a week',
-                            data: [6, 7, 6.5],
-                            backgroundColor: 'rgb(255, 99, 132)',
-                        }]
-                    }}
-                    height={280}
-                    width={450}
-                    options={{
-                        responsive: true
-                    }}
-                />
             </div>
         </>
     );
