@@ -36,8 +36,6 @@ export default function TimeEntry() {
     const [currentDate, setCurrentDate] = useState('');
     const [currentTime, setCurrentTime] = useState('');
 
-    const [totalTime, setTotalTime] = useState(0);
-    const [totalBreakTime, setTotalBreakTime] = useState(0);
     const [totalWorkingTime, setTotalWorkingTime] = useState(0);
 
     useEffect(() => {
@@ -72,13 +70,13 @@ export default function TimeEntry() {
         let res = await response.json();
         setTimePunchData(res.data);
 
-        let n_totalTime = 0;
+        let n_totalWorkingTime = 0;
         res.data.forEach((item: {DATE: String, TIME_IN: String, TIME_OUT: String}) => {
             const [hours1, minutes1, second1] = (item.TIME_IN) ? item.TIME_IN.split(":").map(Number) : [0, 0, 0];
             const [hours2, minutes2, second2] = (item.TIME_OUT) ? item.TIME_OUT.split(":").map(Number) : [null, null, null];
             
             if (hours2 !== null && minutes2 !== null && second2 !== null){       // normal TIME_IN and TIME_OUT
-                n_totalTime += Math.abs(Math.floor((hours2 - hours1) * 60 + (minutes2 - minutes1) + (second2 - second1) / 60));
+                n_totalWorkingTime += Math.abs(Math.floor((hours2 - hours1) * 60 + (minutes2 - minutes1) + (second2 - second1) / 60));
             } else {                                                             // if TIME_OUT missing
                 let [hours3, minutes3, second3] = [0, 0, 0];
                 if (item.DATE != new Date().toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'})) {    // if not today (in the past) means the day has pass and no more time out
@@ -86,27 +84,11 @@ export default function TimeEntry() {
                 } else {                                                                                                                                    // if not end of the day then calculate to the current time
                     [hours3, minutes3, second3] = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }).split(":").map(Number);
                 }
-                n_totalTime += Math.abs(Math.floor((hours3 - hours1) * 60 + (minutes3 - minutes1) + (second3 - second1) / 60));
+                n_totalWorkingTime += Math.abs(Math.floor((hours3 - hours1) * 60 + (minutes3 - minutes1) + (second3 - second1) / 60));
             }
         });
         
-        setTotalTime(Math.max(0, Math.floor(n_totalTime)));
-
-        postData = {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json '},
-                body: JSON.stringify({
-                        query: 'fetchBreakDayQuery',
-                        para: [email, formattedDate]
-                })
-        }
-        
-        response = await fetch(apiUrlEndpoint, postData);
-        res = await response.json();
-        let n_breakTime = res.data[0].BREAK_NUM*30;
-        setTotalBreakTime(n_breakTime);
-
-        setTotalWorkingTime(Math.max(0, Math.floor((n_totalTime-n_breakTime))));
+        setTotalWorkingTime(Math.max(0, Math.floor(n_totalWorkingTime)));
         
 
         setLoading(false);
@@ -238,19 +220,7 @@ export default function TimeEntry() {
                                         Clock Out
                                     </LoadingButton>
                                 </div>
-                                <div className={stylesTimeEntry.Button}>
-                                    <LoadingButton
-                                        size="large" variant="outlined" endIcon={<AddAlarmIcon/>}
-                                        loading={loading} loadingPosition="end"
-                                        style={{width:'100%'}}
-                                        disabled={disabled}
-                                        onClick={() => submitTimeEntry('BREAK')}
-                                    >
-                                        Add Break
-                                    </LoadingButton>
-                                </div>
                             </div>
-                            <div><i><small>*Applying one break will substract 30 minutes from your working time.</small></i></div>
                         </div>
                         </div>
                         <div className={`${stylesTimeEntry.SplitViewColumnChild} ${stylesTimeEntry.TimePunchView} ${loading ? stylesTimeEntry.TimePunchViewBlur : ''} `}>
@@ -263,19 +233,6 @@ export default function TimeEntry() {
                                         </div>
                                     );
                             })}
-                            <hr/>
-                            <div className={stylesTimeEntry.TimeCardSummary}>
-                                <b>Total Time</b>
-                                <b>{Math.floor(totalTime/60)}:{(totalTime%60).toString().padStart(2, '0')} hr</b>
-                            </div>
-                            {(totalBreakTime != 0) ?
-                                <>
-                                <div className={stylesTimeEntry.TimeCardSummary}>
-                                    <b>Break</b>
-                                    <b>- {Math.floor(totalBreakTime/60)}:{(totalBreakTime%60).toString().padStart(2, '0')} hr</b>
-                                </div>
-                                </> : null
-                            }
                             <hr/>
                             <div className={stylesTimeEntry.TimeCardSummary}>
                                 <b>Total Working Time</b>
