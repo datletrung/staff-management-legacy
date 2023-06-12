@@ -19,7 +19,7 @@ export default NextAuth({
     callbacks: {
         async session({ session }:{ session: any}) {
             //retrieve ROLE and assign to session after signed in
-            const apiUrlEndpoint = `${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/fetchSql`;
+            const apiUrlEndpoint = `${process.env.API_ENDPOINT}/api/fetchSql`;
             const postData = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json '},
