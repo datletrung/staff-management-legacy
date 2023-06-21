@@ -91,7 +91,7 @@ export default function Layout({ children }:{ children: any}) {
                 </div>
             </div>
             <div className={styles.FooterContainer}> {/*Footer*/}
-                <center><p>Made with ❤ from Brian</p></center>
+                <center><p>Made with ❤ by Brian</p></center>
             </div>
         </div>
         </>

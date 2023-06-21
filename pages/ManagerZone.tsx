@@ -343,7 +343,7 @@ export default function ManagerZone() {
             headers: { 'Content-Type': 'application/json '},
             body: JSON.stringify({
                 query: 'setEmployeeOption',
-                para: [eemail, role, active, locked]
+                para: [eemail, email, role, active, locked]
             })
         }
         
@@ -379,7 +379,7 @@ export default function ManagerZone() {
         return null;
     }
 
-    async function getTotalWorkingTime(eemail: String, duration: Number) {
+    async function getTotalWorkingTimePerWeek(eemail: String, duration: Number) {
         const apiUrlEndpoint = 'api/fetchSql';
         let postData = {
             method: 'POST',

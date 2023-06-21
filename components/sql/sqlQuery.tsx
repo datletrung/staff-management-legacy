@@ -9,91 +9,57 @@ export const sqlQuery = {
     `,
     //-----TIME ENTRY
     'fetchTimeEntryDayQuery': `
-        WITH TMP AS (
-            SELECT
-                TIMECLOCK.USER_ID
-                ,TIMECLOCK.ACTION
-                ,DATE_FORMAT(TIMECLOCK.DATETIME_EVENT, '%m/%d/%Y') AS DATE
-                ,TIME_FORMAT(TIMECLOCK.DATETIME_EVENT, '%H:%i:%s') AS TIME
-                ,ROW_NUMBER() OVER (PARTITION BY TIMECLOCK.USER_ID ORDER BY TIMECLOCK.DATETIME_EVENT) AS RN
-            FROM TIMECLOCK
-            WHERE 1=1
-                AND TIMECLOCK.ACTION IN ('IN', 'OUT')
-                AND DATE_FORMAT(TIMECLOCK.DATETIME_EVENT, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
-        )        
-        SELECT DATE, TIME_IN, TIME_OUT
-        FROM (
-            SELECT
-                USER_ID
-                ,DATE
-                ,NULL AS TIME_IN
-                ,TIME AS TIME_OUT
-            FROM TMP
-            WHERE 1=1
-                AND RN = 1
-                AND ACTION = 'OUT'
-            UNION ALL
-            SELECT
-                IFNULL(T1.USER_ID, T2.DATE) AS USER_ID
-                ,IFNULL(T1.DATE, T2.DATE) AS DATE
-                ,T1.TIME AS TIME_IN
-                ,T2.TIME AS TIME_OUT
-            FROM USER
-            LEFT JOIN TMP T1 ON 1=1
-                AND USER.USER_ID = T1.USER_ID
-                AND T1.ACTION = 'IN'
-            LEFT JOIN TMP T2 ON 1=1
-                AND USER.USER_ID = T2.USER_ID
-                AND T2.RN = T1.RN + 1
-                AND T2.ACTION = 'OUT'
-        ) t
-        WHERE 1=1
-            AND t.USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
-    `,
-    'fetchBreakDayQuery': `
         SELECT
-            COUNT(*) AS BREAK_NUM
-        FROM TIMECLOCK
-        WHERE 1=1
-            AND TIMECLOCK.USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
-            AND TIMECLOCK.ACTION = 'BREAK'
-            AND DATE_FORMAT(TIMECLOCK.DATETIME_EVENT, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
+            USER_ID
+            ,TIME_IN
+            ,TIME_OUT
+            ,CASE WHEN TOTAL_TIME IS NOT NULL
+                THEN TOTAL_TIME
+                ELSE TIMEDIFF(NOW(), TIME_IN)
+                END AS TOTAL_TIME
+        FROM (
+            SELECT DISTINCT T2.*
+            FROM (
+                    SELECT
+                        TIMECLOCK_ID
+                        ,USER_ID
+                        ,TIME_IN AS TIME_ALL
+                    FROM TIMECLOCK
+                    UNION ALL
+                    SELECT
+                        TIMECLOCK_ID
+                        ,USER_ID
+                        ,TIME_OUT AS TIME_ALL
+                    FROM TIMECLOCK
+                ) T1
+            LEFT JOIN TIMECLOCK T2
+                ON T1.TIMECLOCK_ID = T2.TIMECLOCK_ID
+            WHERE 1=1
+                AND T1.USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
+                AND DATE_FORMAT(T1.TIME_ALL, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
+        ) T
     `,
     'fetchTimeEntryMonthQuery': `
         SELECT
-            DISTINCT DATE_FORMAT(TIMECLOCK.DATETIME_EVENT, '%m/%d/%Y') AS DATE
-        FROM TIMECLOCK
+            DISTINCT DATE_FORMAT(T.TIME_ALL, '%m/%d/%Y') AS DATE
+        FROM 
+            (
+                SELECT
+                    USER_ID
+                    ,TIME_IN AS TIME_ALL
+                FROM TIMECLOCK
+                UNION ALL
+                SELECT
+                    USER_ID
+                    ,TIME_OUT AS TIME_ALL
+                FROM TIMECLOCK
+            ) T
         WHERE 1=1
-            AND TIMECLOCK.USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
-            AND DATE_FORMAT(TIMECLOCK.DATETIME_EVENT, '%Y-%m') = DATE_FORMAT(STR_TO_DATE(?, '%m/%Y'), '%Y-%m')
+            AND T.USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ?)
+            AND DATE_FORMAT(T.TIME_ALL, '%Y-%m') = DATE_FORMAT(STR_TO_DATE(?, '%m/%Y'), '%Y-%m')
     `,
     'submitTimeEntry': `
-        INSERT INTO TIMECLOCK (USER_ID, ACTION, DATETIME_EVENT, APPROVED)
-        SELECT USER_ID, CUR_ACTION, NOW(), APPROVED
-        FROM (
-            SELECT USER.USER_ID, GET_ACTION.ACTION AS CUR_ACTION, PREV_ACT.ACTION AS PREV_ACTION, IFNULL(APP_SET.SETTING_VALUE, 'N') AS APPROVED
-            FROM USER
-            JOIN (SELECT USER_ID FROM USER WHERE USER.EMAIL = ? AND ACTIVE_FLAG = 'Y') GET_USER_ID
-                ON USER.USER_ID = GET_USER_ID.USER_ID
-            JOIN (SELECT ? AS ACTION FROM DUAL) GET_ACTION
-                ON GET_ACTION.ACTION IN ('IN', 'OUT', 'BREAK')
-            LEFT JOIN (
-                SELECT USER_ID, DATE(DATETIME_EVENT), ACTION, ROW_NUMBER() OVER (PARTITION BY USER_ID ORDER BY DATETIME_EVENT DESC) AS RN
-                FROM TIMECLOCK
-                WHERE ACTION IN ('IN', 'OUT')
-            ) PREV_ACT
-                ON PREV_ACT.USER_ID = GET_USER_ID.USER_ID
-                AND PREV_ACT.RN = 1
-            LEFT JOIN (SELECT SETTING_VALUE FROM APP_SETTING WHERE SETTING_NAME = 'AUTO_APPROVE') APP_SET ON 1=1
-        ) t
-        WHERE 1=1
-        AND (
-            (CUR_ACTION = 'IN' AND (PREV_ACTION = 'OUT' OR PREV_ACTION IS NULL))
-            OR
-            (CUR_ACTION = 'OUT' AND PREV_ACTION = 'IN')
-            OR
-            CUR_ACTION = 'BREAK'
-        )
+        CALL SUBMIT_TIMECLOCK(?)
     `,
     'fetchEmployeeList':`
         SELECT USER_ID, FIRST_NAME, LAST_NAME, EMAIL
@@ -110,20 +76,26 @@ export const sqlQuery = {
         INSERT INTO USER (FIRST_NAME, LAST_NAME, EMAIL, LAST_UPDATED_BY, CREATED_BY)
         SELECT ?, ?, ?, USER.USER_ID, USER.USER_ID
         FROM USER
-        WHERE EMAIL = ?
-        AND ACTIVE_FLAG = 'Y'
+        WHERE 1=1
+            AND EMAIL = ?
+            AND ACTIVE_FLAG = 'Y'
     `,
     'submitRehireEmployee': `
-        UPDATE USER AS USR, (SELECT USER_ID FROM USER WHERE EMAIL = ?) AS USR_ID
-        SET USR.FIRST_NAME = ?, USR.LAST_NAME = ?, USR.ACTIVE_FLAG = 'Y', USR.LOCKED_FLAG = 'N', USR.LAST_UPDATED_BY = USR_ID.USER_ID
+        UPDATE USER AS USR, (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y') AS GET_UPDATE_BY_USR_ID
+        SET USR.FIRST_NAME = ?
+            ,USR.LAST_NAME = ?
+            ,USR.ACTIVE_FLAG = 'Y'
+            ,USR.LOCKED_FLAG = 'N'
+            ,USR.LAST_UPDATED_AT = NOW()
+            ,USR.LAST_UPDATED_BY = GET_UPDATE_BY_USR_ID.USER_ID
         WHERE USR.USER_ID = ?
     `,
     'approveTimeSheet': `
         UPDATE TIMECLOCK
         SET APPROVED = 'Y', APPROVED_BY = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
         WHERE 1=1
-        AND USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
-        AND DATE_FORMAT(DATE, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
+            AND USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ?)
+            AND DATE_FORMAT(DATE, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
     `,
     'fetchAutoApproveSetting':`
         SELECT SETTING_VALUE
@@ -138,60 +110,20 @@ export const sqlQuery = {
     'fetchEmployeeOption':`
         SELECT ROLE, LOCKED_FLAG
         FROM USER
-        WHERE EMAIL = ?
-        AND ACTIVE_FLAG = 'Y'
+        WHERE 1=1
+            AND EMAIL = ?
+            AND ACTIVE_FLAG = 'Y'
     `,
     'setEmployeeOption':`
-        UPDATE USER AS USR, (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y') AS USR_ID
-        SET USR.ROLE = ?, USR.ACTIVE_FLAG = ?, USR.LOCKED_FLAG = ?
-        WHERE USR.USER_ID = USR_ID.USER_ID
-    `,
-    'fetchTotalWorkingTime':`
-        SELECT
-            DATE
-            ,ROUND(
-                    CAST(TIMESTAMPDIFF(HOUR, DATETIME_IN, DATETIME_OUT) AS UNSIGNED)
-                    + ((CAST(TIMESTAMPDIFF(MINUTE, DATETIME_IN, DATETIME_OUT) AS UNSIGNED)%60)/60)
-                    , 2) AS 'TIME_WORK'
-        FROM (
-            SELECT
-                USER_ID
-                ,DATE_IN AS DATE
-                ,STR_TO_DATE(CONCAT(DATE_IN, ' ', TIME_IN), '%Y-%m-%d %H:%i:%s') AS 'DATETIME_IN'
-                ,STR_TO_DATE(CONCAT(DATE_OUT, ' ', TIME_OUT), '%Y-%m-%d %H:%i:%s') AS 'DATETIME_OUT'
-            FROM (
-                SELECT
-                    t1.USER_ID
-                    ,t1.DATE AS 'DATE_IN'
-                    ,t1.TIME AS 'TIME_IN'
-                    ,IFNULL((SELECT DATE
-                        FROM TIMECLOCK t2
-                        WHERE 1=1
-                            AND t2.DATE >= t1.DATE
-                            AND t2.TIME > t1.TIME
-                            AND t2.ACTION = 'OUT'
-                        ORDER BY t2.DATE, t2.TIME
-                        LIMIT 1
-                    ), CURDATE()) AS 'DATE_OUT'
-                    ,IFNULL((SELECT TIME
-                        FROM TIMECLOCK t2
-                        WHERE 1=1
-                            AND t2.DATE >= t1.DATE
-                            AND t2.TIME > t1.TIME
-                            AND t2.ACTION = 'OUT'
-                        ORDER BY t2.DATE, t2.TIME
-                        LIMIT 1
-                    ), CURTIME()) AS 'TIME_OUT'
-                FROM 
-                    TIMECLOCK t1
-                WHERE 
-                    ACTION = 'IN'
-            ) t
-            WHERE DATE_OUT IS NOT NULL
-        ) t
-        WHERE 1=1
-            AND USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ?)
-            AND DATE >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+        UPDATE USER AS USR
+                ,(SELECT USER_ID FROM USER WHERE EMAIL = ?) AS GET_USR_ID
+                ,(SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y') AS GET_UPDATE_BY_USR_ID
+        SET USR.ROLE = ?
+            ,USR.ACTIVE_FLAG = ?
+            ,USR.LOCKED_FLAG = ?
+            ,USR.LAST_UPDATED_AT = NOW()
+            ,USR.LAST_UPDATED_BY = GET_UPDATE_BY_USR_ID.USER_ID
+        WHERE USR.USER_ID = GET_USR_ID.USER_ID
     `,
 };
 

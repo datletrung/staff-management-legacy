@@ -27,16 +27,16 @@ export default function TimeEntry() {
     const { data: session } = useSession();
     const [email] = useState(session?.user?.email);
     const [prevDate, setPrevDate] = useState(new Date('0001-01-01'));
-    const [date, setDate] = useState(new Date());
+    const [calendarDate, setCalendarDate] = useState(new Date());
     const [timePunchData, setTimePunchData] = useState<any[]>([]);
     const [timePunchMonthData, setTimePunchMonthData] = useState<String[]>([]);
 
     const [loading, setLoading] = useState(false);
     const [disabled, setDisabled] = useState(false);
+    const [buttonLabel, setButtonLabel] = useState('Loading');
+
     const [currentDate, setCurrentDate] = useState('');
     const [currentTime, setCurrentTime] = useState('');
-
-    const [totalWorkingTime, setTotalWorkingTime] = useState(0);
 
     useEffect(() => {
         refreshStatus();
@@ -55,6 +55,7 @@ export default function TimeEntry() {
     async function getTimeEntryPerDay(datePara: Date) {
         if (typeof(datePara) === 'undefined') return;
         setLoading(true);
+        setButtonLabel('Loading');
         let formattedDate = datePara.toLocaleString("en-US", {timeZone:'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'});
         const apiUrlEndpoint = 'api/fetchSql';
         let postData = {
@@ -62,34 +63,14 @@ export default function TimeEntry() {
                 headers: { 'Content-Type': 'application/json '},
                 body: JSON.stringify({
                         query: 'fetchTimeEntryDayQuery',
-                        para: [formattedDate, email]
+                        para: [email, formattedDate]
                 })
         }
         
         let response = await fetch(apiUrlEndpoint, postData);
         let res = await response.json();
-        setTimePunchData(res.data);
-
-        let n_totalWorkingTime = 0;
-        res.data.forEach((item: {DATE: String, TIME_IN: String, TIME_OUT: String}) => {
-            const [hours1, minutes1, second1] = (item.TIME_IN) ? item.TIME_IN.split(":").map(Number) : [0, 0, 0];
-            const [hours2, minutes2, second2] = (item.TIME_OUT) ? item.TIME_OUT.split(":").map(Number) : [null, null, null];
-            
-            if (hours2 !== null && minutes2 !== null && second2 !== null){       // normal TIME_IN and TIME_OUT
-                n_totalWorkingTime += Math.abs(Math.floor((hours2 - hours1) * 60 + (minutes2 - minutes1) + (second2 - second1) / 60));
-            } else {                                                             // if TIME_OUT missing
-                let [hours3, minutes3, second3] = [0, 0, 0];
-                if (item.DATE != new Date().toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'})) {    // if not today (in the past) means the day has pass and no more time out
-                    [hours3, minutes3, second3] = [23, 59, 59];
-                } else {                                                                                                                                    // if not end of the day then calculate to the current time
-                    [hours3, minutes3, second3] = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }).split(":").map(Number);
-                }
-                n_totalWorkingTime += Math.abs(Math.floor((hours3 - hours1) * 60 + (minutes3 - minutes1) + (second3 - second1) / 60));
-            }
-        });
-        
-        setTotalWorkingTime(Math.max(0, Math.floor(n_totalWorkingTime)));
-        
+        let data = res.data;
+        setTimePunchData(data);
 
         setLoading(false);
         if (datePara.setHours(0,0,0,0) == new Date().setHours(0,0,0,0)){
@@ -129,15 +110,16 @@ export default function TimeEntry() {
         setTimePunchMonthData(tmp);
     }
     
-    async function submitTimeEntry(action: string) {
+    async function submitTimeEntry() {
         setLoading(true);
+        setButtonLabel('Loading');
         const apiUrlEndpoint = 'api/fetchSql';
         const postData = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json '},
                 body: JSON.stringify({
                         query: 'submitTimeEntry',
-                        para: [email, action]
+                        para: [email]
                 })
         }
         
@@ -146,8 +128,6 @@ export default function TimeEntry() {
         setLoading(false);
         if (res.error){
             Notify(res.error, 'error');
-        } else if (res.data.affectedRows == 0) {
-            Notify('Error! You must clock out first if you haven\'t clocked out the previous day.', 'error');
         }
         refreshStatus();
     }
@@ -185,11 +165,11 @@ export default function TimeEntry() {
                     <Calendar className={stylesTimeEntry.CalendarContainer}
                         locale='en-US'
                         onChange={(datePara: any) => {
-                            setDate(datePara);
+                            setCalendarDate(datePara);
                             getTimeEntryPerDay(datePara);
                             getTimeEntryPerMonth(datePara, false);
                         }}
-                        value={date}
+                        value={calendarDate}
                         tileContent={tileContent}
                     />
                 </div>
@@ -197,47 +177,79 @@ export default function TimeEntry() {
                     <div className={stylesTimeEntry.SplitViewColumn}>
                         <div className={stylesTimeEntry.SplitViewColumnChild}>
                         <div>
-                            <div className={stylesTimeEntry.ButtonContainer}>
-                                <div className={stylesTimeEntry.Button}>
-                                    <LoadingButton
-                                        size="large" variant="outlined" color="success" endIcon={<LoginIcon/>}
-                                        loading={loading} loadingPosition="end"
-                                        style={{width:'100%'}}
-                                        disabled={disabled}
-                                        onClick={() => submitTimeEntry('IN')}
-                                    >
-                                        Clock In
-                                    </LoadingButton>
-                                </div>
-                                <div className={stylesTimeEntry.Button}>
-                                    <LoadingButton
-                                        size="large" variant="outlined" color="error" endIcon={<LogoutIcon/>}
-                                        loading={loading} loadingPosition="end"
-                                        style={{width:'100%'}}
-                                        disabled={disabled}
-                                        onClick={() => submitTimeEntry('OUT')}
-                                    >
-                                        Clock Out
-                                    </LoadingButton>
-                                </div>
+                            <div className={stylesTimeEntry.Button}>
+                                <LoadingButton
+                                    size="large" variant="outlined" color="success" endIcon={<LoginIcon/>}
+                                    loading={loading} loadingPosition="end"
+                                    style={{width:'100%'}}
+                                    disabled={disabled}
+                                    onClick={() => submitTimeEntry()}
+                                >
+                                    {buttonLabel}
+                                </LoadingButton>
                             </div>
                         </div>
                         </div>
                         <div className={`${stylesTimeEntry.SplitViewColumnChild} ${stylesTimeEntry.TimePunchView} ${loading ? stylesTimeEntry.TimePunchViewBlur : ''} `}>
-                            {timePunchData.map((item:any, idx:number) => {
-                                    let timeIn = (item.TIME_IN) ? item.TIME_IN.split(":").map(String)[0]+':'+item.TIME_IN.split(":").map(String)[1] : '-';
-                                    let timeOut = (item.TIME_OUT) ? item.TIME_OUT.split(":").map(String)[0]+':'+item.TIME_OUT.split(":").map(String)[1] : '-';
-                                    return (
-                                        <div key={idx} className={stylesTimeEntry.TimeCard}>
-                                            <b className={stylesTimeEntry.TimeCardIn}>{timeIn}</b> <b className={stylesTimeEntry.TimeCardOut}>{timeOut}</b>
-                                        </div>
-                                    );
-                            })}
-                            <hr/>
-                            <div className={stylesTimeEntry.TimeCardSummary}>
-                                <b>Total Working Time</b>
-                                <b>{Math.floor(totalWorkingTime/60)}:{(totalWorkingTime%60).toString().padStart(2, '0')} hr</b>
-                            </div>
+                            <table className={stylesTimeEntry.TableFullWidth}>
+                                <tr>
+                                    <th>Time in</th>
+                                    <th>Time out</th>
+                                    <th>Total hour</th>
+                                </tr>
+
+                                {timePunchData.map((item:any, idx:number) => {
+                                        let selectedDate = calendarDate;
+                                        let totalTime = item.TOTAL_TIME.split(':').slice(0, 2).join(':');
+                                        let timeIn = '-';
+                                        if (item.TIME_IN) {
+                                            let timeInTmp = new Date(item.TIME_IN);
+                                            if (selectedDate.getDate() === timeInTmp.getDate()
+                                                && selectedDate.getMonth() === timeInTmp.getMonth()
+                                                && selectedDate.getFullYear() === timeInTmp.getFullYear()){
+                                                timeIn = timeInTmp?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                                            } else {
+                                                timeIn = timeInTmp?.toLocaleTimeString([], { day: '2-digit', month: '2-digit', year:'2-digit', hour:'2-digit', minute: '2-digit', hour12: false });
+                                            }   
+                                        }
+                                        let timeOut = '-';
+                                        if (item.TIME_OUT) {
+                                            let timeOutTmp = new Date(item.TIME_OUT);
+                                            if (selectedDate.getDate() === timeOutTmp.getDate()
+                                                && selectedDate.getMonth() === timeOutTmp.getMonth()
+                                                && selectedDate.getFullYear() === timeOutTmp.getFullYear()){
+                                                timeOut = timeOutTmp?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                                            } else {
+                                                timeOut = timeOutTmp?.toLocaleTimeString([], { day: '2-digit', month: '2-digit', year:'2-digit', hour:'2-digit', minute: '2-digit', hour12: false });
+                                            }   
+                                        }
+                                        return (
+                                            <tr className={`${(idx % 2 !== 1) ? stylesTimeEntry.TableAlterRow : ''}`}>
+                                                <td className={`${stylesTimeEntry.TimeCardContent} ${stylesTimeEntry.TimeCardIn}`}>
+                                                    {
+                                                    timeIn.includes(',') ? (
+                                                        <>
+                                                            {timeIn.split(',')[0]} <br />
+                                                            {timeIn.split(',')[1].trim()}
+                                                        </>
+                                                    ) : (
+                                                        timeIn
+                                                    )}</td>
+                                                <td className={`${stylesTimeEntry.TimeCardContent} ${stylesTimeEntry.TimeCardOut}`}>
+                                                    {
+                                                    timeOut.includes(',') ? (
+                                                        <>
+                                                            {timeOut.split(',')[0]} <br />
+                                                            {timeOut.split(',')[1].trim()}
+                                                        </>
+                                                    ) : (
+                                                        timeOut
+                                                    )}</td>
+                                                <td className={stylesTimeEntry.TimeCardContent}>{totalTime}</td>
+                                            </tr>
+                                        );
+                                })}
+                            </table>
                         </div>
                     </div>
                 </div>
