@@ -102,22 +102,30 @@
     font-size: 1rem;
 }
 
+.SplitViewColumnChild {
+    flex: auto;
+    margin-bottom: 0.5rem;
+}
+
 .TimePunchView {
-    margin: 0 1rem 0 1rem;
     font-size: 1.2rem;
+}
+
+.Table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.TableAlterRow {
+    background-color: #EAF5E1;
 }
 
 .TimePunchViewBlur {
     filter: blur(3px);
 }
 
-.TimeCard {
-    margin-bottom: 0.8rem;
-    padding: 1rem;
-    border-radius: 1rem;
-    display: flex;
-    justify-content: space-between;
-    border: 2px solid #000000;
+.TimeCardContent {
+    padding: 10px;
 }
 
 .TimeCardIn {
@@ -125,12 +133,37 @@
 }
 
 .TimeCardOut {
-    color: red;
+    color: orange;
+}
+
+.TableColumn {
+    width: 30%;
+    display: table-cell;
+    vertical-align: bottom;
+    text-align: center;
 }
 
 .TimeCardSummary {
     display: flex;
     justify-content: space-between;
+}
+
+.Clock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 1.5rem;
+}
+
+.ClockTime {
+    padding: 0.5rem;
+    font-size: 2rem;
+}
+
+.CenterView {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .SwitchContainer {

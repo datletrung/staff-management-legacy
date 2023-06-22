@@ -1,10 +1,6 @@
 'use client';
 
-import { LoadingButton } from '@mui/lab';
-import {Login as LoginIcon
-            ,Logout as LogoutIcon
-            ,AddAlarm as AddAlarmIcon
-} from '@mui/icons-material';
+import { Button } from '@mui/material';
 
 import Head from 'next/head';
 import { useState, useEffect } from 'react';
@@ -71,6 +67,13 @@ export default function TimeEntry() {
         let res = await response.json();
         let data = res.data;
         setTimePunchData(data);
+        if (data.length === 0) {
+            setButtonLabel('CLOCK IN');
+        } else if (data[data.length-1].TIME_OUT){ // TIME_OUT IS NOT NULL
+            setButtonLabel('CLOCK IN');
+        } else {
+            setButtonLabel('CLOCK OUT');
+        }
 
         setLoading(false);
         if (datePara.setHours(0,0,0,0) == new Date().setHours(0,0,0,0)){
@@ -176,26 +179,25 @@ export default function TimeEntry() {
                 <div className={stylesTimeEntry.SplitViewRowChild}>
                     <div className={stylesTimeEntry.SplitViewColumn}>
                         <div className={stylesTimeEntry.SplitViewColumnChild}>
-                        <div>
-                            <div className={stylesTimeEntry.Button}>
-                                <LoadingButton
-                                    size="large" variant="outlined" color="success" endIcon={<LoginIcon/>}
-                                    loading={loading} loadingPosition="end"
-                                    style={{width:'100%'}}
-                                    disabled={disabled}
-                                    onClick={() => submitTimeEntry()}
-                                >
-                                    {buttonLabel}
-                                </LoadingButton>
-                            </div>
+                        <div className={stylesTimeEntry.ButtonContainer}>
+                            <Button
+                                size="large"
+                                variant="outlined"
+                                color="success"
+                                style={{width:'100%'}}
+                                disabled={disabled}
+                                onClick={() => submitTimeEntry()}
+                            >
+                                {buttonLabel}
+                            </Button>
                         </div>
                         </div>
                         <div className={`${stylesTimeEntry.SplitViewColumnChild} ${stylesTimeEntry.TimePunchView} ${loading ? stylesTimeEntry.TimePunchViewBlur : ''} `}>
-                            <table className={stylesTimeEntry.TableFullWidth}>
+                            <table className={stylesTimeEntry.Table}>
                                 <tr>
-                                    <th>Time in</th>
-                                    <th>Time out</th>
-                                    <th>Total hour</th>
+                                    <th className={stylesTimeEntry.TableColumn}>Time in</th>
+                                    <th className={stylesTimeEntry.TableColumn}>Time out</th>
+                                    <th className={stylesTimeEntry.TableColumn}>Total hour</th>
                                 </tr>
 
                                 {timePunchData.map((item:any, idx:number) => {
@@ -225,27 +227,27 @@ export default function TimeEntry() {
                                         }
                                         return (
                                             <tr className={`${(idx % 2 !== 1) ? stylesTimeEntry.TableAlterRow : ''}`}>
-                                                <td className={`${stylesTimeEntry.TimeCardContent} ${stylesTimeEntry.TimeCardIn}`}>
+                                                <td className={`${stylesTimeEntry.TimeCardContent} ${stylesTimeEntry.TimeCardIn} ${stylesTimeEntry.TableColumn}`}>
                                                     {
                                                     timeIn.includes(',') ? (
                                                         <>
-                                                            {timeIn.split(',')[0]} <br />
+                                                            <small>{timeIn.split(',')[0]}</small> <br/>
                                                             {timeIn.split(',')[1].trim()}
                                                         </>
                                                     ) : (
                                                         timeIn
                                                     )}</td>
-                                                <td className={`${stylesTimeEntry.TimeCardContent} ${stylesTimeEntry.TimeCardOut}`}>
+                                                <td className={`${stylesTimeEntry.TimeCardContent} ${stylesTimeEntry.TimeCardOut} ${stylesTimeEntry.TableColumn}`}>
                                                     {
                                                     timeOut.includes(',') ? (
                                                         <>
-                                                            {timeOut.split(',')[0]} <br />
+                                                            <small>{timeOut.split(',')[0]}</small> <br/>
                                                             {timeOut.split(',')[1].trim()}
                                                         </>
                                                     ) : (
                                                         timeOut
                                                     )}</td>
-                                                <td className={stylesTimeEntry.TimeCardContent}>{totalTime}</td>
+                                                <td className={`${stylesTimeEntry.TimeCardContent}  ${stylesTimeEntry.TableColumn}`}>{totalTime}</td>
                                             </tr>
                                         );
                                 })}

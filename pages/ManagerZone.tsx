@@ -31,7 +31,8 @@ export default function ManagerZone() {
     if (!checkPermissions()) {
         return <AccessDenied/>;
     }
-    const {data: session} = useSession();
+
+    const { data: session } = useSession();
     const [email] = useState(session?.user?.email);
     const [loading, setLoading] = useState(false);
     const [disabled, setDisabled] = useState(false);
@@ -41,7 +42,7 @@ export default function ManagerZone() {
     const [elastName, setLastName] = useState('');
     const [eemail, setEmail] = useState('');
     const [employeeList, setEmployeeList] = useState<String[]>([]);
-    const [date, setDate] = useState(new Date());
+    const [calendarDate, setCalendarDate] = useState(new Date());
     const [addNewEmployeeView, setAddNewEmployeeView] = useState(false);
     const [employeeOptionView, setEmployeeOptionView] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
@@ -140,7 +141,7 @@ export default function ManagerZone() {
         getEmployeeList();
     }
 
-    async function getTimeEntryPerDay(eemail: any, datePara: Date) {
+        async function getTimeEntryPerDay(eemail:any, datePara: Date) {
         if (typeof(datePara) === 'undefined') return;
         setLoading(true);
         let formattedDate = datePara.toLocaleString("en-US", {timeZone:'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'});
@@ -150,50 +151,14 @@ export default function ManagerZone() {
                 headers: { 'Content-Type': 'application/json '},
                 body: JSON.stringify({
                         query: 'fetchTimeEntryDayQuery',
-                        para: [formattedDate, eemail]
+                        para: [eemail, formattedDate]
                 })
         }
         
         let response = await fetch(apiUrlEndpoint, postData);
         let res = await response.json();
-        setTimePunchData(res.data);
-
-        let n_totalTime = 0;
-        res.data.forEach((item: {DATE: String, TIME_IN: String, TIME_OUT: String}) => {
-            const [hours1, minutes1, second1] = (item.TIME_IN) ? item.TIME_IN.split(":").map(Number) : [0, 0, 0];
-            const [hours2, minutes2, second2] = (item.TIME_OUT) ? item.TIME_OUT.split(":").map(Number) : [null, null, null];
-            
-            if (hours2 !== null && minutes2 !== null && second2 !== null){       // normal TIME_IN and TIME_OUT
-                n_totalTime += Math.abs(Math.floor((hours2 - hours1) * 60 + (minutes2 - minutes1) + (second2 - second1) / 60));
-            } else {                                                             // if TIME_OUT missing
-                let [hours3, minutes3, second3] = [0, 0, 0];
-                if (item.DATE != new Date().toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'})) {    // if not today (in the past) means the day has pass and no more time out
-                    [hours3, minutes3, second3] = [23, 59, 59];
-                } else {                                                                                                                                    // if not end of the day then calculate to the current time
-                    [hours3, minutes3, second3] = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }).split(":").map(Number);
-                }
-                n_totalTime += Math.abs(Math.floor((hours3 - hours1) * 60 + (minutes3 - minutes1) + (second3 - second1) / 60));
-            }
-        });
-        
-        setTotalTime(Math.max(0, Math.floor(n_totalTime)));
-
-        postData = {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json '},
-                body: JSON.stringify({
-                        query: 'fetchBreakDayQuery',
-                        para: [email, formattedDate]
-                })
-        }
-        
-        response = await fetch(apiUrlEndpoint, postData);
-        res = await response.json();
-        let n_breakTime = res.data[0].BREAK_NUM*30;
-        setTotalBreakTime(n_breakTime);
-
-        setTotalWorkingTime(Math.max(0, Math.floor((n_totalTime-n_breakTime))));
-        
+        let data = res.data;
+        setTimePunchData(data);
 
         setLoading(false);
         if (datePara.setHours(0,0,0,0) == new Date().setHours(0,0,0,0)){
@@ -481,12 +446,12 @@ export default function ManagerZone() {
                             <Calendar className={stylesManagerZone.CalendarContainer}
                                 locale='en-US'
                                 onChange={(datePara: any) => {
-                                        setDate(datePara);
+                                        setCalendarDate(datePara);
                                         setCalendarIsSelected(true);
                                         getTimeEntryPerDay(currentView[0], datePara);
                                         getTimeEntryPerMonth(currentView[0], datePara, false);
                                     }}
-                                value={date}
+                                value={calendarDate}
                                 tileContent={tileContent}
                             />
                             <div className={stylesManagerZone.ButtonContainer}>
@@ -496,7 +461,7 @@ export default function ManagerZone() {
                                         loading={loading} loadingPosition="end"
                                         style={{width:'100%'}}
                                         disabled={disableApproveButton}
-                                        onClick={() => handleApprove(currentView[0], date)}
+                                        onClick={() => handleApprove(currentView[0], calendarDate)}
                                     >
                                         Approve
                                     </LoadingButton>
@@ -505,34 +470,66 @@ export default function ManagerZone() {
                         </div>
                     </div>
                     <div className={stylesManagerZone.CalendarChildFlexColumnRight} style={{ display: (calendarIsSelected) ? 'block' : 'none' }}> {/* Time Punch Table */}
-                        <div className={`${stylesManagerZone.TimePunchView} ${loading ? stylesManagerZone.TimePunchViewBlur : ''} `}>
-                            {timePunchData.map((item:any, idx:number) => {
-                                let timeIn = (item.TIME_IN) ? item.TIME_IN.split(":").map(String)[0]+':'+item.TIME_IN.split(":").map(String)[1] : '-';
-                                let timeOut = (item.TIME_OUT) ? item.TIME_OUT.split(":").map(String)[0]+':'+item.TIME_OUT.split(":").map(String)[1] : '-';
-                                return (
-                                <div key={idx} className={stylesManagerZone.TimeCard}>
-                                    <b className={stylesManagerZone.TimeCardIn}>{timeIn}</b> <b className={stylesManagerZone.TimeCardOut}>{timeOut}</b>
-                                </div>
-                                );
-                            })}
-                            <hr/>
-                            <div className={stylesManagerZone.TimeCardSummary}>
-                            <b>Total Time</b>
-                            <b>{Math.floor(totalTime/60)}:{(totalTime%60).toString().padStart(2, '0')} hr</b>
-                            </div>
-                            {(totalBreakTime != 0) ?
-                            <>
-                            <div className={stylesManagerZone.TimeCardSummary}>
-                                <b>Break</b>
-                                <b>- {Math.floor(totalBreakTime/60)}:{(totalBreakTime%60).toString().padStart(2, '0')} hr</b>
-                            </div>
-                            </> : null
-                            }
-                            <hr/>
-                            <div className={stylesManagerZone.TimeCardSummary}>
-                            <b>Total Working Time</b>
-                            <b>{Math.floor(totalWorkingTime/60)}:{(totalWorkingTime%60).toString().padStart(2, '0')} hr</b>
-                            </div>
+                        <div className={`${stylesManagerZone.SplitViewColumnChild} ${stylesManagerZone.TimePunchView} ${loading ? stylesManagerZone.TimePunchViewBlur : ''} `}>
+                            <table className={stylesManagerZone.Table}>
+                                <tr>
+                                    <th className={stylesManagerZone.TableColumn}>Time in</th>
+                                    <th className={stylesManagerZone.TableColumn}>Time out</th>
+                                    <th className={stylesManagerZone.TableColumn}>Total hour</th>
+                                </tr>
+
+                                {timePunchData.map((item:any, idx:number) => {
+                                        let selectedDate = calendarDate;
+                                        let totalTime = item.TOTAL_TIME.split(':').slice(0, 2).join(':');
+                                        let timeIn = '-';
+                                        if (item.TIME_IN) {
+                                            let timeInTmp = new Date(item.TIME_IN);
+                                            if (selectedDate.getDate() === timeInTmp.getDate()
+                                                && selectedDate.getMonth() === timeInTmp.getMonth()
+                                                && selectedDate.getFullYear() === timeInTmp.getFullYear()){
+                                                timeIn = timeInTmp?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                                            } else {
+                                                timeIn = timeInTmp?.toLocaleTimeString([], { day: '2-digit', month: '2-digit', year:'2-digit', hour:'2-digit', minute: '2-digit', hour12: false });
+                                            }   
+                                        }
+                                        let timeOut = '-';
+                                        if (item.TIME_OUT) {
+                                            let timeOutTmp = new Date(item.TIME_OUT);
+                                            if (selectedDate.getDate() === timeOutTmp.getDate()
+                                                && selectedDate.getMonth() === timeOutTmp.getMonth()
+                                                && selectedDate.getFullYear() === timeOutTmp.getFullYear()){
+                                                timeOut = timeOutTmp?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                                            } else {
+                                                timeOut = timeOutTmp?.toLocaleTimeString([], { day: '2-digit', month: '2-digit', year:'2-digit', hour:'2-digit', minute: '2-digit', hour12: false });
+                                            }   
+                                        }
+                                        return (
+                                            <tr className={`${(idx % 2 !== 1) ? stylesManagerZone.TableAlterRow : ''}`}>
+                                                <td className={`${stylesManagerZone.TimeCardContent} ${stylesManagerZone.TimeCardIn} ${stylesManagerZone.TableColumn}`}>
+                                                    {
+                                                    timeIn.includes(',') ? (
+                                                        <>
+                                                            <small>{timeIn.split(',')[0]}</small> <br/>
+                                                            {timeIn.split(',')[1].trim()}
+                                                        </>
+                                                    ) : (
+                                                        timeIn
+                                                    )}</td>
+                                                <td className={`${stylesManagerZone.TimeCardContent} ${stylesManagerZone.TimeCardOut} ${stylesManagerZone.TableColumn}`}>
+                                                    {
+                                                    timeOut.includes(',') ? (
+                                                        <>
+                                                            <small>{timeOut.split(',')[0]}</small> <br/>
+                                                            {timeOut.split(',')[1].trim()}
+                                                        </>
+                                                    ) : (
+                                                        timeOut
+                                                    )}</td>
+                                                <td className={`${stylesManagerZone.TimeCardContent}  ${stylesManagerZone.TableColumn}`}>{totalTime}</td>
+                                            </tr>
+                                        );
+                                })}
+                            </table>
                         </div>
                     </div>
                 </div>
