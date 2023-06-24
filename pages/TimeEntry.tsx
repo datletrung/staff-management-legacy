@@ -22,14 +22,14 @@ export default function TimeEntry() {
 
     const { data: session } = useSession();
     const [email] = useState(session?.user?.email);
-    const [prevDate, setPrevDate] = useState(new Date('0001-01-01'));
     const [calendarDate, setCalendarDate] = useState(new Date());
     const [timePunchData, setTimePunchData] = useState<any[]>([]);
     const [timePunchMonthData, setTimePunchMonthData] = useState<String[]>([]);
 
+    const [activeStartDate, setActiveStartDate] = useState(new Date());
+
     const [loading, setLoading] = useState(false);
     const [disabled, setDisabled] = useState(false);
-    const [buttonLabel, setButtonLabel] = useState('Loading');
 
     const [currentDate, setCurrentDate] = useState('');
     const [currentTime, setCurrentTime] = useState('');
@@ -45,13 +45,12 @@ export default function TimeEntry() {
 
     async function refreshStatus() {
         await getTimeEntryPerDay(new Date());
-        await getTimeEntryPerMonth(new Date(), true);
+        await getTimeEntryPerMonth(new Date());
     }
 
     async function getTimeEntryPerDay(datePara: Date) {
         if (typeof(datePara) === 'undefined') return;
         setLoading(true);
-        setButtonLabel('Loading');
         let formattedDate = datePara.toLocaleString("en-US", {timeZone:'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'});
         const apiUrlEndpoint = 'api/fetchSql';
         let postData = {
@@ -67,13 +66,6 @@ export default function TimeEntry() {
         let res = await response.json();
         let data = res.data;
         setTimePunchData(data);
-        if (data.length === 0) {
-            setButtonLabel('CLOCK IN');
-        } else if (data[data.length-1].TIME_OUT){ // TIME_OUT IS NOT NULL
-            setButtonLabel('CLOCK IN');
-        } else {
-            setButtonLabel('CLOCK OUT');
-        }
 
         setLoading(false);
         if (datePara.setHours(0,0,0,0) == new Date().setHours(0,0,0,0)){
@@ -83,14 +75,7 @@ export default function TimeEntry() {
         }
     }
 
-    async function getTimeEntryPerMonth(datePara: Date, forceRefresh: boolean) {
-        if (!forceRefresh
-                && (datePara.getMonth() === prevDate.getMonth() && datePara.getFullYear() === prevDate.getFullYear())
-        ){
-            return;
-        } else {
-            setPrevDate(datePara);
-        }
+    async function getTimeEntryPerMonth(datePara: Date) {
         let formattedDate = datePara.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit'});
         const apiUrlEndpoint = 'api/fetchSql';
         const postData = {
@@ -115,7 +100,6 @@ export default function TimeEntry() {
     
     async function submitTimeEntry() {
         setLoading(true);
-        setButtonLabel('Loading');
         const apiUrlEndpoint = 'api/fetchSql';
         const postData = {
                 method: 'POST',
@@ -170,7 +154,11 @@ export default function TimeEntry() {
                         onChange={(datePara: any) => {
                             setCalendarDate(datePara);
                             getTimeEntryPerDay(datePara);
-                            getTimeEntryPerMonth(datePara, false);
+                        }}
+                        activeStartDate={activeStartDate}
+                        onActiveStartDateChange={(date: any) => {
+                            setActiveStartDate(date.date);
+                            getTimeEntryPerMonth(date.activeStartDate);
                         }}
                         value={calendarDate}
                         tileContent={tileContent}
@@ -178,21 +166,10 @@ export default function TimeEntry() {
                 </div>
                 <div className={stylesTimeEntry.SplitViewRowChild}>
                     <div className={stylesTimeEntry.SplitViewColumn}>
-                        <div className={stylesTimeEntry.SplitViewColumnChild}>
-                        <div className={stylesTimeEntry.ButtonContainer}>
-                            <Button
-                                size="large"
-                                variant="outlined"
-                                color="success"
-                                style={{width:'100%'}}
-                                disabled={disabled}
-                                onClick={() => submitTimeEntry()}
-                            >
-                                {buttonLabel}
-                            </Button>
-                        </div>
-                        </div>
-                        <div className={`${stylesTimeEntry.SplitViewColumnChild} ${stylesTimeEntry.TimePunchView} ${loading ? stylesTimeEntry.TimePunchViewBlur : ''} `}>
+                        <div className={`${stylesTimeEntry.TimePunchView} ${loading ? stylesTimeEntry.TimePunchViewBlur : ''} `}>
+                            <center>
+                                <span>Selected date: {calendarDate.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'})}</span>
+                            </center>
                             <table className={stylesTimeEntry.Table}>
                                 <tr>
                                     <th className={stylesTimeEntry.TableColumn}>Time in</th>
@@ -252,6 +229,19 @@ export default function TimeEntry() {
                                         );
                                 })}
                             </table>
+                        </div>
+                        <br/>
+                        <div className={`${stylesTimeEntry.ButtonContainer} ${disabled ? stylesTimeEntry.ButtonHidden : ''}`}>
+                            <Button
+                                size="large"
+                                variant="outlined"
+                                color="success"
+                                style={{width:'100%'}}
+                                disabled={disabled}
+                                onClick={() => submitTimeEntry()}
+                            >
+                                PUNCH THE CLOCK
+                            </Button>
                         </div>
                     </div>
                 </div>

@@ -73,11 +73,6 @@
     flex-direction: column;
 }
 
-.SplitViewColumnChild {
-    flex: auto;
-    margin-bottom: 0.5rem;
-}
-
 .TimePunchView {
     font-size: 1.2rem;
 }
@@ -135,6 +130,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.ButtonHidden {
+    display: none;
 }
 
 /* Custom CSS for Calendar */

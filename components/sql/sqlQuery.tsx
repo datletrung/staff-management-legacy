@@ -13,10 +13,10 @@ export const sqlQuery = {
             USER_ID
             ,TIME_IN
             ,TIME_OUT
-            ,CASE WHEN TOTAL_TIME IS NOT NULL
+            ,ROUND(TIME_TO_SEC(CASE WHEN TOTAL_TIME IS NOT NULL
                 THEN TOTAL_TIME
                 ELSE TIMEDIFF(NOW(), TIME_IN)
-                END AS TOTAL_TIME
+                END) / 3600, 2) AS TOTAL_TIME
         FROM (
             SELECT DISTINCT T2.*
             FROM (
@@ -38,6 +38,7 @@ export const sqlQuery = {
                 AND T1.USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
                 AND DATE_FORMAT(T1.TIME_ALL, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
         ) T
+        ORDER BY TIME_IN
     `,
     'fetchTimeEntryMonthQuery': `
         SELECT

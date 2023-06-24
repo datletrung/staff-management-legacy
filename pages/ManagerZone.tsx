@@ -47,12 +47,10 @@ export default function ManagerZone() {
     const [employeeOptionView, setEmployeeOptionView] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
     const [currentView, setCurrentView] = useState<String[]>([]);
-    const [prevDate, setPrevDate] = useState(new Date('0001-01-01'));
     const [timePunchData, setTimePunchData] = useState<any[]>([]);
     const [timePunchMonthData, setTimePunchMonthData] = useState<String[]>([]);
-    const [totalTime, setTotalTime] = useState(0);
-    const [totalBreakTime, setTotalBreakTime] = useState(0);
-    const [totalWorkingTime, setTotalWorkingTime] = useState(0);
+
+    const [activeStartDate, setActiveStartDate] = useState(new Date());
     const [calendarIsSelected, setCalendarIsSelected] = useState(false);
     const [checkedAutoApproveSwitch, setCheckedAutoApproveSwitch] = useState(false);
     const [checkedLockSwitch, setCheckedLockSwitch] = useState(false);
@@ -168,14 +166,7 @@ export default function ManagerZone() {
         }
     }
 
-    async function getTimeEntryPerMonth(eemail: any, datePara: Date, forceRefresh: boolean) {
-        if (!forceRefresh
-            && (datePara.getMonth() === prevDate.getMonth() && datePara.getFullYear() === prevDate.getFullYear())
-        ){
-        return;
-        } else {
-        setPrevDate(datePara);
-        }
+    async function getTimeEntryPerMonth(eemail: any, datePara: Date) {
         let formattedDate = datePara.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit'});
         const apiUrlEndpoint = 'api/fetchSql';
         const postData = {
@@ -402,7 +393,7 @@ export default function ManagerZone() {
                                     <div className={`${stylesManagerZone.EmployeeCard}`}
                                         onClick={() => {
                                             setCurrentView([eemail, ename]);
-                                            getTimeEntryPerMonth(eemail, new Date(), true);
+                                            getTimeEntryPerMonth(eemail, new Date());
                                             setCurrentStep(2);
                                         }}
                                     >
@@ -449,8 +440,12 @@ export default function ManagerZone() {
                                         setCalendarDate(datePara);
                                         setCalendarIsSelected(true);
                                         getTimeEntryPerDay(currentView[0], datePara);
-                                        getTimeEntryPerMonth(currentView[0], datePara, false);
-                                    }}
+                                }}
+                                activeStartDate={activeStartDate}
+                                onActiveStartDateChange={(date: any) => {
+                                    setActiveStartDate(date.date);
+                                    getTimeEntryPerMonth(currentView[0], date.activeStartDate);
+                                }}
                                 value={calendarDate}
                                 tileContent={tileContent}
                             />
@@ -471,6 +466,9 @@ export default function ManagerZone() {
                     </div>
                     <div className={stylesManagerZone.CalendarChildFlexColumnRight} style={{ display: (calendarIsSelected) ? 'block' : 'none' }}> {/* Time Punch Table */}
                         <div className={`${stylesManagerZone.SplitViewColumnChild} ${stylesManagerZone.TimePunchView} ${loading ? stylesManagerZone.TimePunchViewBlur : ''} `}>
+                            <center>
+                                <span>Selected date: {calendarDate.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'})}</span>
+                            </center>
                             <table className={stylesManagerZone.Table}>
                                 <tr>
                                     <th className={stylesManagerZone.TableColumn}>Time in</th>
