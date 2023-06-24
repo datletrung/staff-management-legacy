@@ -171,6 +171,7 @@ export default function TimeEntry() {
                                 <span>Selected date: {calendarDate.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'})}</span>
                             </center>
                             <table className={stylesTimeEntry.Table}>
+                                <tbody>
                                 <tr>
                                     <th className={stylesTimeEntry.TableColumn}>Time in</th>
                                     <th className={stylesTimeEntry.TableColumn}>Time out</th>
@@ -228,6 +229,7 @@ export default function TimeEntry() {
                                             </tr>
                                         );
                                 })}
+                                </tbody>
                             </table>
                         </div>
                         <br/>

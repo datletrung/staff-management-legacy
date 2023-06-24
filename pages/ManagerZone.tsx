@@ -470,6 +470,7 @@ export default function ManagerZone() {
                                 <span>Selected date: {calendarDate.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'})}</span>
                             </center>
                             <table className={stylesManagerZone.Table}>
+                                <tbody>
                                 <tr>
                                     <th className={stylesManagerZone.TableColumn}>Time in</th>
                                     <th className={stylesManagerZone.TableColumn}>Time out</th>
@@ -527,6 +528,7 @@ export default function ManagerZone() {
                                             </tr>
                                         );
                                 })}
+                                </tbody>
                             </table>
                         </div>
                     </div>
