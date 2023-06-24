@@ -14,8 +14,10 @@ export default function Layout({ children }:{ children: any}) {
     const router = useRouter();
 
     const [isOpen, setIsOpen] = useState(true);
+    const [isHiddenContent, setIsHiddenContent] = useState(false);
 
     function handleResize() {
+        setIsHiddenContent(false);
         if (window.innerWidth < 768) {
             setIsOpen(false);
         } else {
@@ -38,7 +40,13 @@ export default function Layout({ children }:{ children: any}) {
                 <div className={styles.HeaderRowContainer}>
                     <div className={styles.HeaderLogo}>
                         <div className={styles.HeaderLogoButton}>
-                            <FontAwesomeIcon icon={faBars} size="2xl" onClick={() => {setIsOpen(!isOpen)}}/>
+                            <FontAwesomeIcon icon={faBars} size="2xl"
+                                onClick={() => {
+                                    setIsOpen(!isOpen);
+                                    if (window.innerWidth < 768){
+                                        (isOpen) ? setIsHiddenContent(false) : setIsHiddenContent(true);
+                                    }
+                                }}/>
                         </div>
                         <Link href={"/"}>
                             <h1>{`${process.env.WebsiteName}`}</h1>
@@ -76,7 +84,16 @@ export default function Layout({ children }:{ children: any}) {
                         {NavBarItems.map((menu, idx) => {
                             if (menu.permissionRequired.includes((session?.user?.role!)?session?.user?.role!:''))
                             return (
-                                <Link href={menu.href} key={idx.toString()} className={styles.NavBarItem}>
+                                <Link href={menu.href}
+                                    key={idx.toString()}
+                                    className={styles.NavBarItem}
+                                    onClick={() => {
+                                        if (window.innerWidth < 768) {
+                                            setIsOpen(false);
+                                        }
+                                        setIsHiddenContent(false);
+                                    }}
+                                >
                                     <div className={styles.NavBarItemChild1}>
                                         <FontAwesomeIcon icon={menu.icon} className={styles.NavBarItemChild1}/>
                                     </div>
@@ -86,7 +103,7 @@ export default function Layout({ children }:{ children: any}) {
                         })}
                     </div>
                 </div>
-                <div className={styles.ContentContainer}> {/*Body*/}
+                <div className={styles.ContentContainer} style={{ display: isHiddenContent ? 'none' : 'block' }}> {/*Body*/}
                     {children}
                 </div>
             </div>
