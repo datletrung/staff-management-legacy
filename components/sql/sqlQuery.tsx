@@ -1,9 +1,14 @@
 export const sqlQuery = {
     //-----AUTH
     'fetchRoleQuery': `
-        SELECT ROLE
+        SELECT
+            USER_ID
+            ,ROLE
+            ,CONCAT(FIRST_NAME, ' ', LAST_NAME) AS NAME
         FROM USER
-        WHERE EMAIL = ?
+        WHERE 1=1
+        AND EMAIL = ?
+        AND PASSWORD = ?
         AND ACTIVE_FLAG = 'Y'
         AND LOCKED_FLAG = 'N'
     `,

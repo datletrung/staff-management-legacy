@@ -6,7 +6,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserLock, faBars } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faUserLock, faBars } from '@fortawesome/free-solid-svg-icons';
 
 
 export default function Layout({ children }:{ children: any}) {
@@ -15,6 +15,8 @@ export default function Layout({ children }:{ children: any}) {
 
     const [isOpen, setIsOpen] = useState(true);
     const [isHiddenContent, setIsHiddenContent] = useState(false);
+
+    const [displayName, setDisplayName] = useState(session?.user?.name);
 
     function handleResize() {
         setIsHiddenContent(false);
@@ -60,18 +62,11 @@ export default function Layout({ children }:{ children: any}) {
                                 router.push('/');
                             }
                         }}
+                        onMouseEnter={() => {setDisplayName('Sign Out');}}
+                        onMouseLeave={() => {setDisplayName(session?.user?.name);}}
                     >
-                        {(session && session.user && session.user.image)
-                        ? (<div style={{display: 'flex', position: 'relative', width: '100%', height: '100%'}}>
-                            <Image src={session.user.image}
-                            width={20} height={20}
-                            alt='Profile Picture'
-                            style={{objectFit:"contain", marginRight: '0.2rem'}}
-                            />
-                            <div className={styles.UserNameText}>
-                                <span>{session.user.name}</span>
-                            </div>
-                        </div>)
+                        {(session && session.user)
+                        ? (<><FontAwesomeIcon icon={faUser}/> {displayName}</>)
                         : (<><FontAwesomeIcon icon={faUserLock}/> Sign in</>)
                         }
                     </div>

@@ -87,12 +87,3 @@
 .NavBarItemChild2 {
     align-self: left;
 }
-
-
-.UserNameText:hover span{
-    display: none;
-}
-
-.UserNameText:hover:before {
-    content: "Sign out";
-}

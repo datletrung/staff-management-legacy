@@ -9,7 +9,6 @@ export default function Account() {
     const {data: session} = useSession();
     const router = useRouter();
     if (router.query.returnUrl) router.push(router.query.returnUrl.toString());
-
     return (
         <>
             <Head>
@@ -18,17 +17,15 @@ export default function Account() {
             {(!session) //if not signed in then display sign in button
                 ?   <>
                     <h1>{`Welcome to ${process.env.CompanyName}!`}</h1>
-                    <p>Please sign in with your <i>company account</i> to continue:</p>
-                    <center>
-                        <button
-                            onClick={() => signIn('google', {
-                                redirect: false,
-                            })}
-                            className={stylesIndex.SignInButton}
-                        >
-                            Sign in with Google
-                        </button>
-                    </center>
+                    <p>Please sign in to continue:</p>
+                    <button
+                        onClick={() => signIn('', {
+                            redirect: false,
+                        })}
+                        className={stylesIndex.SignInButton}
+                    >
+                        Sign in with Credentials
+                    </button>
                 </>
                 :
                 <>

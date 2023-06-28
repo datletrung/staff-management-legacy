@@ -1,39 +1,72 @@
-import GoogleProvider from "next-auth/providers/google";
-import NextAuth, { DefaultSession } from "next-auth"
+import NextAuth, { DefaultSession } from "next-auth";
+import CredentialsProvider from 'next-auth/providers/credentials';
+const { createHash } = require('crypto');
 
 declare module "next-auth" {
-  interface Session {
-    user: {
-      role?: string
-    } & DefaultSession["user"]
-  }
+    interface Session {
+        user: {
+            role?: string
+        } & DefaultSession["user"]
+    }
 }
 
 export default NextAuth({
     providers: [
-        GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID as string,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+        CredentialsProvider({
+            name: 'Credentials',
+            credentials: {
+                email: { label: 'Email', type: 'email' },
+                password: { label: 'Password', type: 'password' }
+            },
+            async authorize(credentials) {
+                const payload = {
+                    email: credentials?.email,
+                    password: createHash('sha256').update(credentials?.password).digest('hex'),
+                  };
+
+                const apiUrlEndpoint = `${process.env.API_ENDPOINT}/api/fetchSql`;
+                const postData = {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json '},
+                    body: JSON.stringify({
+                        action: 'fetch',
+                        query: 'fetchRoleQuery',
+                        para: [payload.email, payload.password]
+                    })
+                }
+                const response = await fetch(apiUrlEndpoint, postData);
+                const res = await response.json();
+                const user_id = res.data[0].USER_ID;
+                const role = res.data[0].ROLE;
+                const name = res.data[0].NAME;
+
+                if (!response.ok) {
+                    throw new Error(res.message);
+                }
+                if (response.ok && role) {
+                    return { id: user_id,
+                            email: payload.email,
+                            name: name,
+                            role: role,
+                    };
+                }
+                return null;
+            },
         }),
     ],
     callbacks: {
-        async session({ session }:{ session: any}) {
-            //retrieve ROLE and assign to session after signed in
-            const apiUrlEndpoint = `${process.env.API_ENDPOINT}/api/fetchSql`;
-            const postData = {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json '},
-                body: JSON.stringify({
-                    action: 'fetch',
-                    query: 'fetchRoleQuery',
-                    para: [session.user.email]
-                })
+        async jwt({ token, user }:{ token: any, user: any}) {
+            if (user) {
+                token.role = user.role;
             }
-            const response = await fetch(apiUrlEndpoint, postData);
-            const res = await response.json();
-            let role = res.data[0].ROLE;
-            session.user.role = role;
+            return token;
+        },
+        async session({ session, token }:{ session: any, token: any}) {
+            session.user.role = token.role;
             return session;
         },
     },
-})
+    theme: {
+        colorScheme: 'light',
+    },
+});
