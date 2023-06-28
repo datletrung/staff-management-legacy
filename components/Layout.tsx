@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import styles from './css/layout.module.css';
 import { NavBarItems } from "./NavBarItems";
 import { useSession, signOut } from "next-auth/react";
@@ -62,8 +61,8 @@ export default function Layout({ children }:{ children: any}) {
                                 router.push('/');
                             }
                         }}
-                        onMouseEnter={() => {setDisplayName('Sign Out');}}
-                        onMouseLeave={() => {setDisplayName(session?.user?.name);}}
+                        onMouseEnter={() => setDisplayName('Sign Out')}
+                        onMouseLeave={() => setDisplayName(session?.user?.name)}
                     >
                         {(session && session.user)
                         ? (<><FontAwesomeIcon icon={faUser}/> {displayName}</>)

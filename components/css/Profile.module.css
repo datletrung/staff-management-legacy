@@ -1,0 +1,17 @@
+.FormContainer {
+    width: 50%;
+    margin: auto;
+}
+
+.FormChild {
+    margin-bottom: 10px;
+}
+
+.FormSubChild {
+    width: 100%;
+}
+
+.splitViewForm {
+    display: flex;
+    gap: 10px;
+}
