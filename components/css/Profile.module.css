@@ -1,10 +1,18 @@
 .FormContainer {
-    width: 50%;
+    display: flex;
+    direction: column;
+    gap: 20px;
+    width: 100%;
+    margin: auto;
+}
+
+.FormSplitView {
+    width: 40%;
     margin: auto;
 }
 
 .FormChild {
-    margin-bottom: 10px;
+    padding: 10px 0 10px 0;
 }
 
 .FormSubChild {
@@ -14,4 +22,13 @@
 .splitViewForm {
     display: flex;
     gap: 10px;
+}
+
+@media screen and (max-width: 768px) {
+    .FormContainer {
+        display: block;
+    }
+    .FormSplitView {
+        width: 90%;
+    }
 }

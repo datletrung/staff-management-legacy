@@ -163,6 +163,9 @@ export default function TimeEntry() {
                         value={calendarDate}
                         tileContent={tileContent}
                     />
+                    <div>
+                        Total hour this week: 
+                    </div>
                 </div>
                 <div className={stylesTimeEntry.SplitViewRowChild}>
                     <div className={stylesTimeEntry.SplitViewColumn}>

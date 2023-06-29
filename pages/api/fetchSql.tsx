@@ -6,6 +6,7 @@ import { sqlQuery } from '../../components/sql/sqlQuery';
 export default async function handler(req: any, res: { status: (arg0: number) => { (): any; new(): any; json: { (arg0: { data?: mysql.RowDataPacket[] | mysql.RowDataPacket[][] | mysql.OkPacket | mysql.OkPacket[] | mysql.ResultSetHeader; error?: any; }): void; new(): any; }; }; }){
   const db = await mysql.createConnection({
     host     : process.env.SQL_HOSTNAME,
+    port     : process.env.SQL_HOSTPORT as unknown as number,
     database : process.env.SQL_DB,
     user     : process.env.SQL_USR,
     password : process.env.SQL_PWD,

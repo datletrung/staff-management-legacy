@@ -1,6 +1,6 @@
 import NextAuth, { DefaultSession } from "next-auth";
 import CredentialsProvider from 'next-auth/providers/credentials';
-const { createHash } = require('crypto');
+import { createHash } from 'crypto';
 
 declare module "next-auth" {
     interface Session {

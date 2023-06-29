@@ -67,6 +67,7 @@ export const sqlQuery = {
     'submitTimeEntry': `
         CALL SUBMIT_TIMECLOCK(?)
     `,
+    //-----MANAGER ZONE
     'fetchEmployeeList':`
         SELECT USER_ID, FIRST_NAME, LAST_NAME, EMAIL
         FROM USER
@@ -79,8 +80,8 @@ export const sqlQuery = {
             WHERE EMAIL = ?
     `,
     'submitAddEmployee': `
-        INSERT INTO USER (FIRST_NAME, LAST_NAME, EMAIL, LAST_UPDATED_BY, CREATED_BY)
-        SELECT ?, ?, ?, USER.USER_ID, USER.USER_ID
+        INSERT INTO USER (FIRST_NAME, LAST_NAME, PASSWORD, EMAIL, LAST_UPDATED_BY, CREATED_BY)
+        SELECT ?, ?, ?, ?, USER.USER_ID, USER.USER_ID
         FROM USER
         WHERE 1=1
             AND EMAIL = ?
@@ -90,6 +91,7 @@ export const sqlQuery = {
         UPDATE USER AS USR, (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y') AS GET_UPDATE_BY_USR_ID
         SET USR.FIRST_NAME = ?
             ,USR.LAST_NAME = ?
+            ,USR.PASSWORD = ?
             ,USR.ACTIVE_FLAG = 'Y'
             ,USR.LOCKED_FLAG = 'N'
             ,USR.LAST_UPDATED_AT = NOW()
@@ -101,7 +103,10 @@ export const sqlQuery = {
         SET APPROVED = 'Y', APPROVED_BY = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
         WHERE 1=1
             AND USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ?)
-            AND DATE_FORMAT(DATE, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
+            AND (DATE_FORMAT(TIME_IN, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
+                OR DATE_FORMAT(TIME_OUT, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
+            )
+
     `,
     'fetchAutoApproveSetting':`
         SELECT SETTING_VALUE
@@ -130,6 +135,27 @@ export const sqlQuery = {
             ,USR.LAST_UPDATED_AT = NOW()
             ,USR.LAST_UPDATED_BY = GET_UPDATE_BY_USR_ID.USER_ID
         WHERE USR.USER_ID = GET_USR_ID.USER_ID
+    `,
+    //-----PROFILE
+    'fetchPersonalInfo':`
+        SELECT
+            EMAIL
+            ,FIRST_NAME
+            ,LAST_NAME
+        FROM USER
+        WHERE USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
+    `,
+    'updatePersonalInfo':`
+        UPDATE USER
+        SET EMAIL = ?, FIRST_NAME = ?, LAST_NAME = ?
+        WHERE USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
+    `,
+    'updatePassword':`
+        UPDATE USER
+        SET PASSWORD = ?
+        WHERE 1=1
+        AND USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
+        AND PASSWORD = ?
     `,
 };
 

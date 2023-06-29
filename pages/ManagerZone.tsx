@@ -16,16 +16,19 @@ import {Add as AddIcon
       ,Send as SendIcon
 } from '@mui/icons-material';
 
+import { createHash } from 'crypto';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft
         ,faEllipsisVertical
         ,faLock
         ,faTrash
         ,faUsersGear
+        ,faUser
 } from '@fortawesome/free-solid-svg-icons';
 
 import 'react-calendar/dist/Calendar.css';
 import stylesManagerZone from '../components/css/ManagerZone.module.css';
+
 
 export default function ManagerZone() {
     if (!checkPermissions()) {
@@ -36,8 +39,6 @@ export default function ManagerZone() {
     const [email] = useState(session?.user?.email);
     const [loading, setLoading] = useState(false);
     const [disabled, setDisabled] = useState(false);
-    const [disableAddEmployeeSubmitButton, setDisableAddEmployeeSubmitButton] = useState(true);
-    const [disableApproveButton, setDisableApproveButton] = useState(true);
     const [efirstName, setFirstName] = useState('');
     const [elastName, setLastName] = useState('');
     const [eemail, setEmail] = useState('');
@@ -60,6 +61,22 @@ export default function ManagerZone() {
     const [selectedRole, setSelectedRole] = useState('EMPLOYEE');
     const [prevEmployeeData, setPrevEmployeeData] = useState<String[]>([]);
 
+    const [newGeneratedPassword, setNewGeneratedPassword] = useState('');
+    const [addNewEmployeeViewForm, setAddNewEmployeeViewForm] = useState(true);
+
+    function generateRandomString(length: number) {
+        let result = '';
+        const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz234679!@#$%&*_?';
+        const charactersLength = characters.length;
+        
+        for (let i = 0; i < length; i++) {
+          result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+
+        return result;
+    }
+      
+
     async function getEmployeeList() {
         const apiUrlEndpoint = 'api/fetchSql';
         let postData = {
@@ -75,18 +92,21 @@ export default function ManagerZone() {
         let res = await response.json();
         setEmployeeList(res.data);
     }
-    
-    function validateAddEmployeeForm() {
-        if (eemail.match(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/) && efirstName && elastName && eemail) {
-            setDisableAddEmployeeSubmitButton(false);
-        } else {
-            setDisableAddEmployeeSubmitButton(true);
-        }
-    }
 
     async function handleAddEmployee() {
-        if (!efirstName || !elastName || !eemail) Notify('Please enter all required information.', 'warn')
+        console.log(efirstName, elastName, eemail);
+        if (efirstName === '' || elastName === '' || eemail === ''){
+            Notify('Please enter all required information.', 'error')
+            return;
+        } else if (!(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(eemail))) {
+            Notify('Invalid email!', 'error')
+            return;
+        }
         setLoading(true);
+        let generatedPassword = generateRandomString(10);
+        setNewGeneratedPassword(generatedPassword);
+        generatedPassword = createHash('sha256').update(generatedPassword).digest('hex');
+
         let notifyMsg = '';
         const apiUrlEndpoint = 'api/fetchSql';
 
@@ -106,13 +126,14 @@ export default function ManagerZone() {
                 headers: { 'Content-Type': 'application/json '},
                 body: JSON.stringify({
                     query: 'submitAddEmployee',
-                    para: [efirstName, elastName, eemail, email]
+                    para: [efirstName, elastName, generatedPassword, eemail, email]
                 })
             }
             
             response = await fetch(apiUrlEndpoint, postData);
             res = await response.json();
             notifyMsg = `${efirstName} ${elastName} is added successfully.`;
+            setAddNewEmployeeViewForm(false);
         } else if (res.data[0].ACTIVE_FLAG === 'N') {           // if already exist and is not active then set it to active as well as change name
             const euser_id = res.data[0].USER_ID;
             postData = {
@@ -120,13 +141,14 @@ export default function ManagerZone() {
                 headers: { 'Content-Type': 'application/json '},
                 body: JSON.stringify({
                     query: 'submitRehireEmployee',
-                    para: [email, efirstName, elastName, euser_id]
+                    para: [email, efirstName, elastName, generatedPassword, euser_id]
                 })
             }
             
             response = await fetch(apiUrlEndpoint, postData);
             res = await response.json();
             notifyMsg = `${efirstName} ${elastName} is rehired successfully.`;
+            setAddNewEmployeeViewForm(false);
         } else {                                                // else if the employee already exist and active
             notifyMsg = `${efirstName} ${elastName} exists and active in the system.`;
         }
@@ -224,13 +246,17 @@ export default function ManagerZone() {
         if (res.error){
             Notify(res.error, 'error');
         } else if (res.data.affectedRows == 1) {
-            Notify(`Setting updated successfully.`, 'info');
+            Notify(`Setting updated successfully.`, 'success');
         } else {
             Notify('Something went wrong! Please try again later.', 'error');
         }
     }
 
     async function handleApprove(eemail: any, datePara: Date) {
+        if (checkedAutoApproveSwitch){
+            Notify('Auto Approval is ON.', 'info');
+            return;
+        }
         if (typeof(datePara) === 'undefined') return;
         setLoading(true);
         let formattedDate = datePara.toLocaleString("en-US", {timeZone:'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'});
@@ -240,7 +266,7 @@ export default function ManagerZone() {
             headers: { 'Content-Type': 'application/json '},
             body: JSON.stringify({
                 query: 'approveTimeSheet',
-                para: [email, eemail, formattedDate]
+                para: [email, eemail, formattedDate, formattedDate]
             })
         }
         
@@ -251,7 +277,7 @@ export default function ManagerZone() {
         if (res.error){
             Notify(res.error, 'error');
         } else {
-            Notify(`Approved.`, 'info');
+            Notify(`Approved!`, 'success');
         }
     }
 
@@ -311,7 +337,7 @@ export default function ManagerZone() {
         if (res.error){
             Notify(res.error, 'error');
         } else if (res.data.affectedRows == 1) {
-            Notify(`Update setting successfully.`, 'info');
+            Notify(`Update setting successfully!`, 'success');
             setPrevEmployeeData([role, active, locked]);
         } else {
             Notify('Something went wrong! Please try again later.', 'error');
@@ -362,7 +388,14 @@ export default function ManagerZone() {
             <Head>
                 <title>{`Manager Zone | ${process.env.WebsiteName}`}</title>
             </Head>
-            {addNewEmployeeView && <div className={stylesManagerZone.BlurView} onClick={() => setAddNewEmployeeView(false)} />}
+            {addNewEmployeeView && <div className={stylesManagerZone.BlurView} onClick={() => {
+                setAddNewEmployeeView(false);
+                setAddNewEmployeeViewForm(true);
+                setNewGeneratedPassword('');
+                setEmail('');
+                setFirstName('');
+                setLastName('');
+            }} />}
             {employeeOptionView && <div className={stylesManagerZone.BlurView} onClick={() => setEmployeeOptionView(false)} />}
 
             <h1>Manager Zone</h1>
@@ -372,13 +405,12 @@ export default function ManagerZone() {
                 <div className={stylesManagerZone.TimeSheetContainer}>
                     <div className={stylesManagerZone.CalendarChildFlexColumnLeft}> {/* Employee List and Calendar */}
                         <div className={stylesManagerZone.SwitchContainer}> {/* Always display */}
-                            <label>Auto Approve</label>
+                            <label>Auto Approval</label>
                             <Switch
                                 checked={checkedAutoApproveSwitch}
                                 disabled={disableAutoApproveSwitch}
                                 onChange={(event) => {
                                     const state = event.target.checked;
-                                    (state) ? setDisableApproveButton(true) : setDisableApproveButton(false);
                                     setCheckedAutoApproveSwitch(state);
                                     setAutoApproveSetting(state);
                                 }}
@@ -390,11 +422,14 @@ export default function ManagerZone() {
                                 let eemail = item.EMAIL;
                                 return (
                                 <div key={idx} className={`${stylesManagerZone.EmployeeCardContainer}`}>
+                                    <FontAwesomeIcon icon={faUser} size="2xl" className={stylesManagerZone.UserIcon}/>
                                     <div className={`${stylesManagerZone.EmployeeCard}`}
                                         onClick={() => {
                                             setCurrentView([eemail, ename]);
                                             getTimeEntryPerMonth(eemail, new Date());
                                             setCurrentStep(2);
+                                            setCalendarIsSelected(true);
+                                            getTimeEntryPerDay(eemail, new Date());
                                         }}
                                     >
                                         <b>{ename}</b>
@@ -438,7 +473,6 @@ export default function ManagerZone() {
                                 locale='en-US'
                                 onChange={(datePara: any) => {
                                         setCalendarDate(datePara);
-                                        setCalendarIsSelected(true);
                                         getTimeEntryPerDay(currentView[0], datePara);
                                 }}
                                 activeStartDate={activeStartDate}
@@ -455,7 +489,6 @@ export default function ManagerZone() {
                                         size="large" variant="outlined" endIcon={<CheckIcon/>}
                                         loading={loading} loadingPosition="end"
                                         style={{width:'100%'}}
-                                        disabled={disableApproveButton}
                                         onClick={() => handleApprove(currentView[0], calendarDate)}
                                     >
                                         Approve
@@ -536,51 +569,63 @@ export default function ManagerZone() {
             </div>
 
             <div style={{ display: (addNewEmployeeView) ? 'block' : 'none' }}>
-                <div className={stylesManagerZone.FormContainer}>
-                    <div className={stylesManagerZone.FormChild}>
-                        <TextField
-                            required
-                            label="First Name"
-                            variant="standard"
-                            style={{width:'100%'}}
-                            disabled={disabled}
-                            onChange={(event) => {setFirstName(event.target.value); validateAddEmployeeForm();}}
-                        />
-                    </div>
-                    <div className={stylesManagerZone.FormChild}>
-                        <TextField
-                            required
-                            label="Last Name"
-                            variant="standard"
-                            style={{width:'100%'}}
-                            disabled={disabled}
-                            onChange={(event) => {setLastName(event.target.value); validateAddEmployeeForm();}}
-                        />
-                    </div>
-                    <div className={stylesManagerZone.FormChild}>
-                        <TextField
-                            required
-                            label="Email"
-                            variant="standard"
-                            style={{width:'100%'}}
-                            disabled={disabled}
-                            onChange={(event) => {setEmail(event.target.value); validateAddEmployeeForm();}}
-                        />
-                    </div>
-                    <div className={stylesManagerZone.FormChild}>
-                        <div className={stylesManagerZone.ButtonContainer}>
-                            <div className={stylesManagerZone.Button}>
-                                <LoadingButton
-                                    size="large" variant="outlined" endIcon={<AddIcon/>}
-                                    loading={loading} loadingPosition="end"
-                                    style={{width:'100%'}}
-                                    disabled={disableAddEmployeeSubmitButton}
-                                    onClick={() => handleAddEmployee()}
-                                >
-                                    Add
-                                </LoadingButton>
+                <div style={{ display: (addNewEmployeeViewForm) ? 'block' : 'none' }}>
+                    <div className={stylesManagerZone.FormContainer}>
+                        <div className={stylesManagerZone.FormChild}>
+                            <TextField
+                                required
+                                label="First Name"
+                                variant="standard"
+                                style={{width:'100%'}}
+                                disabled={disabled}
+                                value={efirstName}
+                                onChange={(event) => {setFirstName(event.target.value);}}
+                            />
+                        </div>
+                        <div className={stylesManagerZone.FormChild}>
+                            <TextField
+                                required
+                                label="Last Name"
+                                variant="standard"
+                                style={{width:'100%'}}
+                                disabled={disabled}
+                                value={elastName}
+                                onChange={(event) => {setLastName(event.target.value);}}
+                            />
+                        </div>
+                        <div className={stylesManagerZone.FormChild}>
+                            <TextField
+                                required
+                                label="Email"
+                                variant="standard"
+                                style={{width:'100%'}}
+                                disabled={disabled}
+                                value={eemail}
+                                onChange={(event) => {setEmail(event.target.value);}}
+                            />
+                        </div>
+                        <div className={stylesManagerZone.FormChild}>
+                            <div className={stylesManagerZone.ButtonContainer}>
+                                <div className={stylesManagerZone.Button}>
+                                    <LoadingButton
+                                        size="large" variant="outlined" endIcon={<AddIcon/>}
+                                        loading={loading} loadingPosition="end"
+                                        style={{width:'100%'}}
+                                        onClick={() => handleAddEmployee()}
+                                    >
+                                        Add
+                                    </LoadingButton>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div style={{ display: (addNewEmployeeViewForm) ? 'none' : 'block' }}>
+                    <div className={stylesManagerZone.FormContainer}>
+                        <b>Employee added</b>
+                        <i>Please share this information with the employee:</i>
+                        <span><b>Email:</b> {eemail}</span>
+                        <span><b>Password:</b> {newGeneratedPassword}</span>
                     </div>
                 </div>
             </div>
