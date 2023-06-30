@@ -3,6 +3,7 @@ export const sqlQuery = {
     'fetchRole': `
         SELECT
             USER_ID
+            ,EMAIL
             ,ROLE
             ,CONCAT(FIRST_NAME, ' ', LAST_NAME) AS NAME
         FROM USER
@@ -162,6 +163,7 @@ export const sqlQuery = {
     'fetchPersonalInfo':`
         SELECT
             EMAIL
+            ,PHONE_NUMBER
             ,FIRST_NAME
             ,LAST_NAME
         FROM USER
@@ -169,7 +171,7 @@ export const sqlQuery = {
     `,
     'updatePersonalInfo':`
         UPDATE USER
-        SET EMAIL = ?, FIRST_NAME = ?, LAST_NAME = ?
+        SET EMAIL = ?, PHONE_NUMBER = ?, FIRST_NAME = ?, LAST_NAME = ?
         WHERE USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
     `,
     'updatePassword':`

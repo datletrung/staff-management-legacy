@@ -1,7 +1,7 @@
 import mysql from 'mysql2/promise';
 import moment from "moment-timezone";
 
-import { sqlQuery } from '../../components/sql/sqlQuery';
+import { sqlQuery } from '@components/sql/sqlQuery';
 
 export default async function handler(req: any, res: { status: (arg0: number) => { (): any; new(): any; json: { (arg0: { data?: mysql.RowDataPacket[] | mysql.RowDataPacket[][] | mysql.OkPacket | mysql.OkPacket[] | mysql.ResultSetHeader; error?: any; }): void; new(): any; }; }; }){
   const db = await mysql.createConnection({

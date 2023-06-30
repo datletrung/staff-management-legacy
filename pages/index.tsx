@@ -5,8 +5,8 @@ import { useRouter } from 'next/router';
 import { useState } from 'react';
 import Head from 'next/head';
 import { TextField, Button } from '@mui/material';
-import Notify from '../components/Notify';
-import stylesIndex from '../components/css/index.module.css';
+import Notify from '@components/Notify';
+import stylesIndex from '@components/css/index.module.css';
 
 export default function Account() {
     const {data: session} = useSession();

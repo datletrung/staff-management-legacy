@@ -1,3 +1,5 @@
+'use client';
+
 import Link from "next/link";
 import styles from './css/layout.module.css';
 import { NavBarItems } from "./NavBarItems";

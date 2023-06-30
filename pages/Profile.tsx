@@ -3,14 +3,16 @@
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
-import { FormControl, InputLabel, Input, Button } from '@mui/material';
-import Notify from '../components/Notify';
+import { TextField, Button } from '@mui/material';
+import Notify from '@components/Notify';
 import { createHash } from 'crypto';
 
-import { checkPermissions } from '../components/CheckPermission';
-import AccessDenied from '../components/AccessDenied';
+import { checkPermissions } from '@components/CheckPermission';
+import AccessDenied from '@components/AccessDenied';
+import { MuiTelInput, matchIsValidTel } from 'mui-tel-input';
+import baseApiUrl from '@api/apiConfig';
 
-import stylesProfile from '../components/css/Profile.module.css';
+import stylesProfile from '@components/css/Profile.module.css';
 
 export default function SystemMaintenance() {
     if (!checkPermissions()) {
@@ -20,10 +22,12 @@ export default function SystemMaintenance() {
     const { data: session } = useSession();
     const [email] = useState(session?.user?.email);
     const [personEmail, setPersonEmail] = useState('');
+    const [personPhoneNumber, setPersonPhoneNumber] = useState('');
     const [personFirstName, setPersonFirstName] = useState('');
     const [personLastName, setPersonLastName] = useState('');
 
     const [prevEmail, setPrevEmail] = useState('');
+    const [prevPhoneNumber, setPrevPhoneNumber] = useState('');
     const [prevFirstName, setPrevFirstName] = useState('');
     const [prevLastName, setPrevLastName] = useState('');
 
@@ -36,7 +40,7 @@ export default function SystemMaintenance() {
     }, []);
 
     async function getPersonalInfo() {
-        const apiUrlEndpoint = 'api/fetchSql';
+        const apiUrlEndpoint = `${baseApiUrl}/fetchSql`;
         const postData = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json '},
@@ -49,11 +53,15 @@ export default function SystemMaintenance() {
         const response = await fetch(apiUrlEndpoint, postData);
         const res = await response.json();
         let data = res.data;
+        console.log(data);
+
         setPersonEmail(data[0].EMAIL);
+        setPersonPhoneNumber(data[0].PHONE_NUMBER);
         setPersonFirstName(data[0].FIRST_NAME);
         setPersonLastName(data[0].LAST_NAME);
         
         setPrevEmail(data[0].EMAIL);
+        setPrevPhoneNumber(data[0].PHONE_NUMBER);
         setPrevFirstName(data[0].FIRST_NAME);
         setPrevLastName(data[0].LAST_NAME);
     }
@@ -64,16 +72,21 @@ export default function SystemMaintenance() {
         } else if (personFirstName == prevFirstName
             && personLastName == prevLastName
             && personEmail == prevEmail
+            && personPhoneNumber == prevPhoneNumber
         ) {
             Notify('Nothing changed!', 'warn');
-        } else if (personFirstName != prevFirstName || personLastName != prevLastName || personEmail != prevEmail) {
-            const apiUrlEndpoint = 'api/fetchSql';
+        } else if (personFirstName != prevFirstName || personLastName != prevLastName || personEmail != prevEmail || personPhoneNumber != prevPhoneNumber) {
+            if (personPhoneNumber !== '' && !matchIsValidTel(personPhoneNumber)){     
+                Notify('Invalid phone number!', 'error');
+                return;
+            }
+            const apiUrlEndpoint = `${baseApiUrl}/fetchSql`;
             const postData = {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json '},
                     body: JSON.stringify({
                             query: 'updatePersonalInfo',
-                            para: [personEmail, personFirstName, personLastName, email]
+                            para: [personEmail, personPhoneNumber, personFirstName, personLastName, email]
                     })
             }
             const response = await fetch(apiUrlEndpoint, postData);
@@ -83,6 +96,7 @@ export default function SystemMaintenance() {
                 return;
             }
             setPrevEmail(personEmail);
+            setPrevPhoneNumber(personPhoneNumber);
             setPrevFirstName(personFirstName);
             setPrevLastName(personLastName);
             Notify('Profile updated!', 'success');
@@ -99,7 +113,7 @@ export default function SystemMaintenance() {
         } else {
             const oldPassword = createHash('sha256').update(personOldPassword).digest('hex');
             const newPassword1 = createHash('sha256').update(personNewPassword1).digest('hex');
-            const apiUrlEndpoint = 'api/fetchSql';
+            const apiUrlEndpoint = `${baseApiUrl}/fetchSql`;
             const postData = {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json '},
@@ -140,29 +154,43 @@ export default function SystemMaintenance() {
                         Personal Information
                     </h3>
                     <div className={`${stylesProfile.splitViewForm} ${stylesProfile.FormChild}`}>
-                        <FormControl className={stylesProfile.FormSubChild}>
-                            <InputLabel htmlFor="first-name-input">First Name</InputLabel>
-                            <Input id='first-name-input'
-                                value={personFirstName}
-                                onChange={(event) => setPersonFirstName(event.target.value)}
-                            />
-                        </FormControl>
-                        <FormControl className={stylesProfile.FormSubChild}>
-                            <InputLabel htmlFor="last-name-input">Last Name</InputLabel>
-                            <Input id='last-name-input'
-                                value={personLastName}
-                                onChange={(event) => setPersonLastName(event.target.value)}
-                            />
-                        </FormControl>
+                        <TextField
+                            label='First Name'
+                            id='first-name-input'
+                            variant="standard"
+                            value={personFirstName}
+                            onChange={(event) => setPersonFirstName(event.target.value)}
+                            className={stylesProfile.FormSubChild}
+                        />
+                        <TextField
+                            label='Last Name'
+                            id='last-name-input'
+                            variant="standard"
+                            value={personLastName}
+                            onChange={(event) => setPersonLastName(event.target.value)}
+                            className={stylesProfile.FormSubChild}
+                        />
                     </div>
                     <div className={stylesProfile.FormChild}>
-                        <FormControl className={stylesProfile.FormSubChild}>
-                            <InputLabel htmlFor="email-input">Email</InputLabel>
-                            <Input id='email-input'
-                                value={personEmail}
-                                onChange={(event) => setPersonEmail(event.target.value)}
-                            />
-                        </FormControl>
+                        <TextField
+                            label='Email'
+                            id='email-input'
+                            type='email'
+                            variant="standard"
+                            value={personEmail}
+                            onChange={(event) => setPersonEmail(event.target.value)}
+                            className={stylesProfile.FormSubChild}
+                        />
+                    </div>
+                    <div className={stylesProfile.FormChild}>
+                        <MuiTelInput
+                            label='Phone Number'
+                            id='phone-number-input'
+                            variant="standard" 
+                            value={personPhoneNumber}
+                            onChange={(value: any) => setPersonPhoneNumber(value)}
+                            className={stylesProfile.FormSubChild}
+                        />
                     </div>
                     <div>
                         <Button
@@ -181,34 +209,37 @@ export default function SystemMaintenance() {
                         Security
                     </h3>
                     <div className={stylesProfile.FormChild}>
-                        <FormControl className={stylesProfile.FormSubChild}>
-                            <InputLabel htmlFor="prev-pass-input">Old Password</InputLabel>
-                            <Input id='prev-pass-input'
-                                type='password'
-                                value={personOldPassword}
-                                onChange={(event) => setPersonOldPassword(event.target.value)}
-                            />
-                        </FormControl>
+                        <TextField
+                            label='Old Password'
+                            type='password'
+                            id='prev-pass-input'
+                            variant="standard"
+                            value={personOldPassword}
+                            onChange={(event) => setPersonOldPassword(event.target.value)}
+                            className={stylesProfile.FormSubChild}
+                        />
                     </div>
-                    <div className={`${stylesProfile.splitViewForm} ${stylesProfile.FormChild}`}>                    
-                        <FormControl className={stylesProfile.FormSubChild}>
-                            <InputLabel htmlFor="new-pass-1-input">New Password</InputLabel>
-                            <Input id='new-pass-1-input'
-                                type='password'
-                                value={personNewPassword1}
-                                onChange={(event) => setPersonNewPassword1(event.target.value)}
-                            />
-                        </FormControl>
-                        <FormControl className={stylesProfile.FormSubChild}>
-                            <InputLabel htmlFor="new-pass-2-input">Repeat New Password</InputLabel>
-                            <Input id='new-pass-2-input'
-                                type='password'
-                                value={personNewPassword2}
-                                onChange={(event) => {
-                                    setPersonNewPassword2(event.target.value);
-                                }}
-                            />
-                        </FormControl>
+                    <div className={stylesProfile.FormChild}>
+                        <TextField
+                            label='New Password'
+                            type='password'
+                            id='new-pass-1-input'
+                            variant="standard"
+                            value={personNewPassword1}
+                            onChange={(event) => setPersonNewPassword1(event.target.value)}
+                            className={stylesProfile.FormSubChild}
+                        />
+                    </div>
+                    <div className={stylesProfile.FormChild}>
+                        <TextField
+                            label='Confirm New Password'
+                            type='password'
+                            id='new-pass-2-input'
+                            variant="standard"
+                            value={personNewPassword2}
+                            onChange={(event) => setPersonNewPassword2(event.target.value)}
+                            className={stylesProfile.FormSubChild}
+                        />
                     </div>
                     <div>
                         <Button

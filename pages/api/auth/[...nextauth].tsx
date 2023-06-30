@@ -45,11 +45,12 @@ export default NextAuth({
                 }
                 
                 const user_id = res.data[0].USER_ID;
+                const email = res.data[0].EMAIL;
                 const role = res.data[0].ROLE;
                 const name = res.data[0].NAME;
                 if (response.ok && role) {
                     return {id: user_id,
-                            email: payload.email,
+                            email: email,
                             name: name,
                             role: role,
                     };
@@ -61,12 +62,14 @@ export default NextAuth({
     callbacks: {
         async jwt({ token, user }:{ token: any, user: any}) {
             if (user) {
+                token.email = user.email;
                 token.role = user.role;
             }
             return token;
         },
         async session({ session, token }:{ session: any, token: any}) {
             session.user.role = token.role;
+            session.user.email = token.email;
             return session;
         },
     },

@@ -6,12 +6,13 @@ import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import Calendar from 'react-calendar';
-import Notify from '../components/Notify';
-import { checkPermissions } from '../components/CheckPermission';
-import AccessDenied from '../components/AccessDenied';
+import Notify from '@components/Notify';
+import { checkPermissions } from '@components/CheckPermission';
+import AccessDenied from '@components/AccessDenied';
+import baseApiUrl from '@api/apiConfig';
 
 import 'react-calendar/dist/Calendar.css';
-import stylesTimeEntry from '../components/css/TimeEntry.module.css';
+import stylesTimeEntry from '@components/css/TimeEntry.module.css';
 
 
 
@@ -52,7 +53,7 @@ export default function TimeEntry() {
         if (typeof(datePara) === 'undefined') return;
         setLoading(true);
         let formattedDate = datePara.toLocaleString("en-US", {timeZone:'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'});
-        const apiUrlEndpoint = 'api/fetchSql';
+        const apiUrlEndpoint = `${baseApiUrl}/fetchSql`;
         let postData = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json '},
@@ -77,7 +78,7 @@ export default function TimeEntry() {
 
     async function getTimeEntryPerMonth(datePara: Date) {
         let formattedDate = datePara.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit'});
-        const apiUrlEndpoint = 'api/fetchSql';
+        const apiUrlEndpoint = `${baseApiUrl}/fetchSql`;
         const postData = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json '},
@@ -100,7 +101,7 @@ export default function TimeEntry() {
     
     async function submitTimeEntry() {
         setLoading(true);
-        const apiUrlEndpoint = 'api/fetchSql';
+        const apiUrlEndpoint = `${baseApiUrl}/fetchSql`;
         const postData = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json '},
@@ -122,7 +123,7 @@ export default function TimeEntry() {
     async function getTotalWorkingTimePerWeek(datePara: Date) {
         if (typeof(datePara) === 'undefined') return;
         let formattedDate = datePara.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'});
-        const apiUrlEndpoint = 'api/fetchSql';
+        const apiUrlEndpoint = `${baseApiUrl}/fetchSql`;
         let postData = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json '},

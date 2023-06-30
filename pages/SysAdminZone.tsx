@@ -2,10 +2,10 @@
 
 import { useSession } from "next-auth/react";
 import Head from 'next/head';
-import { checkPermissions } from '../components/CheckPermission';
-import AccessDenied from '../components/AccessDenied';
+import { checkPermissions } from '@components/CheckPermission';
+import AccessDenied from '@components/AccessDenied';
 
-export default function SystemMaintenance() {
+export default function SysAdminZone() {
     if (!checkPermissions()) {
         return <AccessDenied/>;
     }

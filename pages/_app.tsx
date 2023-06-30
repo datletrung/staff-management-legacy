@@ -1,5 +1,5 @@
 import '../styles/globals.css'
-import '../components/css/nprogress.css';
+import '@components/css/nprogress.css';
 
 import type { AppProps } from 'next/app'
 import Router from 'next/router';
@@ -7,8 +7,8 @@ import { SessionProvider } from "next-auth/react";
 import NProgress from 'nprogress';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Layout from '../components/Layout';
-import RouteGuard from '../components/RouteGuard';
+import Layout from '@components/Layout';
+import RouteGuard from '@components/RouteGuard';
 
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
