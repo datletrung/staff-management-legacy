@@ -9,7 +9,7 @@ import { faUser, faUserLock, faBars } from '@fortawesome/free-solid-svg-icons';
 
 
 export default function Layout({ children }:{ children: any}) {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const router = useRouter();
 
     const [isOpen, setIsOpen] = useState(true);
@@ -27,12 +27,15 @@ export default function Layout({ children }:{ children: any}) {
     }
 
     useEffect(() => {
+        if (status === "authenticated") {
+            setDisplayName(session?.user?.name);
+        }
         handleResize();  
         window.addEventListener('resize', handleResize);
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    }, []);
+    }, [status]);
 
     return (
         <>

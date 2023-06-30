@@ -20,17 +20,16 @@ export default function TimeEntry() {
         return <AccessDenied/>;
     }
 
-    const { data: session } = useSession();
+    const {data: session} = useSession();
     const [email] = useState(session?.user?.email);
     const [calendarDate, setCalendarDate] = useState(new Date());
     const [timePunchData, setTimePunchData] = useState<any[]>([]);
     const [timePunchMonthData, setTimePunchMonthData] = useState<String[]>([]);
-
     const [activeStartDate, setActiveStartDate] = useState(new Date());
+    const [totalTimePerWeek, setTotalTimePerWeek] = useState(0);
 
     const [loading, setLoading] = useState(false);
     const [disabled, setDisabled] = useState(false);
-
     const [currentDate, setCurrentDate] = useState('');
     const [currentTime, setCurrentTime] = useState('');
 
@@ -45,6 +44,7 @@ export default function TimeEntry() {
 
     async function refreshStatus() {
         await getTimeEntryPerDay(new Date());
+        await getTotalWorkingTimePerWeek(new Date());
         await getTimeEntryPerMonth(new Date());
     }
 
@@ -57,7 +57,7 @@ export default function TimeEntry() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json '},
                 body: JSON.stringify({
-                        query: 'fetchTimeEntryDayQuery',
+                        query: 'fetchTimeEntryDay',
                         para: [email, formattedDate]
                 })
         }
@@ -82,7 +82,7 @@ export default function TimeEntry() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json '},
                 body: JSON.stringify({
-                        query: 'fetchTimeEntryMonthQuery',
+                        query: 'fetchTimeEntryMonth',
                         para: [email, formattedDate]
                 })
         }
@@ -117,6 +117,30 @@ export default function TimeEntry() {
             Notify(res.error, 'error');
         }
         refreshStatus();
+    }
+
+    async function getTotalWorkingTimePerWeek(datePara: Date) {
+        if (typeof(datePara) === 'undefined') return;
+        let formattedDate = datePara.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'});
+        const apiUrlEndpoint = 'api/fetchSql';
+        let postData = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json '},
+            body: JSON.stringify({
+                query: 'fetchTotalTimePerWeek',
+                para: [formattedDate, formattedDate, formattedDate, formattedDate, email]
+            })
+        }
+        
+        let response = await fetch(apiUrlEndpoint, postData);
+        let res = await response.json();
+        const data = res.data;
+        console.log(data);
+        if (res.data.length === 0){
+            setTotalTimePerWeek(0);
+        } else {
+            setTotalTimePerWeek(data[0].TOTAL_TIME);
+        }
     }
     
     function tileContent(datePara: any) {
@@ -154,6 +178,7 @@ export default function TimeEntry() {
                         onChange={(datePara: any) => {
                             setCalendarDate(datePara);
                             getTimeEntryPerDay(datePara);
+                            getTotalWorkingTimePerWeek(datePara);
                         }}
                         activeStartDate={activeStartDate}
                         onActiveStartDateChange={(date: any) => {
@@ -163,15 +188,13 @@ export default function TimeEntry() {
                         value={calendarDate}
                         tileContent={tileContent}
                     />
-                    <div>
-                        Total hour this week: 
-                    </div>
                 </div>
                 <div className={stylesTimeEntry.SplitViewRowChild}>
                     <div className={stylesTimeEntry.SplitViewColumn}>
                         <div className={`${stylesTimeEntry.TimePunchView} ${loading ? stylesTimeEntry.TimePunchViewBlur : ''} `}>
                             <center>
-                                <span>Selected date: {calendarDate.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'})}</span>
+                                <div>Selected date: {calendarDate.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'})}</div>
+                                <div>Total hour this week: {totalTimePerWeek}</div>
                             </center>
                             <table className={stylesTimeEntry.Table}>
                                 <tbody>

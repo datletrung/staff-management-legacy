@@ -1,19 +1,19 @@
 export const sqlQuery = {
     //-----AUTH
-    'fetchRoleQuery': `
+    'fetchRole': `
         SELECT
             USER_ID
             ,ROLE
             ,CONCAT(FIRST_NAME, ' ', LAST_NAME) AS NAME
         FROM USER
         WHERE 1=1
-        AND EMAIL = ?
+        AND (EMAIL = ? OR USER_ID = ?)
         AND PASSWORD = ?
         AND ACTIVE_FLAG = 'Y'
         AND LOCKED_FLAG = 'N'
     `,
     //-----TIME ENTRY
-    'fetchTimeEntryDayQuery': `
+    'fetchTimeEntryDay': `
         SELECT
             USER_ID
             ,TIME_IN
@@ -45,7 +45,7 @@ export const sqlQuery = {
         ) T
         ORDER BY TIME_IN
     `,
-    'fetchTimeEntryMonthQuery': `
+    'fetchTimeEntryMonth': `
         SELECT
             DISTINCT DATE_FORMAT(T.TIME_ALL, '%m/%d/%Y') AS DATE
         FROM 
@@ -63,6 +63,28 @@ export const sqlQuery = {
         WHERE 1=1
             AND T.USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ?)
             AND DATE_FORMAT(T.TIME_ALL, '%Y-%m') = DATE_FORMAT(STR_TO_DATE(?, '%m/%Y'), '%Y-%m')
+    `,
+    'fetchTotalTimePerWeek':`
+        SELECT SUM(TOTAL_TIME) AS TOTAL_TIME
+        FROM (
+            SELECT
+                USER_ID
+                ,ROUND(TIME_TO_SEC(CASE WHEN TOTAL_TIME IS NOT NULL
+                                    THEN TOTAL_TIME
+                                    ELSE TIMEDIFF(NOW(), TIME_IN)
+                                    END) / 3600, 2) AS TOTAL_TIME
+            FROM TIMECLOCK
+            ,(SELECT
+                DATE(DATE_SUB(STR_TO_DATE(?, '%m/%d/%Y'), INTERVAL (DAYOFWEEK(STR_TO_DATE(?, '%m/%d/%Y')) - 1) DAY)) AS START_WEEK
+                ,DATE(DATE_ADD(STR_TO_DATE(?, '%m/%d/%Y'), INTERVAL 7-((DAYOFWEEK(STR_TO_DATE(?, '%m/%d/%Y')))) DAY)) AS END_WEEK
+            ) T1
+            WHERE 1=1
+                AND (DATE(TIME_IN) BETWEEN T1.START_WEEK AND T1.END_WEEK
+                    OR DATE(TIME_OUT) BETWEEN T1.START_WEEK AND T1.END_WEEK
+                )
+                AND USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ?)
+        ) T
+        GROUP BY USER_ID
     `,
     'submitTimeEntry': `
         CALL SUBMIT_TIMECLOCK(?)

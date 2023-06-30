@@ -50,7 +50,6 @@ export default function ManagerZone() {
     const [currentView, setCurrentView] = useState<String[]>([]);
     const [timePunchData, setTimePunchData] = useState<any[]>([]);
     const [timePunchMonthData, setTimePunchMonthData] = useState<String[]>([]);
-
     const [activeStartDate, setActiveStartDate] = useState(new Date());
     const [calendarIsSelected, setCalendarIsSelected] = useState(false);
     const [checkedAutoApproveSwitch, setCheckedAutoApproveSwitch] = useState(false);
@@ -60,9 +59,10 @@ export default function ManagerZone() {
     const [disableLockSwitch, setDisableLockSwitch] = useState(false);
     const [selectedRole, setSelectedRole] = useState('EMPLOYEE');
     const [prevEmployeeData, setPrevEmployeeData] = useState<String[]>([]);
-
     const [newGeneratedPassword, setNewGeneratedPassword] = useState('');
     const [addNewEmployeeViewForm, setAddNewEmployeeViewForm] = useState(true);
+    const [employeeId, setEmployeeId] = useState('');
+    const [totalTimePerWeek, setTotalTimePerWeek] = useState(0);
 
     function generateRandomString(length: number) {
         let result = '';
@@ -94,7 +94,6 @@ export default function ManagerZone() {
     }
 
     async function handleAddEmployee() {
-        console.log(efirstName, elastName, eemail);
         if (efirstName === '' || elastName === '' || eemail === ''){
             Notify('Please enter all required information.', 'error')
             return;
@@ -133,9 +132,11 @@ export default function ManagerZone() {
             response = await fetch(apiUrlEndpoint, postData);
             res = await response.json();
             notifyMsg = `${efirstName} ${elastName} is added successfully.`;
+            setEmployeeId(res.data.insertId.toString().padStart(6, '0'));
             setAddNewEmployeeViewForm(false);
         } else if (res.data[0].ACTIVE_FLAG === 'N') {           // if already exist and is not active then set it to active as well as change name
             const euser_id = res.data[0].USER_ID;
+            setEmployeeId(euser_id.toString().padStart(6, '0'));
             postData = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json '},
@@ -147,6 +148,7 @@ export default function ManagerZone() {
             
             response = await fetch(apiUrlEndpoint, postData);
             res = await response.json();
+            console.log(res);
             notifyMsg = `${efirstName} ${elastName} is rehired successfully.`;
             setAddNewEmployeeViewForm(false);
         } else {                                                // else if the employee already exist and active
@@ -170,7 +172,7 @@ export default function ManagerZone() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json '},
                 body: JSON.stringify({
-                        query: 'fetchTimeEntryDayQuery',
+                        query: 'fetchTimeEntryDay',
                         para: [eemail, formattedDate]
                 })
         }
@@ -195,7 +197,7 @@ export default function ManagerZone() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json '},
             body: JSON.stringify({
-                query: 'fetchTimeEntryMonthQuery',
+                query: 'fetchTimeEntryMonth',
                 para: [eemail, formattedDate]
             })
         }
@@ -361,14 +363,16 @@ export default function ManagerZone() {
         return null;
     }
 
-    async function getTotalWorkingTimePerWeek(eemail: String, duration: Number) {
+    async function getTotalWorkingTimePerWeek(eemail:string, datePara: Date) {
+        if (typeof(datePara) === 'undefined') return;
+        let formattedDate = datePara.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'});
         const apiUrlEndpoint = 'api/fetchSql';
         let postData = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json '},
             body: JSON.stringify({
-                query: 'fetchTotalWorkingTime',
-                para: [eemail, duration]
+                query: 'fetchTotalTimePerWeek',
+                para: [formattedDate, formattedDate, formattedDate, formattedDate, eemail]
             })
         }
         
@@ -376,6 +380,11 @@ export default function ManagerZone() {
         let res = await response.json();
         const data = res.data;
         console.log(data);
+        if (res.data.length === 0){
+            setTotalTimePerWeek(0);
+        } else {
+            setTotalTimePerWeek(data[0].TOTAL_TIME);
+        }
     }
 
     useEffect(() => {
@@ -428,8 +437,10 @@ export default function ManagerZone() {
                                             setCurrentView([eemail, ename]);
                                             getTimeEntryPerMonth(eemail, new Date());
                                             setCurrentStep(2);
+                                            setCalendarDate(new Date());
                                             setCalendarIsSelected(true);
                                             getTimeEntryPerDay(eemail, new Date());
+                                            getTotalWorkingTimePerWeek(eemail, new Date());
                                         }}
                                     >
                                         <b>{ename}</b>
@@ -474,6 +485,7 @@ export default function ManagerZone() {
                                 onChange={(datePara: any) => {
                                         setCalendarDate(datePara);
                                         getTimeEntryPerDay(currentView[0], datePara);
+                                        getTotalWorkingTimePerWeek(currentView[0] as string, datePara);
                                 }}
                                 activeStartDate={activeStartDate}
                                 onActiveStartDateChange={(date: any) => {
@@ -500,7 +512,8 @@ export default function ManagerZone() {
                     <div className={stylesManagerZone.CalendarChildFlexColumnRight} style={{ display: (calendarIsSelected) ? 'block' : 'none' }}> {/* Time Punch Table */}
                         <div className={`${stylesManagerZone.SplitViewColumnChild} ${stylesManagerZone.TimePunchView} ${loading ? stylesManagerZone.TimePunchViewBlur : ''} `}>
                             <center>
-                                <span>Selected date: {calendarDate.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'})}</span>
+                                <div>Selected date: {calendarDate.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'})}</div>
+                                <div>Total hour this week: {totalTimePerWeek}</div>
                             </center>
                             <table className={stylesManagerZone.Table}>
                                 <tbody>
@@ -624,6 +637,7 @@ export default function ManagerZone() {
                     <div className={stylesManagerZone.FormContainer}>
                         <b>Employee added</b>
                         <i>Please share this information with the employee:</i>
+                        <span><b>Staff ID:</b> {employeeId}</span>
                         <span><b>Email:</b> {eemail}</span>
                         <span><b>Password:</b> {newGeneratedPassword}</span>
                     </div>

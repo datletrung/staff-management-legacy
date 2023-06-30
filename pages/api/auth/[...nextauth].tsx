@@ -15,13 +15,13 @@ export default NextAuth({
         CredentialsProvider({
             name: 'Credentials',
             credentials: {
-                email: { label: 'Email', type: 'email' },
+                email: { label: 'Email or User ID', type: 'text' },
                 password: { label: 'Password', type: 'password' }
             },
             async authorize(credentials) {
                 const payload = {
                     email: credentials?.email,
-                    password: createHash('sha256').update(credentials?.password).digest('hex'),
+                    password: createHash('sha256').update(credentials?.password!).digest('hex'),
                   };
 
                 const apiUrlEndpoint = `${process.env.API_ENDPOINT}/api/fetchSql`;
@@ -30,21 +30,25 @@ export default NextAuth({
                     headers: { 'Content-Type': 'application/json '},
                     body: JSON.stringify({
                         action: 'fetch',
-                        query: 'fetchRoleQuery',
-                        para: [payload.email, payload.password]
+                        query: 'fetchRole',
+                        para: [payload.email, payload.email, payload.password]
                     })
                 }
                 const response = await fetch(apiUrlEndpoint, postData);
                 const res = await response.json();
-                const user_id = res.data[0].USER_ID;
-                const role = res.data[0].ROLE;
-                const name = res.data[0].NAME;
 
                 if (!response.ok) {
                     throw new Error(res.message);
                 }
+                if (response.ok && res.data.length === 0) {
+                    throw new Error('Incorrect Email/User ID or Password!');
+                }
+                
+                const user_id = res.data[0].USER_ID;
+                const role = res.data[0].ROLE;
+                const name = res.data[0].NAME;
                 if (response.ok && role) {
-                    return { id: user_id,
+                    return {id: user_id,
                             email: payload.email,
                             name: name,
                             role: role,
