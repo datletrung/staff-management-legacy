@@ -17,7 +17,7 @@
     "baseUrl": ".",
     "paths": {
       "@components/*": ["./components/*"],
-      "@api/*": ["./pages/apiConfig.js"],
+      "@api/*": ["components/apiConfig.tsx"],
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],

@@ -6,10 +6,7 @@ import { checkPermissions } from '@components/CheckPermission';
 import AccessDenied from '@components/AccessDenied';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPeopleGroup
-        ,faCog
-        ,faStopwatch
-} from '@fortawesome/free-solid-svg-icons';
+import { faPeopleGroup, faCog, faStopwatch } from '@fortawesome/free-solid-svg-icons';
 
 import 'react-calendar/dist/Calendar.css';
 import stylesManagerZone from '@components/css/ManagerZone/index.module.css';
