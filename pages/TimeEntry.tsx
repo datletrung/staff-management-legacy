@@ -14,15 +14,13 @@ import baseApiUrl from '@api/apiConfig';
 import 'react-calendar/dist/Calendar.css';
 import stylesTimeEntry from '@components/css/TimeEntry.module.css';
 
-
-
 export default function TimeEntry() {
     if (!checkPermissions()) {
         return <AccessDenied/>;
     }
 
     const {data: session} = useSession();
-    const [email] = useState(session?.user?.email);
+    const [userId] = useState(session?.user?.userId);
     const [calendarDate, setCalendarDate] = useState(new Date());
     const [timePunchData, setTimePunchData] = useState<any[]>([]);
     const [timePunchMonthData, setTimePunchMonthData] = useState<String[]>([]);
@@ -59,7 +57,7 @@ export default function TimeEntry() {
                 headers: { 'Content-Type': 'application/json '},
                 body: JSON.stringify({
                         query: 'fetchTimeEntryDay',
-                        para: [email, formattedDate]
+                        para: [userId, formattedDate]
                 })
         }
         
@@ -84,7 +82,7 @@ export default function TimeEntry() {
                 headers: { 'Content-Type': 'application/json '},
                 body: JSON.stringify({
                         query: 'fetchTimeEntryMonth',
-                        para: [email, formattedDate]
+                        para: [userId, formattedDate]
                 })
         }
         
@@ -107,7 +105,7 @@ export default function TimeEntry() {
                 headers: { 'Content-Type': 'application/json '},
                 body: JSON.stringify({
                         query: 'submitTimeEntry',
-                        para: [email]
+                        para: [userId]
                 })
         }
         
@@ -129,14 +127,13 @@ export default function TimeEntry() {
             headers: { 'Content-Type': 'application/json '},
             body: JSON.stringify({
                 query: 'fetchTotalTimePerWeek',
-                para: [formattedDate, formattedDate, formattedDate, formattedDate, email]
+                para: [formattedDate, formattedDate, formattedDate, formattedDate, userId]
             })
         }
         
         let response = await fetch(apiUrlEndpoint, postData);
         let res = await response.json();
         const data = res.data;
-        console.log(data);
         if (res.data.length === 0){
             setTotalTimePerWeek(0);
         } else {

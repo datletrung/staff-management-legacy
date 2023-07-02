@@ -5,7 +5,8 @@ import { createHash } from 'crypto';
 declare module "next-auth" {
     interface Session {
         user: {
-            role?: string
+            role?: string,
+            userId?: number,
         } & DefaultSession["user"]
     }
 }
@@ -44,12 +45,12 @@ export default NextAuth({
                     throw new Error('Incorrect Email/User ID or Password!');
                 }
                 
-                const user_id = res.data[0].USER_ID;
+                const userId = res.data[0].USER_ID;
                 const email = res.data[0].EMAIL;
                 const role = res.data[0].ROLE;
                 const name = res.data[0].NAME;
                 if (response.ok && role) {
-                    return {id: user_id,
+                    return {id: userId,
                             email: email,
                             name: name,
                             role: role,
@@ -62,14 +63,16 @@ export default NextAuth({
     callbacks: {
         async jwt({ token, user }:{ token: any, user: any}) {
             if (user) {
+                token.id = user.id;
                 token.email = user.email;
                 token.role = user.role;
             }
             return token;
         },
         async session({ session, token }:{ session: any, token: any}) {
-            session.user.role = token.role;
+            session.user.userId = token.id;
             session.user.email = token.email;
+            session.user.role = token.role;
             return session;
         },
     },

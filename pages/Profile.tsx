@@ -20,7 +20,8 @@ export default function SystemMaintenance() {
     }
 
     const { data: session } = useSession();
-    const [email] = useState(session?.user?.email);
+    const [userId] = useState(session?.user?.userId);
+
     const [personEmail, setPersonEmail] = useState('');
     const [personPhoneNumber, setPersonPhoneNumber] = useState('');
     const [personFirstName, setPersonFirstName] = useState('');
@@ -46,14 +47,13 @@ export default function SystemMaintenance() {
                 headers: { 'Content-Type': 'application/json '},
                 body: JSON.stringify({
                         query: 'fetchPersonalInfo',
-                        para: [email]
+                        para: [userId]
                 })
         }
         
         const response = await fetch(apiUrlEndpoint, postData);
         const res = await response.json();
         let data = res.data;
-        console.log(data);
 
         setPersonEmail(data[0].EMAIL);
         setPersonPhoneNumber(data[0].PHONE_NUMBER);
@@ -86,7 +86,7 @@ export default function SystemMaintenance() {
                     headers: { 'Content-Type': 'application/json '},
                     body: JSON.stringify({
                             query: 'updatePersonalInfo',
-                            para: [personEmail, personPhoneNumber, personFirstName, personLastName, email]
+                            para: [personEmail, personPhoneNumber, personFirstName, personLastName, userId]
                     })
             }
             const response = await fetch(apiUrlEndpoint, postData);
@@ -119,12 +119,11 @@ export default function SystemMaintenance() {
                     headers: { 'Content-Type': 'application/json '},
                     body: JSON.stringify({
                             query: 'updatePassword',
-                            para: [newPassword1, email, oldPassword]
+                            para: [newPassword1, userId, oldPassword]
                     })
             }
             const response = await fetch(apiUrlEndpoint, postData);
             const res = await response.json();
-            console.log(res);
             if (res.error){
                 Notify(res.error, 'error');
                 return;

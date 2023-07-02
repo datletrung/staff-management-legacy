@@ -6,7 +6,7 @@ import { checkPermissions } from '@components/CheckPermission';
 import AccessDenied from '@components/AccessDenied';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser
+import { faPeopleGroup
         ,faCog
         ,faStopwatch
 } from '@fortawesome/free-solid-svg-icons';
@@ -35,7 +35,7 @@ export default function ManagerZone() {
                 </Link>
                 <Link href={"/ManagerZone/ManageStaff"}>
                     <div className={stylesManagerZone.OptionButton}>
-                        <FontAwesomeIcon icon={faUser} className={stylesManagerZone.OptionButtonIcon} size='2xl'/>
+                        <FontAwesomeIcon icon={faPeopleGroup} className={stylesManagerZone.OptionButtonIcon} size='2xl'/>
                         <h2>Manage Staff</h2>
                     </div>
                 </Link>

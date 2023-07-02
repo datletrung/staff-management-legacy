@@ -8,22 +8,23 @@
 .ViewChildFlexColumnLeft {
     display: flex;
     flex-direction: column;
-    width: 400px;
-    margin: 0 1rem 1rem 0;
+    width: 320px;
+    margin: 0 2rem 1rem 0;
 }
 
 .ViewChildFlexColumnRight {
     display: flex;
     flex-direction: column;
     flex: auto;
-    width: 50%;
 }
 
 .EmployeeList {
+    height: 400px;
     width: 100%;
-    max-width: 350px;
+    max-width: 320px;
     display:flex;
     flex-direction: column;
+    overflow-y: auto;
 }
 
 .EmployeeCardContainer {
@@ -73,11 +74,8 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 0 0.5rem 0 0.5rem;
-}
-
-.SwitchSpace {
     justify-content: space-between;
+    padding: 0 0.5rem 0 0.5rem;
 }
 
 .FormContainer {
@@ -113,4 +111,52 @@
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 999;
+}
+
+.LoadingBlur {
+    filter: blur(3px);
+}
+
+.Title {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.TitleText {
+    display: inline-block;
+}
+
+.TitleButton {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.InfoTitle {
+    display: inline-flex;
+    width: 120px;
+}
+
+.InfoContent {
+    display: inline-block;
+}
+
+.InfoInput {
+    border: none;
+    border-bottom: 1px solid black;
+    background-color: rgba(230, 230, 230, 0.6);
+    font-size: inherit;
+    font-family: inherit;
+    padding: 0;
+    outline: none;
+}
+
+@media screen and (max-width: 768px) {
+    .ViewChildFlexColumnLeft {
+        width: 100%;
+        margin: 0;
+        justify-content: center;
+        align-items: center;
+    }
 }

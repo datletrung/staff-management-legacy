@@ -41,7 +41,7 @@ export const sqlQuery = {
             LEFT JOIN TIMECLOCK T2
                 ON T1.TIMECLOCK_ID = T2.TIMECLOCK_ID
             WHERE 1=1
-                AND T1.USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
+                AND T1.USER_ID = ?
                 AND DATE_FORMAT(T1.TIME_ALL, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
         ) T
         ORDER BY TIME_IN
@@ -62,7 +62,7 @@ export const sqlQuery = {
                 FROM TIMECLOCK
             ) T
         WHERE 1=1
-            AND T.USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ?)
+            AND T.USER_ID = ?
             AND DATE_FORMAT(T.TIME_ALL, '%Y-%m') = DATE_FORMAT(STR_TO_DATE(?, '%m/%Y'), '%Y-%m')
     `,
     'fetchTotalTimePerWeek':`
@@ -83,16 +83,37 @@ export const sqlQuery = {
                 AND (DATE(TIME_IN) BETWEEN T1.START_WEEK AND T1.END_WEEK
                     OR DATE(TIME_OUT) BETWEEN T1.START_WEEK AND T1.END_WEEK
                 )
-                AND USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ?)
+                AND USER_ID = ?
         ) T
         GROUP BY USER_ID
     `,
     'submitTimeEntry': `
         CALL SUBMIT_TIMECLOCK(?)
     `,
-    //-----MANAGER ZONE
+    //-----MANAGER ZONE > SETTINGS
+    'fetchAutoApproveSetting':`
+        SELECT SETTING_VALUE
+        FROM APP_SETTING
+        WHERE SETTING_NAME = 'AUTO_APPROVE'
+    `,
+    'updateAutoApproveSetting':`
+        UPDATE APP_SETTING
+        SET SETTING_VALUE = ?
+        WHERE SETTING_NAME = 'AUTO_APPROVE'
+    `,
+    //-----MANAGER ZONE > TIME SHEET
+    'approveTimeSheet': `
+        UPDATE TIMECLOCK
+        SET APPROVED = 'Y', APPROVED_BY = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
+        WHERE 1=1
+            AND USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ?)
+            AND (DATE_FORMAT(TIME_IN, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
+                OR DATE_FORMAT(TIME_OUT, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
+            )
+    `,
+    //-----MANAGER ZONE > MANAGE STAFF
     'fetchEmployeeList':`
-        SELECT USER_ID, FIRST_NAME, LAST_NAME, EMAIL
+        SELECT USER_ID, FIRST_NAME, LAST_NAME, EMAIL, PHONE_NUMBER
         FROM USER
         WHERE 1=1
             AND ACTIVE_FLAG = 'Y'
@@ -107,57 +128,36 @@ export const sqlQuery = {
         SELECT ?, ?, ?, ?, USER.USER_ID, USER.USER_ID
         FROM USER
         WHERE 1=1
-            AND EMAIL = ?
+            AND USER_ID = ?
             AND ACTIVE_FLAG = 'Y'
     `,
     'submitRehireEmployee': `
-        UPDATE USER AS USR, (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y') AS GET_UPDATE_BY_USR_ID
+        UPDATE USER AS USR
         SET USR.FIRST_NAME = ?
             ,USR.LAST_NAME = ?
             ,USR.PASSWORD = ?
+            ,USR.ROLE = 'EMPLOYEE'
             ,USR.ACTIVE_FLAG = 'Y'
             ,USR.LOCKED_FLAG = 'N'
             ,USR.LAST_UPDATED_AT = NOW()
-            ,USR.LAST_UPDATED_BY = GET_UPDATE_BY_USR_ID.USER_ID
+            ,USR.LAST_UPDATED_BY = ?
         WHERE USR.USER_ID = ?
-    `,
-    'approveTimeSheet': `
-        UPDATE TIMECLOCK
-        SET APPROVED = 'Y', APPROVED_BY = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
-        WHERE 1=1
-            AND USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ?)
-            AND (DATE_FORMAT(TIME_IN, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
-                OR DATE_FORMAT(TIME_OUT, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
-            )
-
-    `,
-    'fetchAutoApproveSetting':`
-        SELECT SETTING_VALUE
-        FROM APP_SETTING
-        WHERE SETTING_NAME = 'AUTO_APPROVE'
-    `,
-    'updateAutoApproveSetting':`
-        UPDATE APP_SETTING
-        SET SETTING_VALUE = ?
-        WHERE SETTING_NAME = 'AUTO_APPROVE'
     `,
     'fetchEmployeeOption':`
         SELECT ROLE, LOCKED_FLAG
         FROM USER
         WHERE 1=1
-            AND EMAIL = ?
+            AND USER_ID = ?
             AND ACTIVE_FLAG = 'Y'
     `,
     'setEmployeeOption':`
         UPDATE USER AS USR
-                ,(SELECT USER_ID FROM USER WHERE EMAIL = ?) AS GET_USR_ID
-                ,(SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y') AS GET_UPDATE_BY_USR_ID
         SET USR.ROLE = ?
             ,USR.ACTIVE_FLAG = ?
             ,USR.LOCKED_FLAG = ?
             ,USR.LAST_UPDATED_AT = NOW()
-            ,USR.LAST_UPDATED_BY = GET_UPDATE_BY_USR_ID.USER_ID
-        WHERE USR.USER_ID = GET_USR_ID.USER_ID
+            ,USR.LAST_UPDATED_BY = ?
+        WHERE USR.USER_ID = ?
     `,
     //-----PROFILE
     'fetchPersonalInfo':`
@@ -167,18 +167,18 @@ export const sqlQuery = {
             ,FIRST_NAME
             ,LAST_NAME
         FROM USER
-        WHERE USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
+        WHERE USER_ID = ?
     `,
     'updatePersonalInfo':`
         UPDATE USER
         SET EMAIL = ?, PHONE_NUMBER = ?, FIRST_NAME = ?, LAST_NAME = ?
-        WHERE USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
+        WHERE USER_ID = ?
     `,
     'updatePassword':`
         UPDATE USER
         SET PASSWORD = ?
         WHERE 1=1
-        AND USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
+        AND USER_ID = ?
         AND PASSWORD = ?
     `,
 };
