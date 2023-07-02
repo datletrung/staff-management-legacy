@@ -159,6 +159,12 @@ export const sqlQuery = {
             ,USR.LAST_UPDATED_BY = ?
         WHERE USR.USER_ID = ?
     `,
+    'resetPassword':`
+        UPDATE USER
+        SET PASSWORD = ?
+        WHERE 1=1
+        AND USER_ID = ?
+    `,
     //-----PROFILE
     'fetchPersonalInfo':`
         SELECT
@@ -171,7 +177,12 @@ export const sqlQuery = {
     `,
     'updatePersonalInfo':`
         UPDATE USER
-        SET EMAIL = ?, PHONE_NUMBER = ?, FIRST_NAME = ?, LAST_NAME = ?
+        SET EMAIL = ?
+        ,PHONE_NUMBER = ?
+        ,FIRST_NAME = ?
+        ,LAST_NAME = ?
+        ,LAST_UPDATED_AT = NOW()
+        ,LAST_UPDATED_BY = ?
         WHERE USER_ID = ?
     `,
     'updatePassword':`

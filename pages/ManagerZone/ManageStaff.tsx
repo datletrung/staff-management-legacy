@@ -4,10 +4,10 @@ import Link from "next/link";
 import Head from 'next/head';
 import Notify from '@components/Notify';
 import { useState, useEffect } from 'react';
-import { TextField, Switch, MenuItem } from '@mui/material';
+import { TextField, Switch, MenuItem, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel } from '@mui/material';
 import baseApiUrl from '@api/apiConfig';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faUsersGear, faLock, faTrash, faCopy, faKey } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faUsersGear, faLock, faTrash, faCopy, faKey, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
 import { Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
 import { Button } from '@mui/material';
 import Select from '@mui/material/Select';
@@ -32,7 +32,6 @@ export default function ManagerZoneManageStaff() {
     const [staffEmail, setStaffEmail] = useState('');
 
     const [staffCurrentViewId, setStaffCurrentViewId] = useState('');
-    const [staffCurrentViewFullName, setStaffCurrentViewFullName] = useState('');
     const [staffCurrentViewFirstName, setStaffCurrentViewFirstName] = useState('');
     const [staffCurrentViewLastName, setStaffCurrentViewLastName] = useState('');
     const [staffCurrentViewEmail, setStaffCurrentViewEmail] = useState('');
@@ -49,9 +48,15 @@ export default function ManagerZoneManageStaff() {
     const [viewStaffOption, setViewStaffOption] = useState(false);
     const [viewStaffAddition, setViewStaffAddition] = useState(false);
     const [viewStaffAdditionPopup, setViewStaffAdditionPopup] = useState(false);
+    const [viewResetPassword, setViewResetPassword] = useState(false);
+    const [viewResetPasswordMsg, setViewResetPasswordMsg] = useState(false);
+    const [viewResetPasswordManual, setViewResetPasswordManual] = useState(false);
     const [loading, setLoading] = useState(false);
     const [profileEditStatus, setProfileEditStatus] = useState(false);
     const [accountEditStatus, setAccountEditStatus] = useState(false);
+    const [resetPasswordOption, setResetPasswordOption] = useState('');
+    const [resetPasswordNewPass1, setResetPasswordNewPass1] = useState('');
+    const [resetPasswordNewPass2, setResetPasswordNewPass2] = useState('');
 
     function scrolltoHash(elementId: string) {
         const element = document.getElementById(elementId);
@@ -112,6 +117,7 @@ export default function ManagerZoneManageStaff() {
         }
         let response = await fetch(apiUrlEndpoint, postData);
         let res = await response.json();
+
         if (res.data.length === 0) {                            // if employee not exist then add new
             postData = {
                 method: 'POST',
@@ -125,7 +131,6 @@ export default function ManagerZoneManageStaff() {
             response = await fetch(apiUrlEndpoint, postData);
             res = await response.json();
             notifyMsg = `${staffFirstName} ${staffLastName} is added successfully.`;
-            setViewStaffAdditionPopup(true);
             setPromptMsg('New Employee Hired');
             setEmployeeId(res.data.insertId.toString().padStart(6, '0'));
         } else if (res.data[0].ACTIVE_FLAG === 'N') {           // if already exist and is not active then set it to active as well as change name
@@ -139,12 +144,9 @@ export default function ManagerZoneManageStaff() {
                     para: [staffFirstName, staffLastName, generatedPassword, userId, staffUserId]
                 })
             }
-            
             response = await fetch(apiUrlEndpoint, postData);
             res = await response.json();
-            console.log(res);
             notifyMsg = `${staffFirstName} ${staffLastName} is rehired successfully.`;
-            setViewStaffAdditionPopup(true);
             setPromptMsg('Employee Rehired');
         } else {                                                // else if the employee already exist and active
             notifyMsg = `${staffFirstName} ${staffLastName} exists and active in the system.`;
@@ -153,6 +155,7 @@ export default function ManagerZoneManageStaff() {
             Notify(res.error, 'error');
         } else {
             Notify(notifyMsg, 'info');
+            setViewStaffAdditionPopup(true);
         }
         setLoading(false);
         getEmployeeList();
@@ -232,7 +235,7 @@ export default function ManagerZoneManageStaff() {
                     headers: { 'Content-Type': 'application/json '},
                     body: JSON.stringify({
                             query: 'updatePersonalInfo',
-                            para: [staffCurrentViewEmail, staffCurrentViewPhoneNumber, staffCurrentViewFirstName, staffCurrentViewLastName, staffCurrentViewId]
+                            para: [staffCurrentViewEmail, staffCurrentViewPhoneNumber, staffCurrentViewFirstName, staffCurrentViewLastName, userId, staffCurrentViewId]
                     })
             }
             const response = await fetch(apiUrlEndpoint, postData);
@@ -242,9 +245,53 @@ export default function ManagerZoneManageStaff() {
                 return;
             }
             Notify('Profile updated!', 'success');
-            setViewStaffOption(false);
+            setProfileEditStatus(false);
             getEmployeeList();
             setLoading(false);
+        }
+    }
+
+    async function resetPassword(){
+        let newPassword = '';
+        if (!viewResetPasswordManual){ // generate a random password
+            newPassword = generateRandomString(10);
+            setNewGeneratedPassword(newPassword);
+        } else { // if set password manually
+            if (resetPasswordNewPass1 === '' || resetPasswordNewPass2 === '') {
+                Notify('Password cannot be empty!', 'error');
+                return;
+            } else if (resetPasswordNewPass1 != resetPasswordNewPass2) {
+                Notify('Passwords do not match!', 'error');
+                return;
+            } else {
+                newPassword = resetPasswordNewPass1;
+                setNewGeneratedPassword('********');
+            }
+        }
+        newPassword = createHash('sha256').update(generateRandomString(10)).digest('hex');
+        const apiUrlEndpoint = `${baseApiUrl}/fetchSql`;
+        const postData = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json '},
+                body: JSON.stringify({
+                        query: 'resetPassword',
+                        para: [newPassword, userId]
+                })
+        }
+        const response = await fetch(apiUrlEndpoint, postData);
+        const res = await response.json();
+        if (res.error){
+            Notify(res.error, 'error');
+            return;
+        } else if (res.data.affectedRows === 1){
+            Notify('Password reset!', 'success');
+            setResetPasswordNewPass1('');
+            setResetPasswordNewPass2('');
+            setViewResetPasswordMsg(true);
+            return;
+        } else {
+            Notify('Something went wrong! Please try again later.', 'error');
+            return;
         }
     }
 
@@ -266,10 +313,30 @@ export default function ManagerZoneManageStaff() {
                 setStaffFirstName('');
                 setStaffLastName('');
             }} />}
+            {viewResetPassword && <div className={stylesManagerZoneManageStaff.BlurView} onClick={() => {
+                setViewResetPassword(false);
+                setViewResetPasswordMsg(false);
+                setResetPasswordNewPass1('');
+                setResetPasswordNewPass2('');
+                setNewGeneratedPassword('');
+            }} />}
 
             <h1><Link href={'/ManagerZone'}>Manager Zone</Link> {`> Manage Staff`}</h1>
             <div className={stylesManagerZoneManageStaff.ViewContainer}>
                 <div className={stylesManagerZoneManageStaff.ViewChildFlexColumnLeft}>
+                    <div className={stylesManagerZoneManageStaff.Title}>
+                        <h2 className={stylesManagerZoneManageStaff.TitleText}>
+                            Employee List
+                        </h2>
+                        <FontAwesomeIcon
+                            icon={faArrowsRotate}
+                            style={{cursor: 'pointer'}}
+                            onClick={() => {
+                                getEmployeeList();
+                                setViewStaffOption(false);
+                            }}
+                        />
+                    </div>
                     <div className={stylesManagerZoneManageStaff.EmployeeList}>
                         {employeeList.map((item:any, idx:number) => {
                             let staffUserIdTmp = item.USER_ID;
@@ -284,7 +351,6 @@ export default function ManagerZoneManageStaff() {
                                 <div className={`${stylesManagerZoneManageStaff.EmployeeCard}`}
                                     onClick={() => {
                                         setStaffCurrentViewId((staffUserIdTmp)?staffUserIdTmp:'');
-                                        setStaffCurrentViewFullName((fullNameTmp)?fullNameTmp:'');
                                         setStaffCurrentViewFirstName((firstNameTmp)?firstNameTmp:'');
                                         setStaffCurrentViewLastName((lastNameTmp)?lastNameTmp:'');
                                         setStaffCurrentViewEmail((emailTmp)?emailTmp:'');
@@ -329,7 +395,6 @@ export default function ManagerZoneManageStaff() {
                 <div id='detail-info'
                     className={`${stylesManagerZoneManageStaff.ViewChildFlexColumnRight} ${loading ? stylesManagerZoneManageStaff.LoadingBlur : ''}`}>
                     <div style={{ display: (viewStaffOption) ? 'block' : 'none' }}>
-                        <center><h2>{staffCurrentViewFullName}</h2></center>
                         <div>
                             <div className={stylesManagerZoneManageStaff.Title}>
                                 <h3 className={stylesManagerZoneManageStaff.TitleText}>
@@ -353,7 +418,8 @@ export default function ManagerZoneManageStaff() {
                             <div className={stylesManagerZoneManageStaff.FormChild}>
                                 <div className={stylesManagerZoneManageStaff.SwitchContainer}>
                                     <b className={stylesManagerZoneManageStaff.InfoTitle}>First Name: </b>
-                                    <input className={stylesManagerZoneManageStaff.InfoInput}
+                                    <TextField
+                                        variant="standard"
                                         style={{display: (profileEditStatus) ? 'inline-block' : 'none'}}
                                         value={staffCurrentViewFirstName}
                                         onChange={(event) => setStaffCurrentViewFirstName(event.target.value)}
@@ -370,7 +436,8 @@ export default function ManagerZoneManageStaff() {
                                 <div className={stylesManagerZoneManageStaff.SwitchContainer}>
                                     <b className={stylesManagerZoneManageStaff.InfoTitle}>Last Name: </b>
                                     <div>
-                                        <input className={stylesManagerZoneManageStaff.InfoInput}
+                                        <TextField
+                                            variant="standard"
                                             style={{display: (profileEditStatus) ? 'inline-block' : 'none'}}
                                             value={staffCurrentViewLastName}
                                             onChange={(event) => setStaffCurrentViewLastName(event.target.value)}
@@ -388,7 +455,8 @@ export default function ManagerZoneManageStaff() {
                                 <div className={stylesManagerZoneManageStaff.SwitchContainer}>
                                     <b className={stylesManagerZoneManageStaff.InfoTitle}>Email: </b>
                                     <div>
-                                        <input className={stylesManagerZoneManageStaff.InfoInput}
+                                        <TextField
+                                            variant="standard"
                                             style={{display: (profileEditStatus) ? 'inline-block' : 'none'}}
                                             value={staffCurrentViewEmail}
                                             onChange={(event) => setStaffCurrentViewEmail(event.target.value)}
@@ -415,12 +483,12 @@ export default function ManagerZoneManageStaff() {
                                 <div className={stylesManagerZoneManageStaff.SwitchContainer}>
                                     <b className={stylesManagerZoneManageStaff.InfoTitle}>Phone Number: </b>
                                     <div>
-                                        <input className={stylesManagerZoneManageStaff.InfoInput}
+                                        <TextField
+                                            variant="standard"
                                             style={{display: (profileEditStatus) ? 'inline-block' : 'none'}}
                                             value={staffCurrentViewPhoneNumber}
                                             onChange={(event) => {
                                                 setStaffCurrentViewPhoneNumber(event.target.value);
-                                                console.log('oops');
                                             }}
                                         />
                                         <div
@@ -484,7 +552,12 @@ export default function ManagerZoneManageStaff() {
                                         <Button
                                             variant="outlined"
                                             className={stylesManagerZoneManageStaff.TitleButton}
-                                            onClick={() => {}}
+                                            onClick={() => {
+                                                setViewResetPassword(true);
+                                                setViewResetPasswordMsg(false);
+                                                setResetPasswordOption('option1');
+                                                setViewResetPasswordManual(false);
+                                            }}
                                         >
                                             RESET PASSWORD
                                         </Button>
@@ -602,6 +675,69 @@ export default function ManagerZoneManageStaff() {
                                 <i>Please share this information with the employee:</i><br/>
                                 <span><b>Staff ID:</b> {employeeId}</span>
                                 <span><b>Email:</b> {staffEmail}</span>
+                                <span><b>Password:</b> {newGeneratedPassword}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style={{ display: (viewResetPassword) ? 'block' : 'none' }}>
+                        <div style={{ display: (viewResetPasswordMsg) ? 'none' : 'block' }}>
+                            <div className={stylesManagerZoneManageStaff.PopUp}>
+                                <center><h2>Reset Password</h2></center>
+                                <FormControl>
+                                    <RadioGroup
+                                        aria-labelledby="reset-pass-label"
+                                        defaultValue='option1'
+                                        value={resetPasswordOption}
+                                        onChange={(event) => {
+                                            const state = event.target.value;
+                                            setResetPasswordOption(state);
+                                            if (state == 'option1'){
+                                                setViewResetPasswordManual(false);
+                                            } else {
+                                                setViewResetPasswordManual(true);
+                                            }
+                                        }}
+                                    >
+                                        <FormControlLabel value="option1" control={<Radio />} label="Generate random password" />
+                                        <FormControlLabel value="option2" control={<Radio />} label="Set password manually" />
+                                    </RadioGroup>
+                                </FormControl>
+                                <div style={{ display: (viewResetPasswordManual) ? 'block' : 'none' }}>
+                                    <TextField
+                                        style={{width: '100%'}}
+                                        label="New Password"
+                                        variant="standard"
+                                        type="password"
+                                        value={resetPasswordNewPass1}
+                                        onChange={(event) => setResetPasswordNewPass1(event.target.value)}
+                                    />
+                                    <TextField
+                                        style={{width: '100%'}}
+                                        label="Confirm New Password"
+                                        variant="standard"
+                                        type="password"
+                                        value={resetPasswordNewPass2}
+                                        onChange={(event) => setResetPasswordNewPass2(event.target.value)}
+                                    />
+                                </div>
+                                <br/>
+                                <Button
+                                    variant="outlined"
+                                    style={{width:'100%'}}
+                                    onClick={() => {
+                                        resetPassword();
+                                    }}
+                                >
+                                    SAVE
+                                </Button>
+                            </div>
+                        </div>
+                        <div style={{ display: (viewResetPasswordMsg) ? 'block' : 'none' }}>
+                            <div className={stylesManagerZoneManageStaff.PopUp}>
+                                <center><h2>Reset Password</h2></center>
+                                <i>Please share this information with the employee:</i><br/>
+                                <span><b>Staff ID:</b> {staffCurrentViewId.toString().padStart(6, '0')}</span>
+                                <span><b>Email:</b> {staffCurrentViewEmail}</span>
                                 <span><b>Password:</b> {newGeneratedPassword}</span>
                             </div>
                         </div>

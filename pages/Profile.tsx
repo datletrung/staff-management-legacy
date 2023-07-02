@@ -86,7 +86,7 @@ export default function SystemMaintenance() {
                     headers: { 'Content-Type': 'application/json '},
                     body: JSON.stringify({
                             query: 'updatePersonalInfo',
-                            para: [personEmail, personPhoneNumber, personFirstName, personLastName, userId]
+                            para: [personEmail, personPhoneNumber, personFirstName, personLastName, userId, userId]
                     })
             }
             const response = await fetch(apiUrlEndpoint, postData);
@@ -137,7 +137,7 @@ export default function SystemMaintenance() {
                 setPersonNewPassword2('');
                 return;
             }
-            Notify('Unknown error!', 'error');
+            Notify('Something went wrong! Please try again later.', 'error');
         }
     }
     
