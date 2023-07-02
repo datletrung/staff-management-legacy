@@ -25,7 +25,7 @@ export default async function handler(req: any, res: any){
         "Sec-Fetch-Mode": "cors",
         "Sec-Fetch-Site": "cross-site",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-        "X-Api-Key": process.env.PAYROLL_API_KEY
+        "X-Api-Key": process.env.PAYROLL_API_KEY as string,
     };
 
     const body = JSON.stringify({
