@@ -275,7 +275,7 @@ export default function ManagerZoneManageStaff() {
                 headers: { 'Content-Type': 'application/json '},
                 body: JSON.stringify({
                         query: 'resetPassword',
-                        para: [newPassword, userId]
+                        para: [newPassword, staffCurrentViewId]
                 })
         }
         const response = await fetch(apiUrlEndpoint, postData);
