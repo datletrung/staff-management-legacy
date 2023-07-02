@@ -7,8 +7,7 @@ export default async function handler(req: any, res: any){
     const wages = req.body.wages as number;
     const vacationPay = req.body.vacationPay as number;
 
-    if ((!province || !annualPayPeriods || !wages || !vacationPay)
-        || (wages == 0 || vacationPay == 0)) {
+    if (!province || !annualPayPeriods || !wages || !vacationPay || wages == 0) {
         res.status(500).json({ error: 'Invalid data!' });
     }
 
@@ -26,7 +25,7 @@ export default async function handler(req: any, res: any){
         "Sec-Fetch-Mode": "cors",
         "Sec-Fetch-Site": "cross-site",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-        "X-Api-Key": "AZWjxlCDYZ8DSDLEOJt1w4pZb0WhzVvO1fboG2iX"
+        "X-Api-Key": process.env.PAYROLL_API_KEY
     };
 
     const body = JSON.stringify({
@@ -127,16 +126,16 @@ export default async function handler(req: any, res: any){
     const totalNetPay = totalEarnings - totalDeduction;
 
     const data = {
-        wages: wages,
-        vacationPay: vacationPay,
-        CPP: CPP,
-        EI: EI,
-        taxFed: taxFed,
-        taxProv: taxProv,
-        totalEarnings: totalEarnings,
-        totalTax: totalTax,
-        totalDeduction: totalDeduction,
-        totalNetPay: totalNetPay,
+        wages: wages.toFixed(2),
+        vacationPay: vacationPay.toFixed(2),
+        CPP: CPP.toFixed(2),
+        EI: EI.toFixed(2),
+        taxFed: taxFed.toFixed(2),
+        taxProv: taxProv.toFixed(2),
+        totalEarnings: totalEarnings.toFixed(2),
+        totalTax: totalTax.toFixed(2),
+        totalDeduction: totalDeduction.toFixed(2),
+        totalNetPay: totalNetPay.toFixed(2),
     }
     
     res.status(200).json({ data: data });
