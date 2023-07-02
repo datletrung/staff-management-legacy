@@ -268,7 +268,7 @@ export default function ManagerZoneManageStaff() {
                 setNewGeneratedPassword('********');
             }
         }
-        newPassword = createHash('sha256').update(generateRandomString(10)).digest('hex');
+        newPassword = createHash('sha256').update(newPassword).digest('hex');
         const apiUrlEndpoint = `${baseApiUrl}/fetchSql`;
         const postData = {
                 method: 'POST',
