@@ -6,6 +6,8 @@ import Notify from '@components/Notify';
 import { useState, useEffect } from 'react';
 import baseApiUrl from '@api/apiConfig';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
 import { checkPermissions } from '@components/CheckPermission';
 import AccessDenied from '@components/AccessDenied';
 
@@ -18,7 +20,16 @@ export default function ManagerZoneTimeSheet() {
     }
 
     const {data: session} = useSession();
-    const [employeeList, setEmployeeList] = useState<String[]>([]);
+    const [userId] = useState(session?.user?.userId);
+    const [employeeList, setEmployeeList] = useState<string[]>([]);
+
+    const [staffCurrentViewId, setStaffCurrentViewId] = useState('');
+    const [staffCurrentViewFirstName, setStaffCurrentViewFirstName] = useState('');
+    const [staffCurrentViewLastName, setStaffCurrentViewLastName] = useState('');
+    const [staffCurrentViewEmail, setStaffCurrentViewEmail] = useState('');
+    const [staffCurrentViewPhoneNumber, setStaffCurrentViewPhoneNumber] = useState('');
+
+    const [loading, setLoading] = useState(false);
 
 
     async function getEmployeeList() {
@@ -38,113 +49,69 @@ export default function ManagerZoneTimeSheet() {
     }
 
     useEffect(() => {
-        //getEmployeeList();
-        calculatePayroll();
+        getEmployeeList();
     }, [])
-
-
-    async function calculatePayroll(){
-        /*
-        const apiUrlEndpoint = `${baseApiUrl}/fetchPayroll`;
-        let postData = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json '},
-            body: JSON.stringify({
-                province: 'PE',
-                annualPayPeriods: 24,
-                wages: 1125,
-                vacationPay: 45,
-            })
-        }
-        let response = await fetch(apiUrlEndpoint, postData);
-        let res = await response.json();
-        let data = res.data;
-        */
-        const data = {
-            CPP: "60.94",
-            EI: "19.07",
-            taxFed: "61.20",
-            taxProv: "57.82",
-            totalDeduction: "199.03",
-            totalEarnings: "1170.00",
-            totalNetPay: "970.97",
-            totalTax: "119.02",
-            vacationPay: "45.00",
-            wages: "1125.00",
-        }
-        console.log(data);
-    }
 
     return (
         <>
             <Head>
                 <title>{`${process.env.WebsiteName}`}</title>
             </Head>
-            <h1><Link href={'/ManagerZone'}>Manager Zone</Link> {`> Time Sheet`}</h1>
+            {/*viewStaffAdditionPopup && <div className={stylesManagerZoneTimeSheet.BlurView} onClick={() => {
+            }} />*/} {/*CHANGE_THIS*/}
 
-            <h3>Payroll Deduction</h3>
-            <div>
-                <span>Employee's name: Dat Le</span>
-                <span>Employer's name: LRT</span>
-                <span>Pay period frequency: Semi-monthly (24 pay periods a year)</span>
-                <span>Date the employee is paid: 2025-01-01 (YYYY-MM-DD)</span>
-                <span>Province of employment: Prince Edward Island</span>
-                <br/>
-                <div>
-                    <table>
-                        <tbody>
-                            <tr>
-                                <td>Salary or wages income</td>
-                                <td>1,125.00</td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>Vacation pay</td>
-                                <td>45.00</td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td><b>Total cash income</b></td>
-                                <td></td>
-                                <td>1,170.00</td>
-                            </tr>
-                            <hr/>
-                            <tr>
-                                <td>Federal tax deduction</td>
-                                <td>61.20</td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>Provincial tax deduction</td>
-                                <td>57.82</td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>CPP deductions</td>
-                                <td>60.94</td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>EI deductions</td>
-                                <td>19.07</td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td><b>Total deductions</b></td>
-                                <td></td>
-                                <td>199.03</td>
-                            </tr>
-                            <hr/>
-                            <tr>
-                                <td><b>Net amount</b></td>
-                                <td></td>
-                                <td>970.97</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <h1><Link href={'/ManagerZone'}>Manager Zone</Link> {`> Time Sheet`}</h1>
+            <div className={stylesManagerZoneTimeSheet.ViewContainer}>
+                <div className={stylesManagerZoneTimeSheet.ViewChildFlexColumnLeft}>
+                    <div className={stylesManagerZoneTimeSheet.Title}>
+                        <h2 className={stylesManagerZoneTimeSheet.TitleText}>
+                            Employee List
+                        </h2>
+                        <FontAwesomeIcon
+                            icon={faArrowsRotate}
+                            style={{cursor: 'pointer'}}
+                            onClick={() => {
+                                getEmployeeList();
+                                //setViewStaffOption(false); // CHANGE_THIS
+                            }}
+                        />
+                    </div>
+                    <div className={stylesManagerZoneTimeSheet.EmployeeList}>
+                        {employeeList.map((item:any, idx:number) => {
+                            let staffUserIdTmp = item.USER_ID;
+                            let emailTmp = item.EMAIL;
+                            let firstNameTmp = item.FIRST_NAME;
+                            let lastNameTmp = item.LAST_NAME;
+                            let fullNameTmp = item.FIRST_NAME + ' ' + item.LAST_NAME;
+                            let phoneTmp = item.PHONE_NUMBER;
+                            return (
+                            <div key={idx} className={`${stylesManagerZoneTimeSheet.EmployeeCardContainer}`}>
+                                <FontAwesomeIcon icon={faUser} size="2xl" className={stylesManagerZoneTimeSheet.UserIcon}/>
+                                <div className={`${stylesManagerZoneTimeSheet.EmployeeCard}`}
+                                    onClick={() => {
+                                        setStaffCurrentViewId((staffUserIdTmp)?staffUserIdTmp:'');
+                                        setStaffCurrentViewFirstName((firstNameTmp)?firstNameTmp:'');
+                                        setStaffCurrentViewLastName((lastNameTmp)?lastNameTmp:'');
+                                        setStaffCurrentViewEmail((emailTmp)?emailTmp:'');
+                                        setStaffCurrentViewPhoneNumber((phoneTmp)?phoneTmp:'');
+                                        //CHANGE_THIS
+                                    }}
+                                >
+                                    <b>{fullNameTmp}</b>
+                                    <small>Staff ID: {staffUserIdTmp.toString().padStart(6, '0')}</small>
+                                    <small>Email: {emailTmp}</small>
+                                </div>
+                            </div>
+                            );                    
+                        })}
+                    </div>
+                </div>
+                <div id='detail-info'
+                    className={`${stylesManagerZoneTimeSheet.ViewChildFlexColumnRight} ${loading ? stylesManagerZoneTimeSheet.LoadingBlur : ''}`}>
+                    <div style={{ display: (true) ? 'block' : 'none' }}> {/*CHANGE_THIS*/}
+                    </div>
                 </div>
             </div>
-
         </>
     )
 }

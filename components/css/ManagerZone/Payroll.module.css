@@ -1,0 +1,27 @@
+.PayrollContainer {
+    width: 100%;
+}
+
+.PayrollInfoPrintableContainer {
+    border: 1px solid black;
+}
+
+.PayrollInfoContainer {
+    margin: 5px;
+    padding: 5px 20px;
+}
+
+.PayrollInfo {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    grid-gap: 10px;
+}
+
+.PayrollTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+  
+.PayrollTable td {
+    padding: 10px;
+}

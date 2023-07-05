@@ -1,6 +1,7 @@
 .FormContainer {
     display:block;
     width: 50%;
+    max-width: 400px;
     margin: auto;
 }
 

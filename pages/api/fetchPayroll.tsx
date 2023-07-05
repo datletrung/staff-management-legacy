@@ -1,7 +1,9 @@
-export default async function handler(req: any, res: any){
+async function formatNumber(num: any){
+    return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
 
+export default async function handler(req: any, res: any){
   try {
-    console.log(req.body);
     const province = req.body.province;
     const annualPayPeriods = req.body.annualPayPeriods;
     const wages = req.body.wages as number;
@@ -126,16 +128,16 @@ export default async function handler(req: any, res: any){
     const totalNetPay = totalEarnings - totalDeduction;
 
     const data = {
-        wages: wages.toFixed(2),
-        vacationPay: vacationPay.toFixed(2),
-        CPP: CPP.toFixed(2),
-        EI: EI.toFixed(2),
-        taxFed: taxFed.toFixed(2),
-        taxProv: taxProv.toFixed(2),
-        totalEarnings: totalEarnings.toFixed(2),
-        totalTax: totalTax.toFixed(2),
-        totalDeduction: totalDeduction.toFixed(2),
-        totalNetPay: totalNetPay.toFixed(2),
+        wages: await formatNumber(wages),
+        vacationPay: await formatNumber(vacationPay),
+        CPP: await formatNumber(CPP),
+        EI: await formatNumber(EI),
+        taxFed: await formatNumber(taxFed),
+        taxProv: await formatNumber(taxProv),
+        totalEarnings: await formatNumber(totalEarnings),
+        totalTax: await formatNumber(totalTax),
+        totalDeduction: await formatNumber(totalDeduction),
+        totalNetPay: await formatNumber(totalNetPay),
     }
     
     res.status(200).json({ data: data });

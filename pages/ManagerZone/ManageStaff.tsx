@@ -4,13 +4,11 @@ import Link from "next/link";
 import Head from 'next/head';
 import Notify from '@components/Notify';
 import { useState, useEffect } from 'react';
-import { TextField, Switch, MenuItem, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel } from '@mui/material';
+import { TextField, Switch, MenuItem, Radio, RadioGroup, FormControlLabel, FormControl, Button, Select } from '@mui/material';
 import baseApiUrl from '@api/apiConfig';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faUsersGear, faLock, faTrash, faCopy, faKey, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
 import { Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
-import { Button } from '@mui/material';
-import Select from '@mui/material/Select';
 
 import { checkPermissions } from '@components/CheckPermission';
 import AccessDenied from '@components/AccessDenied';
@@ -409,103 +407,85 @@ export default function ManagerZoneManageStaff() {
                                     EDIT
                                 </Button>
                             </div>
-                            <div className={stylesManagerZoneManageStaff.FormChild}>
-                                <div className={stylesManagerZoneManageStaff.SwitchContainer}>
-                                    <b className={stylesManagerZoneManageStaff.InfoTitle}>Staff ID: </b>
-                                    <div className={stylesManagerZoneManageStaff.InfoContent}>{staffCurrentViewId.toString().padStart(6, '0')}</div>
+                            <div className={stylesManagerZoneManageStaff.InfoContainer}>
+                                <b className={stylesManagerZoneManageStaff.InfoTitle}>Staff ID: </b>
+                                <div className={stylesManagerZoneManageStaff.InfoContent}>{staffCurrentViewId.toString().padStart(6, '0')}</div>
+                                <b className={stylesManagerZoneManageStaff.InfoTitle}>First Name: </b>
+                                <TextField
+                                    variant="standard"
+                                    style={{display: (profileEditStatus) ? 'inline-block' : 'none'}}
+                                    value={staffCurrentViewFirstName}
+                                    onChange={(event) => setStaffCurrentViewFirstName(event.target.value)}
+                                />
+                                <div
+                                    className={stylesManagerZoneManageStaff.InfoContent}
+                                    style={{display: (profileEditStatus) ? 'none' : 'inline-block'}}
+                                >
+                                    {staffCurrentViewFirstName}
                                 </div>
-                            </div>
-                            <div className={stylesManagerZoneManageStaff.FormChild}>
-                                <div className={stylesManagerZoneManageStaff.SwitchContainer}>
-                                    <b className={stylesManagerZoneManageStaff.InfoTitle}>First Name: </b>
+                                <b className={stylesManagerZoneManageStaff.InfoTitle}>Last Name: </b>
+                                <div>
                                     <TextField
                                         variant="standard"
                                         style={{display: (profileEditStatus) ? 'inline-block' : 'none'}}
-                                        value={staffCurrentViewFirstName}
-                                        onChange={(event) => setStaffCurrentViewFirstName(event.target.value)}
+                                        value={staffCurrentViewLastName}
+                                        onChange={(event) => setStaffCurrentViewLastName(event.target.value)}
                                     />
                                     <div
                                         className={stylesManagerZoneManageStaff.InfoContent}
                                         style={{display: (profileEditStatus) ? 'none' : 'inline-block'}}
                                     >
-                                        {staffCurrentViewFirstName}
+                                        {staffCurrentViewLastName}
                                     </div>
                                 </div>
-                            </div>
-                            <div className={stylesManagerZoneManageStaff.FormChild}>
-                                <div className={stylesManagerZoneManageStaff.SwitchContainer}>
-                                    <b className={stylesManagerZoneManageStaff.InfoTitle}>Last Name: </b>
-                                    <div>
-                                        <TextField
-                                            variant="standard"
-                                            style={{display: (profileEditStatus) ? 'inline-block' : 'none'}}
-                                            value={staffCurrentViewLastName}
-                                            onChange={(event) => setStaffCurrentViewLastName(event.target.value)}
-                                        />
-                                        <div
-                                            className={stylesManagerZoneManageStaff.InfoContent}
-                                            style={{display: (profileEditStatus) ? 'none' : 'inline-block'}}
-                                        >
-                                            {staffCurrentViewLastName}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className={stylesManagerZoneManageStaff.FormChild}>
-                                <div className={stylesManagerZoneManageStaff.SwitchContainer}>
-                                    <b className={stylesManagerZoneManageStaff.InfoTitle}>Email: </b>
-                                    <div>
-                                        <TextField
-                                            variant="standard"
-                                            style={{display: (profileEditStatus) ? 'inline-block' : 'none'}}
-                                            value={staffCurrentViewEmail}
-                                            onChange={(event) => setStaffCurrentViewEmail(event.target.value)}
-                                        />
-                                        <div
-                                            className={stylesManagerZoneManageStaff.InfoContent}
-                                            style={{display: (profileEditStatus) ? 'none' : 'inline-block'}}
-                                        >
-                                            <a href={`mailto:${staffCurrentViewEmail}`}>{staffCurrentViewEmail}</a>
-                                            <span>&nbsp;</span>
-                                            <FontAwesomeIcon
-                                                icon={faCopy}
-                                                style={{cursor: 'pointer', display:(staffCurrentViewEmail) ? 'inline-block' : 'none'}}
-                                                onClick={async () => {
-                                                    await navigator.clipboard.writeText(staffCurrentViewEmail);
-                                                    Notify('Email copied!', 'success')
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className={stylesManagerZoneManageStaff.FormChild}>
-                                <div className={stylesManagerZoneManageStaff.SwitchContainer}>
-                                    <b className={stylesManagerZoneManageStaff.InfoTitle}>Phone Number: </b>
-                                    <div>
-                                        <TextField
-                                            variant="standard"
-                                            style={{display: (profileEditStatus) ? 'inline-block' : 'none'}}
-                                            value={staffCurrentViewPhoneNumber}
-                                            onChange={(event) => {
-                                                setStaffCurrentViewPhoneNumber(event.target.value);
+                                <b className={stylesManagerZoneManageStaff.InfoTitle}>Email: </b>
+                                <div>
+                                    <TextField
+                                        variant="standard"
+                                        style={{display: (profileEditStatus) ? 'inline-block' : 'none'}}
+                                        value={staffCurrentViewEmail}
+                                        onChange={(event) => setStaffCurrentViewEmail(event.target.value)}
+                                    />
+                                    <div
+                                        className={stylesManagerZoneManageStaff.InfoContent}
+                                        style={{display: (profileEditStatus) ? 'none' : 'inline-block'}}
+                                    >
+                                        <a href={`mailto:${staffCurrentViewEmail}`}>{staffCurrentViewEmail}</a>
+                                        <span>&nbsp;</span>
+                                        <FontAwesomeIcon
+                                            icon={faCopy}
+                                            style={{cursor: 'pointer', display:(staffCurrentViewEmail) ? 'inline-block' : 'none'}}
+                                            onClick={async () => {
+                                                await navigator.clipboard.writeText(staffCurrentViewEmail);
+                                                Notify('Email copied!', 'success')
                                             }}
                                         />
-                                        <div
-                                            className={stylesManagerZoneManageStaff.InfoContent}
-                                            style={{display: (profileEditStatus) ? 'none' : 'inline-block'}}
-                                        >
-                                            <a href={`tel:${staffCurrentViewPhoneNumber}`}>{staffCurrentViewPhoneNumber}</a>
-                                            <span>&nbsp;</span>
-                                            <FontAwesomeIcon
-                                                icon={faCopy}
-                                                style={{cursor: 'pointer', display:(staffCurrentViewPhoneNumber) ? 'inline-block' : 'none'}}
-                                                onClick={async () => {
-                                                    await navigator.clipboard.writeText(staffCurrentViewPhoneNumber);
-                                                    Notify('Phone number copied!', 'success')
-                                                }}
-                                            />
-                                        </div>
+                                    </div>
+                                </div>
+                                <b className={stylesManagerZoneManageStaff.InfoTitle}>Phone Number: </b>
+                                <div>
+                                    <TextField
+                                        variant="standard"
+                                        style={{display: (profileEditStatus) ? 'inline-block' : 'none'}}
+                                        value={staffCurrentViewPhoneNumber}
+                                        onChange={(event) => {
+                                            setStaffCurrentViewPhoneNumber(event.target.value);
+                                        }}
+                                    />
+                                    <div
+                                        className={stylesManagerZoneManageStaff.InfoContent}
+                                        style={{display: (profileEditStatus) ? 'none' : 'inline-block'}}
+                                    >
+                                        <a href={`tel:${staffCurrentViewPhoneNumber}`}>{staffCurrentViewPhoneNumber}</a>
+                                        <span>&nbsp;</span>
+                                        <FontAwesomeIcon
+                                            icon={faCopy}
+                                            style={{cursor: 'pointer', display:(staffCurrentViewPhoneNumber) ? 'inline-block' : 'none'}}
+                                            onClick={async () => {
+                                                await navigator.clipboard.writeText(staffCurrentViewPhoneNumber);
+                                                Notify('Phone number copied!', 'success')
+                                            }}
+                                        />
                                     </div>
                                 </div>
                             </div>
