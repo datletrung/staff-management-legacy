@@ -163,7 +163,7 @@ export default function ManagerZoneTimeSheet() {
             <h1><Link href={'/ManagerZone'}>Manager Zone</Link> {`> Time Sheet`}</h1>
             <div className={stylesManagerZoneTimeSheet.ViewContainer}>
                 <div className={stylesManagerZoneTimeSheet.ViewChildFlexColumnLeft}>
-                <div className={stylesManagerZoneTimeSheet.FilterContainer}>
+                    <div className={stylesManagerZoneTimeSheet.FilterContainer}>
                         <span className={stylesManagerZoneTimeSheet.FilterTitle}>Employee</span>
                         <Autocomplete
                             options={employeeList}

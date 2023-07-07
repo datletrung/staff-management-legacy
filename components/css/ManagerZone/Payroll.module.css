@@ -102,6 +102,11 @@
     z-index: 999;
 }
 
+.PopUpScroll {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
 .BlurView {
     position: fixed;
     top: 0;
@@ -117,6 +122,7 @@
 }
 
 .FilterContainer{
+    width: 100%;
     display: grid;
     grid-template-columns: max-content 1fr;
     grid-gap: 10px;

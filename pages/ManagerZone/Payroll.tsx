@@ -491,7 +491,7 @@ export default function ManagerZonePayroll() {
             <div style={{ display: (viewDisclaimerPopup) ? 'block' : 'none' }}>
                 <div className={stylesManagerZonePayroll.PopUp}>
                     <center><h2>Disclaimer</h2></center>
-                    <div>
+                    <div  className={stylesManagerZonePayroll.PopUpScroll}>
                         <div>
                         The payroll deduction calculator provided on this platform is intended for reference purposes only. While we strive to ensure the accuracy and reliability of the calculator, it is important to note that it may not account for all possible scenarios and variations in tax laws and regulations.
                         </div><br/>
