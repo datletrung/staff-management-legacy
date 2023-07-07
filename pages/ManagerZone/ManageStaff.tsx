@@ -4,7 +4,7 @@ import Link from "next/link";
 import Head from 'next/head';
 import Notify from '@components/Notify';
 import { useState, useEffect } from 'react';
-import { TextField, Switch, MenuItem, Radio, RadioGroup, FormControlLabel, FormControl, Button, Select } from '@mui/material';
+import { TextField, Switch, Radio, RadioGroup, FormControlLabel, FormControl, Button, Select, MenuItem } from '@mui/material';
 import baseApiUrl from '@api/apiConfig';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faUsersGear, faLock, faTrash, faCopy, faKey, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
@@ -86,6 +86,10 @@ export default function ManagerZoneManageStaff() {
         
         let response = await fetch(apiUrlEndpoint, postData);
         let res = await response.json();
+        if (res.error) {
+            Notify('Something went wrong! Please try again later.', 'error');
+            return;
+        }
         setEmployeeList(res.data);
     }
 
@@ -372,7 +376,8 @@ export default function ManagerZoneManageStaff() {
                             </div>
                             );                    
                         })}
-                        <div className={stylesManagerZoneManageStaff.ButtonContainer}>
+                    </div>
+                    <div className={stylesManagerZoneManageStaff.ButtonContainer}>
                             <div className={stylesManagerZoneManageStaff.Button}>
                                 <Button
                                 variant="outlined" endIcon={<AddIcon/>}
@@ -388,7 +393,6 @@ export default function ManagerZoneManageStaff() {
                                 </Button>
                             </div>
                         </div>
-                    </div>
                 </div>
                 <div id='detail-info'
                     className={`${stylesManagerZoneManageStaff.ViewChildFlexColumnRight} ${loading ? stylesManagerZoneManageStaff.LoadingBlur : ''}`}>
@@ -678,7 +682,7 @@ export default function ManagerZoneManageStaff() {
                                             }
                                         }}
                                     >
-                                        <FormControlLabel value="option1" control={<Radio />} label="Generate random password" />
+                                        <FormControlLabel value="option1" control={<Radio />} label="Generate a random password" />
                                         <FormControlLabel value="option2" control={<Radio />} label="Set password manually" />
                                     </RadioGroup>
                                 </FormControl>

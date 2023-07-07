@@ -1,6 +1,19 @@
-.SwitchContainer {
-    display: flex;
-    flex-direction: row;
+.GridContainer{
+    width: 500px;
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    grid-gap: 10px;
     align-items: center;
-    padding: 0 0.5rem 0 0.5rem;
+}
+
+@media screen and (max-width: 768px) {
+    .GridContainer {
+        width: 100%;
+    }
+}
+
+@media screen and (min-width: 768px) {
+    .SettingTitle {
+        min-width: 200px;
+    }
 }

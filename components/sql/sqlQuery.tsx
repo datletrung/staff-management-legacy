@@ -87,19 +87,70 @@ export const sqlQuery = {
         ) T
         GROUP BY USER_ID
     `,
+    'fetchTotalTimeCustom':`
+        SELECT SUM(TOTAL_TIME) AS TOTAL_TIME
+        FROM (
+            SELECT
+                USER_ID
+                ,ROUND(TIME_TO_SEC(CASE WHEN TOTAL_TIME IS NOT NULL
+                                    THEN TOTAL_TIME
+                                    ELSE TIMEDIFF(NOW(), TIME_IN)
+                                    END) / 3600, 2) AS TOTAL_TIME
+            FROM TIMECLOCK
+            ,(SELECT
+                DATE(STR_TO_DATE(?, '%m/%d/%Y')) AS START_DAY
+                ,DATE(STR_TO_DATE(?, '%m/%d/%Y')) AS END_DAY
+            ) T1
+            WHERE 1=1
+                AND (DATE(TIME_IN) BETWEEN T1.START_DAY AND T1.END_DAY
+                    OR DATE(TIME_OUT) BETWEEN T1.START_DAY AND T1.END_DAY
+                )
+                AND APPROVED IN (
+                    SELECT CASE WHEN ? = 'Y'
+                        THEN 'Y'
+                        END
+                    FROM DUAL
+                    UNION ALL
+                    SELECT CASE WHEN ? = 'N'
+                        THEN 'Y'
+                        END
+                    FROM DUAL
+                    UNION ALL
+                    SELECT CASE WHEN ? = 'N'
+                        THEN 'N'
+                        END
+                    FROM DUAL
+                )
+                AND USER_ID = ?
+        ) T
+        GROUP BY USER_ID
+    `,
     'submitTimeEntry': `
         CALL SUBMIT_TIMECLOCK(?)
     `,
     //-----MANAGER ZONE > SETTINGS
-    'fetchAutoApproveSetting':`
-        SELECT SETTING_VALUE
+    'fetchSettings':`
+        SELECT SETTING_NAME, SETTING_VALUE
         FROM APP_SETTING
-        WHERE SETTING_NAME = 'AUTO_APPROVE'
+        WHERE ENABLED_FLAG = 'Y'
     `,
-    'updateAutoApproveSetting':`
+    'updateSettings':`
         UPDATE APP_SETTING
-        SET SETTING_VALUE = ?
-        WHERE SETTING_NAME = 'AUTO_APPROVE'
+        JOIN (
+            SELECT ? AS NEW_VALUE, 'COMPANY_NAME' AS SETTING_NAME
+            UNION ALL
+            SELECT ?, 'COMPANY_SHORT_NAME'
+            UNION ALL
+            SELECT ?, 'AUTO_APPROVE'
+            UNION ALL
+            SELECT ?, 'PROVINCE'
+            UNION ALL
+            SELECT ?, 'PAY_PERIOD') NEW_SETTING
+        ON APP_SETTING.SETTING_NAME = NEW_SETTING.SETTING_NAME
+        SET APP_SETTING.SETTING_VALUE = NEW_SETTING.NEW_VALUE,
+            APP_SETTING.LAST_UPDATED_AT = NOW(),
+            APP_SETTING.LAST_UPDATED_BY = ?
+        WHERE APP_SETTING.SETTING_VALUE != NEW_SETTING.NEW_VALUE
     `,
     //-----MANAGER ZONE > TIME SHEET
     'approveTimeSheet': `
@@ -111,9 +162,28 @@ export const sqlQuery = {
                 OR DATE_FORMAT(TIME_OUT, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
             )
     `,
+    'fetchTotalTimePerDay':`
+        SELECT
+            USER_ID
+            ,DATE(TIME_IN) AS EVENT_DATE
+            ,ROUND(TIME_TO_SEC(CASE WHEN TOTAL_TIME IS NOT NULL
+                                THEN TOTAL_TIME
+                                ELSE TIMEDIFF(NOW(), TIME_IN)
+                                END) / 3600, 2) AS TOTAL_TIME
+        FROM TIMECLOCK
+        ,(SELECT
+            DATE(STR_TO_DATE(?, '%m/%d/%Y')) AS START_DAY
+            ,DATE(STR_TO_DATE(?, '%m/%d/%Y')) AS END_DAY
+        ) T1
+        WHERE 1=1
+            AND (DATE(TIME_IN) BETWEEN T1.START_DAY AND T1.END_DAY
+                OR DATE(TIME_OUT) BETWEEN T1.START_DAY AND T1.END_DAY
+            )
+            AND USER_ID = ?
+    `,
     //-----MANAGER ZONE > MANAGE STAFF
     'fetchEmployeeList':`
-        SELECT USER_ID, FIRST_NAME, LAST_NAME, EMAIL, PHONE_NUMBER
+        SELECT USER_ID, FIRST_NAME, LAST_NAME, CONCAT(FIRST_NAME, ' ', LAST_NAME) AS FULL_NAME, EMAIL, PHONE_NUMBER
         FROM USER
         WHERE 1=1
             AND ACTIVE_FLAG = 'Y'

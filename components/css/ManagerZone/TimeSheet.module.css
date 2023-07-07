@@ -8,7 +8,7 @@
 .ViewChildFlexColumnLeft {
     display: flex;
     flex-direction: column;
-    width: 320px;
+    width: 400px;
     margin: 0 2rem 1rem 0;
 }
 
@@ -16,47 +16,6 @@
     display: flex;
     flex-direction: column;
     flex: auto;
-}
-
-.EmployeeList {
-    height: 400px;
-    width: 100%;
-    max-width: 320px;
-    display:flex;
-    flex-direction: column;
-    overflow-y: auto;
-}
-
-.EmployeeCardContainer {
-    cursor: pointer;
-    display: flex;
-    flex-direction: row;
-    border-radius: 0.5rem;
-    border: 2px solid rgba(0, 128, 0, 0.3);
-    margin-bottom: 0.25rem;
-}
-
-.EmployeeCard {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    background-color: inherit;
-    margin-bottom: 0.2rem;
-    padding: 0.5rem;
-}
-
-.EmployeeCardOption {
-    cursor: pointer;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
-}
-
-.UserIcon {
-    margin: auto;
-    margin-left: 10px;
 }
 
 .PopUp {
@@ -89,20 +48,56 @@
     filter: blur(3px);
 }
 
-.Title {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
+.FilterContainer{
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    grid-gap: 10px;
     align-items: center;
 }
 
-.TitleText {
-    display: inline-block;
+.FilterTitle {
+    width: 120px;
 }
 
-.TitleButton {
+.Table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.TableAlterRow {
+    background-color: #EAF5E1;
+}
+
+.TimeCardContent {
+    padding: 10px;
+}
+
+.TimeCardIn {
+    color: green;
+}
+
+.TimeCardOut {
+    color: orange;
+}
+
+.TableColumn {
+    width: 30%;
+    display: table-cell;
+    vertical-align: bottom;
+    text-align: center;
+}
+
+.TimeCardSummary {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+}
+
+/* Custom CSS for Calendar */
+.CalendarContainer {
+    padding: 0.5rem;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 0.5rem;
 }
 
 @media screen and (max-width: 768px) {
@@ -111,5 +106,9 @@
         margin: 0;
         justify-content: center;
         align-items: center;
+    }
+    .FilterTitle {
+        width: auto;
+        min-width: 100px;
     }
 }

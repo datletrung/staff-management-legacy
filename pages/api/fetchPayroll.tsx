@@ -6,10 +6,10 @@ export default async function handler(req: any, res: any){
   try {
     const province = req.body.province;
     const annualPayPeriods = req.body.annualPayPeriods;
-    const wages = req.body.wages as number;
-    const vacationPay = req.body.vacationPay as number;
-
-    if (!province || !annualPayPeriods || !wages || !vacationPay || wages == 0) {
+    const wages = Number(req.body.wages);
+    const vacationPay = Number(req.body.vacationPay);
+    
+    if (province === '' || annualPayPeriods === '' || wages == 0) {
         res.status(500).json({ error: 'Invalid data!' });
     }
 

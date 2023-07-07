@@ -136,6 +136,7 @@
 .InfoTitle {
     display: inline-flex;
     width: 120px;
+    align-items: center;
 }
 
 .InfoContent {

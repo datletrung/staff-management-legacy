@@ -2,10 +2,6 @@
     width: 100%;
 }
 
-.PayrollInfoPrintableContainer {
-    border: 1px solid black;
-}
-
 .PayrollInfoContainer {
     margin: 5px;
     padding: 5px 20px;
@@ -17,6 +13,10 @@
     grid-gap: 10px;
 }
 
+.PayrollInfoTitle {
+    width: 300px;
+}
+
 .PayrollTable {
     width: 100%;
     border-collapse: collapse;
@@ -24,4 +24,121 @@
   
 .PayrollTable td {
     padding: 10px;
+}
+
+.ViewContainer {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.ViewChildFlexColumnLeft {
+    display: block;
+    width: 400px;
+    margin: 0 2rem 1rem 0;
+}
+
+.ViewChildFlexColumnRight {
+    display: flex;
+    flex-direction: column;
+    flex: auto;
+}
+
+.EmployeeList {
+    height: 400px;
+    width: 100%;
+    max-width: 400px;
+    display:flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.EmployeeCardContainer {
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    border-radius: 0.5rem;
+    border: 2px solid rgba(0, 128, 0, 0.3);
+    margin-bottom: 0.25rem;
+}
+
+.EmployeeCard {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background-color: inherit;
+    margin-bottom: 0.2rem;
+    padding: 0.5rem;
+}
+
+.EmployeeCardOption {
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+}
+
+.UserIcon {
+    margin: auto;
+    margin-left: 10px;
+}
+
+.PopUp {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    width: 80%;
+    max-width: 800px;
+    padding: 20px;
+    border-radius: 1rem;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+}
+
+.BlurView {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.LoadingBlur {
+    filter: blur(3px);
+}
+
+.FilterContainer{
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    grid-gap: 10px;
+    align-items: center;
+}
+
+.FilterTitle {
+    width: 120px;
+}
+
+@media screen and (max-width: 768px) {
+    .ViewChildFlexColumnLeft {
+        width: 100%;
+        margin: 0;
+        justify-content: center;
+        align-items: center;
+    }
+    .PayrollInfoTitle {
+        width: 100%;
+    }
+    .FilterTitle {
+        width: auto;
+        min-width: 100px;
+    }
 }
