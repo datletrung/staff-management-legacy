@@ -121,7 +121,6 @@ export default async function handler(req: any, res: any){
     const EI = result.employeePayrollDeductions.EI;
     const taxFed = result.employeePayrollDeductions.ITDfed;
     const taxProv = result.employeePayrollDeductions.ITDprov;
-    const totalTax = taxFed + taxProv;
 
     const totalEarnings = wages + vacationPay;
     const totalDeduction = result.employeePayrollDeductions.CPP + result.employeePayrollDeductions.EI + result.employeePayrollDeductions.ITD;
@@ -135,7 +134,6 @@ export default async function handler(req: any, res: any){
         taxFed: await formatNumber(taxFed),
         taxProv: await formatNumber(taxProv),
         totalEarnings: await formatNumber(totalEarnings),
-        totalTax: await formatNumber(totalTax),
         totalDeduction: await formatNumber(totalDeduction),
         totalNetPay: await formatNumber(totalNetPay),
     }

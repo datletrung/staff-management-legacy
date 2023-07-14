@@ -25,6 +25,8 @@ export default function ManagerZoneSettings() {
     const [selectedPayPeriodOption, setSelectedPayPeriodOption] = useState('');
     const [companyName, setCompanyName] = useState('');
     const [companyShortName, setCompanyShortName] = useState('');
+    const [overtimeHourDay, setOvertimeHourDay] = useState('');
+    const [overtimeHourWeek, setOvertimeHourWeek] = useState('');
 
     const provinceOptions = [
         { label: 'Alberta', value: 'AB' },
@@ -98,6 +100,14 @@ export default function ManagerZoneSettings() {
                     setSelectedPayPeriodOption(item.SETTING_VALUE);
                     break;
                 }
+                case 'OVERTIME_HOUR_DAY': {
+                    setOvertimeHourDay(item.SETTING_VALUE);
+                    break;
+                }
+                case 'OVERTIME_HOUR_WEEK': {
+                    setOvertimeHourWeek(item.SETTING_VALUE);
+                    break;
+                }
                 default: {
                     break;
                 }
@@ -118,6 +128,8 @@ export default function ManagerZoneSettings() {
                     (checkedAutoApproveSwitch) ? 'Y' : 'N',
                     selectedProvinceOption,
                     selectedPayPeriodOption,
+                    overtimeHourDay,
+                    overtimeHourWeek,
                     userId,
                 ]
             })
@@ -143,7 +155,7 @@ export default function ManagerZoneSettings() {
             <Head>
                 <title>{`${process.env.WebsiteName}`}</title>
             </Head>
-            <h1><Link href={'/ManagerZone'}>Manager Zone</Link> {`> Settings`}</h1>
+            <h2><Link href={'/ManagerZone'} style={{textDecoration: 'underline'}}>Manager Zone</Link> &#x2022; {`App Settings`}</h2>
             <div>
                 <h4>General</h4>
                 <div className={stylesManagerZoneSettings.GridContainer}>
@@ -194,6 +206,25 @@ export default function ManagerZoneSettings() {
                         </MenuItem>
                         ))}
                     </Select>
+                    <span className={stylesManagerZoneSettings.SettingTitle}>Overtime Rules</span>
+                    <div>
+                        <TextField
+                            variant="standard"
+                            type="number"
+                            value={overtimeHourDay}
+                            onChange={(event) => {setOvertimeHourDay(event.target.value)}}
+                            style={{width: '100px'}}
+                        />
+                        hour a day OR
+                        <TextField
+                            variant="standard"
+                            type="number"
+                            value={overtimeHourWeek}
+                            onChange={(event) => {setOvertimeHourWeek(event.target.value)}}
+                            style={{width: '100px'}}
+                        />
+                        hour a week
+                    </div>
                 </div>
                 <br/>
                 <Button

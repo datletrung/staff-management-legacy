@@ -146,7 +146,7 @@ export default function SystemMaintenance() {
             <Head>
                 <title>{`${process.env.WebsiteName}`}</title>
             </Head>
-            <h1>Profile</h1>
+            <h2>Profile</h2>
             <div className={stylesProfile.FormContainer}>
                 <div className={stylesProfile.FormSplitView}>
                     <h3>

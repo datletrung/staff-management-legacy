@@ -35,7 +35,7 @@ export default function Account() {
             </Head>
             {(!session) //if not signed in then display sign in button
                 ?   <>
-                    <h1>{`Welcome to ${process.env.CompanyName}!`}</h1>
+                    <h2>{`Welcome to ${process.env.CompanyName}!`}</h2>
                     <div className={stylesIndex.FormContainer}>
                         <p>Please sign in to continue:</p>
                         <TextField
@@ -63,13 +63,13 @@ export default function Account() {
                             onClick={() => handleSignIn()}
                             className={stylesIndex.FormChild}
                         >
-                            Sign in with Credentials
+                            Sign in
                         </Button>
                     </div>
                 </>
                 :
                 <>
-                <h1>{`Welcome back, ${session?.user?.name}!`}</h1>
+                <h2>{`Welcome back, ${session?.user?.name}!`}</h2>
                 
                 </>
             }

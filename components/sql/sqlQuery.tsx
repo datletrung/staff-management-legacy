@@ -145,7 +145,12 @@ export const sqlQuery = {
             UNION ALL
             SELECT ?, 'PROVINCE'
             UNION ALL
-            SELECT ?, 'PAY_PERIOD') NEW_SETTING
+            SELECT ?, 'PAY_PERIOD'
+            UNION ALL
+            SELECT ?, 'OVERTIME_HOUR_DAY'
+            UNION ALL
+            SELECT ?, 'OVERTIME_HOUR_WEEK'
+        ) NEW_SETTING
         ON APP_SETTING.SETTING_NAME = NEW_SETTING.SETTING_NAME
         SET APP_SETTING.SETTING_VALUE = NEW_SETTING.NEW_VALUE,
             APP_SETTING.LAST_UPDATED_AT = NOW(),

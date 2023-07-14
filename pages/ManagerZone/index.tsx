@@ -22,9 +22,9 @@ export default function ManagerZone() {
             <Head>
                 <title>{`Manager Zone | ${process.env.WebsiteName}`}</title>
             </Head>
-            <h1>Manager Zone</h1>
+            <h2>Manager Zone</h2>
             <div className={stylesManagerZone.OptionButtonContainer}>
-                <Link href={"/ManagerZone/Settings"}>
+                <Link href={"/ManagerZone/AppSettings"}>
                     <div className={stylesManagerZone.OptionButton}>
                         <FontAwesomeIcon icon={faCog} className={stylesManagerZone.OptionButtonIcon} size='2xl'/>
                         <h2>App Settings</h2>

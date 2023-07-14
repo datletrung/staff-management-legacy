@@ -323,7 +323,7 @@ export default function ManagerZoneManageStaff() {
                 setNewGeneratedPassword('');
             }} />}
 
-            <h1><Link href={'/ManagerZone'}>Manager Zone</Link> {`> Manage Staff`}</h1>
+            <h2><Link href={'/ManagerZone'} style={{textDecoration: 'underline'}}>Manager Zone</Link> &#x2022; {`Manage Staff`}</h2>
             <div className={stylesManagerZoneManageStaff.ViewContainer}>
                 <div className={stylesManagerZoneManageStaff.ViewChildFlexColumnLeft}>
                     <div className={stylesManagerZoneManageStaff.Title}>

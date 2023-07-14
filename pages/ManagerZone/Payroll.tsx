@@ -110,7 +110,6 @@ export default function ManagerZonePayroll() {
         totalDeduction: '0.00',
         totalEarnings: '0.00',
         totalNetPay: '0.00',
-        totalTax: '0.00',
         vacationPay: '0.00',
         wages: '0.00',
         disclaimer: '',
@@ -202,7 +201,6 @@ export default function ManagerZonePayroll() {
             totalDeduction: '0.00',
             totalEarnings: '0.00',
             totalNetPay: '0.00',
-            totalTax: '0.00',
             vacationPay: '0.00',
             wages: '0.00',
             disclaimer: '',
@@ -266,7 +264,6 @@ export default function ManagerZonePayroll() {
                 totalDeduction: retrievedData.totalDeduction,
                 totalEarnings: retrievedData.totalEarnings,
                 totalNetPay: retrievedData.totalNetPay,
-                totalTax: retrievedData.totalTax,
                 vacationPay: retrievedData.vacationPay,
                 wages: retrievedData.wages,
                 disclaimer: '',
@@ -314,7 +311,7 @@ export default function ManagerZonePayroll() {
             <Head>
                 <title>{`${process.env.WebsiteName}`}</title>
             </Head>
-            <h1><Link href={'/ManagerZone'}>Manager Zone</Link> {`> Payroll`}</h1>
+            <h2><Link href={'/ManagerZone'} style={{textDecoration: 'underline'}}>Manager Zone</Link> &#x2022; {`Payroll`}</h2>
             {viewDisclaimerPopup && <div className={stylesManagerZonePayroll.BlurView}/>}
 
             <div className={stylesManagerZonePayroll.ViewContainer}>

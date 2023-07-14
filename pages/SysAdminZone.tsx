@@ -15,7 +15,7 @@ export default function SysAdminZone() {
             <Head>
                 <title>{`${process.env.WebsiteName}`}</title>
             </Head>
-            <h1>SysAdmin Zone</h1>
+            <h2>SysAdmin Zone</h2>
         </>
     )
 }

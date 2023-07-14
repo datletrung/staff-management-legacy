@@ -160,7 +160,7 @@ export default function ManagerZoneTimeSheet() {
                 <title>{`${process.env.WebsiteName}`}</title>
             </Head>
 
-            <h1><Link href={'/ManagerZone'}>Manager Zone</Link> {`> Time Sheet`}</h1>
+            <h2><Link href={'/ManagerZone'} style={{textDecoration: 'underline'}}>Manager Zone</Link> &#x2022; {`Time Sheet`}</h2>
             <div className={stylesManagerZoneTimeSheet.ViewContainer}>
                 <div className={stylesManagerZoneTimeSheet.ViewChildFlexColumnLeft}>
                     <div className={stylesManagerZoneTimeSheet.FilterContainer}>

@@ -163,7 +163,7 @@ export default function TimeEntry() {
             <Head>
                     <title>{`Time Entry | ${process.env.WebsiteName}`}</title>
             </Head>
-            <h1>Time Entry</h1>
+            <h2>Time Entry</h2>
 
             <div className={stylesTimeEntry.SplitViewRow}>
                 <div className={stylesTimeEntry.CenterView}>
