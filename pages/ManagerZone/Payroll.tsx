@@ -539,12 +539,6 @@ export default function ManagerZonePayroll() {
                         </div><br/>
                         <div>
                         By using this calculator, you acknowledge that the results are not guaranteed to be completely accurate or up to date. We disclaim any liability for any damages or losses arising from the use or reliance on the calculator's results. It is your responsibility to verify the information provided and seek professional advice when necessary.
-                        </div><br/>
-                        <div>
-                        Please note that tax laws and regulations can change over time, and it is essential to stay informed about the latest updates from relevant authorities.
-                        </div><br/>
-                        <div>
-                        By using this payroll deduction calculator, you agree to these terms and conditions and understand that it should not substitute for professional advice or official sources.
                         </div>
                     </div><br/>
                     <Button
