@@ -1,40 +1,45 @@
+#--------TIMECLOCK
+#--Create generated column TOTAL_TIME
+ALTER TABLE TIMECLOCK
+    DROP COLUMN IF EXISTS TOTAL_TIME,
+    ADD COLUMN TOTAL_TIME TIME AS (TIMEDIFF(TIME_OUT, TIME_IN)) AFTER TIME_OUT;
+
+#--Create Procedure SUBMIT_TIMECLOCK 
+
 DELIMITER //
 CREATE PROCEDURE SUBMIT_TIMECLOCK(
-	IN UserEmail VARCHAR(255)
+	IN UserId INT(6)
 )
 BEGIN
     IF EXISTS (
             SELECT 1
             FROM TIMECLOCK
             WHERE 1=1
-                AND USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = UserEmail)
+                AND USER_ID = UserId
                 AND TIME_OUT IS NULL
     )
     THEN
         UPDATE TIMECLOCK AS TC
         SET
             TIME_OUT = NOW()
-            ,TOTAL_TIME = TIMEDIFF(NOW(),
-                (
-                    SELECT TIME_IN
-                    FROM TIMECLOCK
-                    WHERE 1=1
-                        AND USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = UserEmail)
-                        AND TIME_OUT IS NULL
-                )
-            )
         WHERE 1=1
-            AND USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = UserEmail)
+            AND USER_ID = UserId
             AND TIME_OUT IS NULL;
     ELSE 
         INSERT INTO TIMECLOCK (`USER_ID`, `TIME_IN`, `APPROVED`)
         SELECT 
-            (SELECT USER_ID FROM USER WHERE EMAIL = UserEmail) AS USER_ID
+            UserId
             ,NOW()
             ,(SELECT IFNULL(SETTING_VALUE, 'N') FROM APP_SETTING WHERE SETTING_NAME = 'AUTO_APPROVE') AS APPROVED
         FROM DUAL;
     END IF;
 END //
 DELIMITER;
+#--CALL SUBMIT_TIMECLOCK(1);
 
-#--CALL SUBMIT_TIMECLOCK('brianle@lionrocktech.net');
+
+#--------ABSENCE
+#--Create generated column TOTAL_DAY
+ALTER TABLE ABSENCE
+    DROP COLUMN IF EXISTS TOTAL_DAY,
+    ADD COLUMN TOTAL_DAY INT(8) AS (DATEDIFF(ABSENCE_END, ABSENCE_START)+1) AFTER ABSENCE_END;

@@ -303,10 +303,6 @@ export default function ManagerZoneManageStaff() {
 
     return (
         <>
-            <Head>
-                <title>{`${process.env.WebsiteName}`}</title>
-            </Head>
-
             {viewStaffAdditionPopup && <div className={stylesManagerZoneManageStaff.BlurView} onClick={() => {
                 setViewStaffAdditionPopup(false);
                 setViewStaffAddition(false);
@@ -322,8 +318,12 @@ export default function ManagerZoneManageStaff() {
                 setResetPasswordNewPass2('');
                 setNewGeneratedPassword('');
             }} />}
-
+            
+            <Head>
+                <title>{`Manage Staff | ${process.env.WebsiteName}`}</title>
+            </Head>
             <h2><Link href={'/ManagerZone'} style={{textDecoration: 'underline'}}>Manager Zone</Link> &#x2022; {`Manage Staff`}</h2>
+            
             <div className={stylesManagerZoneManageStaff.ViewContainer}>
                 <div className={stylesManagerZoneManageStaff.ViewChildFlexColumnLeft}>
                     <div className={stylesManagerZoneManageStaff.Title}>

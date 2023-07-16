@@ -12,7 +12,7 @@ import { Select, MenuItem, Button, Autocomplete, TextField, Switch } from '@mui/
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 
 import baseApiUrl from '@api/apiConfig';
 import { checkPermissions } from '@components/CheckPermission';
@@ -47,6 +47,7 @@ export default function ManagerZonePayroll() {
     const [employeeId, setEmployeeId] = useState('');
     const [employeeName, setEmployeeName] = useState('');
     const [hourlyRate, setHourlyRate] = useState(18);
+    const [salary, setSalary] = useState(3000);
     const [vacationPayPercent, setVacationPayPercent] = useState(4);
     const [fromDate, setFromDate] = useState(dayjs().startOf('month'));
     const [toDate, setToDate] = useState(dayjs());
@@ -54,15 +55,15 @@ export default function ManagerZonePayroll() {
     const [viewPayrollResult, setViewPayrollResult] = useState(false);
     const [approvedOnly, setApprovedOnly] = useState(false);
 
-    
     const [payrollEmployeeName, setPayrollEmployeeName] = useState('');
     const [payrollProvinceOption, setPayrollProvinceOption] = useState('');
     const [payrollPayPeriodOption, setPayrollPayPeriodOption] = useState('');
     const [payrollPayDate, setPayrollPayDate] = useState(dayjs());
-
     const [payrollTotalWorkingHour, setPayrollTotalWorkingHour] = useState('');
     const [payrollHourlyRates, setPayrollHourlyRates] = useState('');
     const [payrollWages, setPayrollWages] = useState('');
+
+    const [salaryOption, setSalaryOption] = useState(false);
     
     const [viewDisclaimerPopup, setViewDisclaimerPopup] = useState(true);
 
@@ -207,6 +208,7 @@ export default function ManagerZonePayroll() {
         };
         var totalWorkingHour = 0;
         var wages = 0;
+        var vacationPay = 0;
 
         var apiUrlEndpoint = `${baseApiUrl}/fetchSql`;
         var postData = {
@@ -231,9 +233,13 @@ export default function ManagerZonePayroll() {
             return;
         }
         if (res.data.length !== 0) {
-            totalWorkingHour = Number(res.data[0].TOTAL_TIME);
-            wages = Number((totalWorkingHour * hourlyRate).toFixed(2));
-            const vacationPay = Number((wages * vacationPayPercent / 100).toFixed(2));
+            if (!salaryOption) {
+                totalWorkingHour = Number(res.data[0].TOTAL_TIME);
+                wages = Number((totalWorkingHour * hourlyRate).toFixed(2));
+                vacationPay = Number((wages * vacationPayPercent / 100).toFixed(2));
+            } else {
+                wages = Number((salary).toFixed(2));
+            }
 
             var apiUrlEndpoint = `${baseApiUrl}/fetchPayroll`;
             var postData = {
@@ -275,9 +281,9 @@ export default function ManagerZonePayroll() {
         setPayrollProvinceOption(selectedProvinceOption);
         setPayrollPayDate(payDate);
 
-        setPayrollTotalWorkingHour(totalWorkingHour.toFixed(2));
-        setPayrollHourlyRates(hourlyRate.toFixed(2));
-        setPayrollWages(wages.toFixed(2));
+        setPayrollTotalWorkingHour(salaryOption ? 'N/A' : totalWorkingHour.toFixed(2));
+        setPayrollHourlyRates(salaryOption ? 'N/A' : hourlyRate.toFixed(2));
+        setPayrollWages(salaryOption ? wages.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',') : wages.toFixed(2));
 
         setViewPayrollResult(true);
         setLoading(false);
@@ -309,13 +315,18 @@ export default function ManagerZonePayroll() {
     return (
         <>
             <Head>
-                <title>{`${process.env.WebsiteName}`}</title>
+                <title>{`Payroll | ${process.env.WebsiteName}`}</title>
             </Head>
             <h2><Link href={'/ManagerZone'} style={{textDecoration: 'underline'}}>Manager Zone</Link> &#x2022; {`Payroll`}</h2>
             {viewDisclaimerPopup && <div className={stylesManagerZonePayroll.BlurView}/>}
 
             <div className={stylesManagerZonePayroll.ViewContainer}>
                 <div className={stylesManagerZonePayroll.ViewChildFlexColumnLeft}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <hr style={{ flex: 1, marginRight: '10px' }} />
+                        <h4>Employee Details</h4>
+                        <hr style={{ flex: 1, marginLeft: '10px' }} />
+                    </div>
                     <div className={stylesManagerZonePayroll.FilterContainer}>
                         <span className={stylesManagerZonePayroll.FilterTitle}>Employee</span>
                         <Autocomplete
@@ -343,67 +354,94 @@ export default function ManagerZonePayroll() {
                             style={{ width: '100%' }}
                         />
                         <span className={stylesManagerZonePayroll.FilterTitle}>From Date</span>
-                        <div>
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DatePicker
-                                    value={fromDate}
-                                    onChange={(value: any) => {
-                                        setFromDate(value);
-                                    }}
-                                    slots={{
-                                      textField: textFieldProps => <TextField {...textFieldProps} variant='standard' />
-                                    }}
-                                />
-                            </LocalizationProvider>
-                        </div>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DatePicker
+                                value={fromDate}
+                                onChange={(value: any) => {
+                                    setFromDate(value);
+                                }}
+                                slots={{
+                                    textField: textFieldProps => <TextField {...textFieldProps} variant='standard' />
+                                }}
+                            />
+                        </LocalizationProvider>
                         <span className={stylesManagerZonePayroll.FilterTitle}>To Date</span>
-                        <div>
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DatePicker
-                                    value={toDate}
-                                    onChange={(value: any) => {
-                                        setToDate(value);
-                                    }}
-                                    slots={{
-                                      textField: textFieldProps => <TextField {...textFieldProps} variant='standard' />
-                                    }}
-                                />
-                            </LocalizationProvider>
-                        </div>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DatePicker
+                                value={toDate}
+                                onChange={(value: any) => {
+                                    setToDate(value);
+                                }}
+                                slots={{
+                                    textField: textFieldProps => <TextField {...textFieldProps} variant='standard' />
+                                }}
+                            />
+                        </LocalizationProvider>
                         <span className={stylesManagerZonePayroll.FilterTitle}>Approved only</span>
-                        <div>
-                            <Switch
-                                value={approvedOnly}
-                                onChange={(event) => {setApprovedOnly(event.target.checked)}}
+                        <Switch
+                            value={approvedOnly}
+                            onChange={(event) => {setApprovedOnly(event.target.checked)}}
+                        />
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <hr style={{ flex: 1, marginRight: '10px' }} />
+                        <h4>Payment Details</h4>
+                        <hr style={{ flex: 1, marginLeft: '10px' }} />
+                    </div>
+                    <div>
+                        <div className={stylesManagerZonePayroll.TabContainer}>
+                            <div
+                                className={`${stylesManagerZonePayroll.Tab} ${!salaryOption ? stylesManagerZonePayroll.Active : ''}`}
+                                onClick={() => setSalaryOption(false)}
+                            >
+                                Hourly Wage
+                            </div>
+                            <div
+                                className={`${stylesManagerZonePayroll.Tab} ${salaryOption ? stylesManagerZonePayroll.Active : ''}`}
+                                onClick={() => setSalaryOption(true)}
+                            >
+                                Salary
+                            </div>
+                        </div>
+                        <div className={stylesManagerZonePayroll.FilterContainer} style={{display: salaryOption ? 'none' : 'grid'}}>
+                            <span className={stylesManagerZonePayroll.FilterTitle}>Hourly Rate</span>
+                            <TextField
+                                    type="number"
+                                    variant='standard'
+                                    style={{width: '100%'}}
+                                    value={hourlyRate}
+                                    onChange={(event) => {setHourlyRate(Number(event.target.value))}}
+                                    InputProps={{
+                                        endAdornment: '$',
+                                    }}
+                            />
+                            <span className={stylesManagerZonePayroll.FilterTitle}>Vacation Pay</span>
+                            <TextField
+                                    type="number"
+                                    variant='standard'
+                                    style={{width: '100%'}}
+                                    value={vacationPayPercent}
+                                    onChange={(event) => {setVacationPayPercent(Number(event.target.value))}}
+                                    InputProps={{
+                                        endAdornment: '%',
+                                    }}
                             />
                         </div>
-                    </div>
-                    <br/><hr/><br/>
-                    <div className={stylesManagerZonePayroll.FilterContainer}>
-                        <span className={stylesManagerZonePayroll.FilterTitle}>Hourly Rate</span>
-                        <TextField
-                                type="number"
-                                variant='standard'
-                                style={{width: '100%'}}
-                                value={hourlyRate}
-                                onChange={(event) => {setHourlyRate(Number(event.target.value))}}
-                                InputProps={{
-                                    endAdornment: '$',
-                                }}
-                        />
-                        <span className={stylesManagerZonePayroll.FilterTitle}>Vacation Pay</span>
-                        <TextField
-                                type="number"
-                                variant='standard'
-                                style={{width: '100%'}}
-                                value={vacationPayPercent}
-                                onChange={(event) => {setVacationPayPercent(Number(event.target.value))}}
-                                InputProps={{
-                                    endAdornment: '%',
-                                }}
-                        />
-                        <span className={stylesManagerZonePayroll.FilterTitle}>Pay Date</span>
-                        <div>
+                        <div className={stylesManagerZonePayroll.FilterContainer} style={{display: salaryOption ? 'grid' : 'none'}}>
+                            <span className={stylesManagerZonePayroll.FilterTitle}>Salary</span>
+                            <TextField
+                                    type="number"
+                                    variant='standard'
+                                    style={{width: '100%'}}
+                                    value={salary}
+                                    onChange={(event) => {setSalary(Number(event.target.value))}}
+                                    InputProps={{
+                                        endAdornment: '$',
+                                    }}
+                            />
+                        </div><br/>
+                        <div className={stylesManagerZonePayroll.FilterContainer}>
+                            <span className={stylesManagerZonePayroll.FilterTitle}>Pay Date</span>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 <DatePicker
                                     value={payDate}
@@ -411,13 +449,17 @@ export default function ManagerZonePayroll() {
                                         setPayDate(value);
                                     }}
                                     slots={{
-                                      textField: textFieldProps => <TextField {...textFieldProps} variant='standard' />
+                                        textField: textFieldProps => <TextField {...textFieldProps} variant='standard' />
                                     }}
                                 />
                             </LocalizationProvider>
                         </div>
                     </div>
-                    <br/><hr/><br/>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <hr style={{ flex: 1, marginRight: '10px' }} />
+                        <h4>Payroll Information</h4>
+                        <hr style={{ flex: 1, marginLeft: '10px' }} />
+                    </div>
                     <div className={stylesManagerZonePayroll.FilterContainer}>
                         <span className={stylesManagerZonePayroll.FilterTitle}>Province</span>
                         <Select

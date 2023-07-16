@@ -153,7 +153,7 @@ export default function ManagerZoneSettings() {
     return (
         <>
             <Head>
-                <title>{`${process.env.WebsiteName}`}</title>
+                <title>{`App Settings | ${process.env.WebsiteName}`}</title>
             </Head>
             <h2><Link href={'/ManagerZone'} style={{textDecoration: 'underline'}}>Manager Zone</Link> &#x2022; {`App Settings`}</h2>
             <div>

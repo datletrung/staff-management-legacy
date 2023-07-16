@@ -6,7 +6,7 @@ import { checkPermissions } from '@components/CheckPermission';
 import AccessDenied from '@components/AccessDenied';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPeopleGroup, faCog, faStopwatch, faFileInvoiceDollar } from '@fortawesome/free-solid-svg-icons';
+import { faPeopleGroup, faCog, faStopwatch, faCalendarXmark, faFileInvoiceDollar } from '@fortawesome/free-solid-svg-icons';
 
 import 'react-calendar/dist/Calendar.css';
 import stylesManagerZone from '@components/css/ManagerZone/index.module.css';
@@ -40,6 +40,12 @@ export default function ManagerZone() {
                     <div className={stylesManagerZone.OptionButton}>
                         <FontAwesomeIcon icon={faStopwatch} className={stylesManagerZone.OptionButtonIcon} size='2xl'/>
                         <h2>Time Sheet</h2>
+                    </div>
+                </Link>
+                <Link href={"/ManagerZone/ManageAbsence"}>
+                    <div className={stylesManagerZone.OptionButton}>
+                        <FontAwesomeIcon icon={faCalendarXmark} className={stylesManagerZone.OptionButtonIcon} size='2xl'/>
+                        <h2>Manage Absence</h2>
                     </div>
                 </Link>
                 <Link href={"/ManagerZone/Payroll"}>

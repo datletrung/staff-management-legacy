@@ -13,7 +13,62 @@ export const sqlQuery = {
         AND ACTIVE_FLAG = 'Y'
         AND LOCKED_FLAG = 'N'
     `,
-    //-----TIME ENTRY
+    //-----STAFF ZONE > ABSENCE
+    'fetchAbsenceTable': `
+        SELECT
+            ABSENCE_ID
+            ,ABSENCE_START
+            ,ABSENCE_END
+            ,TOTAL_DAY
+            ,(SELECT MEANING FROM LOOKUPS WHERE LOOKUP_TYPE = 'APPROVAL_STATUS' AND LOOKUP_CODE = APPROVAL_STATUS) AS APPROVAL_STATUS
+        FROM ABSENCE
+        WHERE 1=1
+            AND USER_ID = ?
+        ORDER BY ABSENCE_START DESC
+                ,ABSENCE_END DESC
+    `,
+    'fetchAbsenceCalendar': `
+        SELECT DISTINCT
+            DATE_FORMAT(DATE_ADD(ABSENCE_START, INTERVAL t DAY), '%m/%d/%Y') AS ABSENCE_DAY
+            ,APPROVAL_STATUS
+        FROM (
+            SELECT t
+            FROM (
+                SELECT (t1.i + t2.i * 10) AS t
+                FROM (SELECT 0 AS i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) AS t1
+                CROSS JOIN (SELECT 0 AS i UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) AS t2
+            ) AS numbers
+            WHERE
+                t <= (SELECT MAX(TOTAL_DAY) FROM ABSENCE)
+        ) t3
+        INNER JOIN ABSENCE
+            ON DATE_ADD(ABSENCE_START, INTERVAL t DAY) BETWEEN ABSENCE_START AND ABSENCE_END
+            AND MONTH(STR_TO_DATE(?, '%m/%Y')) BETWEEN MONTH(ABSENCE_START) AND MONTH(ABSENCE_END)
+        WHERE USER_ID = ?
+    `,
+    'checkAbsenceExist':`
+        SELECT 1
+        FROM (
+            SELECT
+                STR_TO_DATE(?, '%m/%d/%Y') AS AB_START
+                ,STR_TO_DATE(?, '%m/%d/%Y') AS AB_END
+            ) t
+            ,ABSENCE
+        WHERE 1=1
+            AND USER_ID = ?
+            AND (AB_START <= ABSENCE_END AND AB_END >= ABSENCE_START)
+    `,
+    'requestAbsence': `
+        INSERT INTO ABSENCE (USER_ID, ABSENCE_START, ABSENCE_END, APPROVAL_STATUS)
+        VALUES (?, STR_TO_DATE(?, '%m/%d/%Y'), STR_TO_DATE(?, '%m/%d/%Y'), 'PENDING')
+    `,
+    'withdrawAbsence': `
+        DELETE FROM ABSENCE
+        WHERE 1=1
+            AND USER_ID = ?
+            AND FIND_IN_SET(ABSENCE_ID, ?)
+    `,
+    //-----STAFF ZONE > TIME ENTRY
     'fetchTimeEntryDay': `
         SELECT
             USER_ID
@@ -128,6 +183,15 @@ export const sqlQuery = {
     'submitTimeEntry': `
         CALL SUBMIT_TIMECLOCK(?)
     `,
+    //-----MANAGER ZONE > MANAGE ABSENCE
+    'updateApprovalStatusAbsence':`
+        UPDATE ABSENCE
+        SET APPROVAL_STATUS = ?
+            ,APPROVER = ?
+        WHERE 1=1
+            AND USER_ID = ?
+            AND FIND_IN_SET(ABSENCE_ID, ?)
+    `,
     //-----MANAGER ZONE > SETTINGS
     'fetchSettings':`
         SELECT SETTING_NAME, SETTING_VALUE
@@ -160,12 +224,20 @@ export const sqlQuery = {
     //-----MANAGER ZONE > TIME SHEET
     'approveTimeSheet': `
         UPDATE TIMECLOCK
-        SET APPROVED = 'Y', APPROVED_BY = (SELECT USER_ID FROM USER WHERE EMAIL = ? AND ACTIVE_FLAG = 'Y')
+        SET APPROVED = 'Y', APPROVED_BY = ?
         WHERE 1=1
-            AND USER_ID = (SELECT USER_ID FROM USER WHERE EMAIL = ?)
+            AND USER_ID = ?
             AND (DATE_FORMAT(TIME_IN, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
                 OR DATE_FORMAT(TIME_OUT, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
             )
+            AND 'N' = (SELECT SETTING_VALUE FROM APP_SETTING WHERE SETTING_NAME = 'AUTO_APPROVE' AND MODULE = 'TIME_ENTRY')
+    `,
+    'approveTimeSheetAll': `
+    UPDATE TIMECLOCK
+    SET APPROVED = 'Y', APPROVED_BY = ?
+    WHERE 1=1
+        AND USER_ID = ?
+        AND 'N' = (SELECT SETTING_VALUE FROM APP_SETTING WHERE SETTING_NAME = 'AUTO_APPROVE' AND MODULE = 'TIME_ENTRY')
     `,
     'fetchTotalTimePerDay':`
         SELECT

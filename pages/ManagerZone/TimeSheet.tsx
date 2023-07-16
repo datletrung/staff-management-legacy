@@ -32,6 +32,7 @@ export default function ManagerZoneTimeSheet() {
     const [timePunchMonthData, setTimePunchMonthData] = useState<String[]>([]);
     const [activeStartDate, setActiveStartDate] = useState(new Date());
     const [totalTimePerWeek, setTotalTimePerWeek] = useState(0);
+    const [viewTimeSheet, setViewTimeSheet] = useState(false);
 
     const filterOptions = (options: any[], { inputValue }: any) => {
         return options.filter(
@@ -133,6 +134,56 @@ export default function ManagerZoneTimeSheet() {
         }
     }
 
+    async function approveTimeSheet() {
+        setLoading(true);
+        if (typeof(calendarDate) === 'undefined') return;
+        let formattedDate = calendarDate.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'});
+        const apiUrlEndpoint = `${baseApiUrl}/fetchSql`;
+        let postData = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json '},
+            body: JSON.stringify({
+                query: 'approveTimeSheet',
+                para: [userId, employeeId, formattedDate, formattedDate]
+            })
+        }
+        
+        let response = await fetch(apiUrlEndpoint, postData);
+        let res = await response.json();
+        if (res.error){
+            Notify(res.error, 'error');
+        } else if (res.data.affectedRows === 0) {
+            Notify('Something went wrong! Please make sure Auto Approve is disabled and try again later.', 'error');
+        }
+        Notify('Approved.', 'success');
+        setLoading(false);
+        return;
+    }
+
+    async function approveTimeSheetAll() {
+        setLoading(true);
+        const apiUrlEndpoint = `${baseApiUrl}/fetchSql`;
+        let postData = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json '},
+            body: JSON.stringify({
+                query: 'approveTimeSheetAll',
+                para: [userId, employeeId]
+            })
+        }
+        
+        let response = await fetch(apiUrlEndpoint, postData);
+        let res = await response.json();
+        if (res.error){
+            Notify(res.error, 'error');
+        } else if (res.data.affectedRows === 0) {
+            Notify('Something went wrong! Please make sure Auto Approve is disabled and try again later.', 'error');
+        }
+        Notify('Approved all.', 'success');
+        setLoading(false);
+        return;
+    }
+
     function tileContent(datePara: any) {
         let formattedDate = datePara.date.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'});
         if (timePunchMonthData.includes(formattedDate)) {
@@ -157,10 +208,10 @@ export default function ManagerZoneTimeSheet() {
     return (
         <>
             <Head>
-                <title>{`${process.env.WebsiteName}`}</title>
+                <title>{`Time Sheet | ${process.env.WebsiteName}`}</title>
             </Head>
-
             <h2><Link href={'/ManagerZone'} style={{textDecoration: 'underline'}}>Manager Zone</Link> &#x2022; {`Time Sheet`}</h2>
+            
             <div className={stylesManagerZoneTimeSheet.ViewContainer}>
                 <div className={stylesManagerZoneTimeSheet.ViewChildFlexColumnLeft}>
                     <div className={stylesManagerZoneTimeSheet.FilterContainer}>
@@ -179,9 +230,11 @@ export default function ManagerZoneTimeSheet() {
                                     getTimeEntryPerDay(value.USER_ID, new Date());
                                     getTotalWorkingTimePerWeek(value.USER_ID, new Date());
                                     getTimeEntryPerMonth(value.USER_ID, new Date());
+                                    setViewTimeSheet(true);
                                 } else {
                                     setEmployeeId('');
                                     setEmployeeName('');
+                                    setViewTimeSheet(false);
                                 }
                             }}
                             renderInput={(params) => (
@@ -216,12 +269,30 @@ export default function ManagerZoneTimeSheet() {
                     />
                 </div>
                 <div className={`${stylesManagerZoneTimeSheet.ViewChildFlexColumnRight} ${loading ? stylesManagerZoneTimeSheet.LoadingBlur : ''}`}>
-                    <div style={{ display: (true) ? 'block' : 'none' }}> {/*CHANGE_THIS*/}
+                    <div style={{ display: (viewTimeSheet) ? 'block' : 'none' }}>
                         <center>
                             <h3>{employeeName}</h3>
                             <div>Selected date: {calendarDate.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'})}</div>
                             <div>Total hour this week: {totalTimePerWeek}</div>
                         </center>
+                        <div className={stylesManagerZoneTimeSheet.ButtonContainer}>
+                            <Button
+                                variant="outlined"
+                                color="success"
+                                style={{width:'100%'}}
+                                onClick={() => approveTimeSheet()}
+                            >
+                                APPROVE THIS DAY
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                color="success"
+                                style={{width:'100%'}}
+                                onClick={() => approveTimeSheetAll()}
+                            >
+                                APPROVE ALL
+                            </Button>
+                        </div>
                         <table className={stylesManagerZoneTimeSheet.Table}>
                             <tbody>
                             <tr>

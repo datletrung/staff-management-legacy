@@ -1,0 +1,105 @@
+.ButtonContainer {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    margin: 0.25rem;
+}
+
+.SplitViewRow {
+    display: flex;
+    flex-direction: row;
+    padding: 10px;
+}
+
+.SplitViewRowChild {
+    flex: auto;
+    margin-left: 0.5rem;
+}
+
+.SplitViewColumn {
+    display: flex;
+    flex-direction: column;
+}
+
+.AbsenceView {
+    font-size: 1.2rem;
+}
+
+.Table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.TableAlterRow {
+    background-color: #EAF5E1;
+}
+
+.AbsenceViewBlur {
+    filter: blur(3px);
+}
+
+.AbsenceContent {
+    padding: 10px;
+    width: 25%;
+    display: table-cell;
+    vertical-align: bottom;
+    text-align: center;
+}
+
+.CenterView {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.PopUp {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    width: 80%;
+    max-width: 500px;
+    padding: 20px;
+    border-radius: 1rem;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+}
+
+.BlurView {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.FormContainer{
+    width: 100%;
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    grid-gap: 10px;
+    align-items: center;
+}
+
+.FormTitle {
+    width: 150px;
+}
+
+/* Custom CSS for Calendar */
+.CalendarContainer {
+    padding: 0.5rem;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 0.5rem;
+}
+
+@media screen and (max-width: 768px) {
+    .SplitViewRow {
+        flex-direction: column;
+    }
+}

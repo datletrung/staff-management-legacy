@@ -93,6 +93,13 @@
     justify-content: space-between;
 }
 
+.ButtonContainer {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    margin: 0.25rem;
+}
+
 /* Custom CSS for Calendar */
 .CalendarContainer {
     padding: 0.5rem;

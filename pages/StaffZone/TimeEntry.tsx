@@ -2,6 +2,7 @@
 
 import { Button } from '@mui/material';
 
+import Link from "next/link";
 import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
@@ -12,9 +13,9 @@ import AccessDenied from '@components/AccessDenied';
 import baseApiUrl from '@api/apiConfig';
 
 import 'react-calendar/dist/Calendar.css';
-import stylesTimeEntry from '@components/css/TimeEntry.module.css';
+import stylesStaffZoneTimeEntry from '@components/css/StaffZone/TimeEntry.module.css';
 
-export default function TimeEntry() {
+export default function StaffZoneTimeEntry() {
     if (!checkPermissions()) {
         return <AccessDenied/>;
     }
@@ -29,8 +30,8 @@ export default function TimeEntry() {
 
     const [loading, setLoading] = useState(false);
     const [disabled, setDisabled] = useState(false);
-    const [currentDate, setCurrentDate] = useState('');
-    const [currentTime, setCurrentTime] = useState('');
+    const [currentDate, setCurrentDate] = useState(new Date().toLocaleString("en-US", {timeZone:'America/Halifax', weekday: 'short', month: 'short', day: '2-digit', year: 'numeric'}));
+    const [currentTime, setCurrentTime] = useState(new Date().toLocaleString("en-US", {timeZone:'America/Halifax', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false}));
 
     useEffect(() => {
         refreshStatus();
@@ -163,15 +164,15 @@ export default function TimeEntry() {
             <Head>
                     <title>{`Time Entry | ${process.env.WebsiteName}`}</title>
             </Head>
-            <h2>Time Entry</h2>
+            <h2><Link href={'/StaffZone'} style={{textDecoration: 'underline'}}>Staff Zone</Link> &#x2022; {`Time Entry`}</h2>
 
-            <div className={stylesTimeEntry.SplitViewRow}>
-                <div className={stylesTimeEntry.CenterView}>
-                    <div className={stylesTimeEntry.Clock}>
+            <div className={stylesStaffZoneTimeEntry.SplitViewRow}>
+                <div className={stylesStaffZoneTimeEntry.CenterView}>
+                    <div className={stylesStaffZoneTimeEntry.Clock}>
                         <div>{currentDate}</div>
-                        <div className={stylesTimeEntry.ClockTime}>{currentTime}</div>
+                        <div className={stylesStaffZoneTimeEntry.ClockTime}>{currentTime}</div>
                     </div>
-                    <Calendar className={stylesTimeEntry.CalendarContainer}
+                    <Calendar className={stylesStaffZoneTimeEntry.CalendarContainer}
                         locale='en-US'
                         onChange={(datePara: any) => {
                             setCalendarDate(datePara);
@@ -187,19 +188,19 @@ export default function TimeEntry() {
                         tileContent={tileContent}
                     />
                 </div>
-                <div className={stylesTimeEntry.SplitViewRowChild}>
-                    <div className={stylesTimeEntry.SplitViewColumn}>
-                        <div className={`${stylesTimeEntry.TimePunchView} ${loading ? stylesTimeEntry.TimePunchViewBlur : ''} `}>
+                <div className={stylesStaffZoneTimeEntry.SplitViewRowChild}>
+                    <div className={stylesStaffZoneTimeEntry.SplitViewColumn}>
+                        <div className={`${stylesStaffZoneTimeEntry.TimePunchView} ${loading ? stylesStaffZoneTimeEntry.TimePunchViewBlur : ''} `}>
                             <center>
                                 <div>Selected date: {calendarDate.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'})}</div>
                                 <div>Total hour this week: {totalTimePerWeek}</div>
                             </center>
-                            <table className={stylesTimeEntry.Table}>
+                            <table className={stylesStaffZoneTimeEntry.Table}>
                                 <tbody>
                                 <tr>
-                                    <th className={stylesTimeEntry.TableColumn}>Time in</th>
-                                    <th className={stylesTimeEntry.TableColumn}>Time out</th>
-                                    <th className={stylesTimeEntry.TableColumn}>Total hour</th>
+                                    <th className={stylesStaffZoneTimeEntry.TableColumn}>Time in</th>
+                                    <th className={stylesStaffZoneTimeEntry.TableColumn}>Time out</th>
+                                    <th className={stylesStaffZoneTimeEntry.TableColumn}>Total hour</th>
                                 </tr>
 
                                 {timePunchData.map((item:any, idx:number) => {
@@ -228,8 +229,8 @@ export default function TimeEntry() {
                                             }   
                                         }
                                         return (
-                                            <tr className={`${(idx % 2 !== 1) ? stylesTimeEntry.TableAlterRow : ''}`}>
-                                                <td className={`${stylesTimeEntry.TimeCardContent} ${stylesTimeEntry.TimeCardIn} ${stylesTimeEntry.TableColumn}`}>
+                                            <tr className={`${(idx % 2 !== 1) ? stylesStaffZoneTimeEntry.TableAlterRow : ''}`}>
+                                                <td className={`${stylesStaffZoneTimeEntry.TimeCardContent} ${stylesStaffZoneTimeEntry.TimeCardIn} ${stylesStaffZoneTimeEntry.TableColumn}`}>
                                                     {
                                                     timeIn.includes(',') ? (
                                                         <>
@@ -239,7 +240,7 @@ export default function TimeEntry() {
                                                     ) : (
                                                         timeIn
                                                     )}</td>
-                                                <td className={`${stylesTimeEntry.TimeCardContent} ${stylesTimeEntry.TimeCardOut} ${stylesTimeEntry.TableColumn}`}>
+                                                <td className={`${stylesStaffZoneTimeEntry.TimeCardContent} ${stylesStaffZoneTimeEntry.TimeCardOut} ${stylesStaffZoneTimeEntry.TableColumn}`}>
                                                     {
                                                     timeOut.includes(',') ? (
                                                         <>
@@ -249,7 +250,7 @@ export default function TimeEntry() {
                                                     ) : (
                                                         timeOut
                                                     )}</td>
-                                                <td className={`${stylesTimeEntry.TimeCardContent}  ${stylesTimeEntry.TableColumn}`}>{totalTime}</td>
+                                                <td className={`${stylesStaffZoneTimeEntry.TimeCardContent}  ${stylesStaffZoneTimeEntry.TableColumn}`}>{totalTime}</td>
                                             </tr>
                                         );
                                 })}
@@ -257,7 +258,7 @@ export default function TimeEntry() {
                             </table>
                         </div>
                         <br/>
-                        <div className={`${stylesTimeEntry.ButtonContainer} ${disabled ? stylesTimeEntry.ButtonHidden : ''}`}>
+                        <div className={`${stylesStaffZoneTimeEntry.ButtonContainer} ${disabled ? stylesStaffZoneTimeEntry.ButtonHidden : ''}`}>
                             <Button
                                 size="large"
                                 variant="outlined"

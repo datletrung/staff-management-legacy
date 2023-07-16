@@ -133,6 +133,34 @@
     width: 120px;
 }
 
+.TabContainer {
+    display: flex;
+    margin-bottom: 20px;
+    justify-content: center;
+    align-items: center;
+    gap: 1px;
+}
+
+.Tab {
+    display: flex;
+    width: 100%;
+    padding: 10px 20px;
+    cursor: pointer;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0;
+    border-radius: 5px 5px 0 0;
+}
+
+.Tab.Active {
+    background-color: #e6e6e6;
+    font-weight: bold;
+}
+
+.Tab:not(.Active):hover {
+    background-color: #E6FFE6;
+}
+
 @media screen and (max-width: 768px) {
     .ViewChildFlexColumnLeft {
         width: 100%;
