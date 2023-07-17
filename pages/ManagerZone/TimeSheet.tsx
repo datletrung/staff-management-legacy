@@ -214,6 +214,11 @@ export default function ManagerZoneTimeSheet() {
             
             <div className={stylesManagerZoneTimeSheet.ViewContainer}>
                 <div className={stylesManagerZoneTimeSheet.ViewChildFlexColumnLeft}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <hr style={{ flex: 1, marginRight: '10px' }} />
+                        <h4>Employee Details</h4>
+                        <hr style={{ flex: 1, marginLeft: '10px' }} />
+                    </div>
                     <div className={stylesManagerZoneTimeSheet.FilterContainer}>
                         <span className={stylesManagerZoneTimeSheet.FilterTitle}>Employee</span>
                         <Autocomplete
@@ -221,6 +226,13 @@ export default function ManagerZoneTimeSheet() {
                             autoHighlight
                             filterOptions={filterOptions}
                             getOptionLabel={(option: any) => option.FULL_NAME}
+                            isOptionEqualToValue={(option: any, value: any) => {
+                                return (
+                                    option?.USER_ID !== value?.USER_ID ||
+                                    option?.FULL_NAME !== value?.FULL_NAME ||
+                                    option?.EMAIL !== value?.EMAIL
+                                );
+                            }}
                             onChange={(event, value) => {
                                 if (value){
                                     setEmployeeId(value.USER_ID);

@@ -160,22 +160,6 @@ export const sqlQuery = {
                 AND (DATE(TIME_IN) BETWEEN T1.START_DAY AND T1.END_DAY
                     OR DATE(TIME_OUT) BETWEEN T1.START_DAY AND T1.END_DAY
                 )
-                AND APPROVED IN (
-                    SELECT CASE WHEN ? = 'Y'
-                        THEN 'Y'
-                        END
-                    FROM DUAL
-                    UNION ALL
-                    SELECT CASE WHEN ? = 'N'
-                        THEN 'Y'
-                        END
-                    FROM DUAL
-                    UNION ALL
-                    SELECT CASE WHEN ? = 'N'
-                        THEN 'N'
-                        END
-                    FROM DUAL
-                )
                 AND USER_ID = ?
         ) T
         GROUP BY USER_ID
@@ -311,6 +295,29 @@ export const sqlQuery = {
         SET PASSWORD = ?
         WHERE 1=1
         AND USER_ID = ?
+    `,
+    //-----MANAGER ZONE > PAYROLL
+    'savePayroll':`
+        INSERT INTO PAYROLL (PAYROLL_USER_ID, PAY_PERIOD_FROM, PAY_PERIOD_TO, PAY_DATE, PAY_PERIOD, PAY_PROVINCE, TOTAL_HOUR, HOURLY_RATE, WAGES, VACATION_PAY, TAX_FED, TAX_PROV, CPP, EI, CREATED_AT, CREATED_BY)
+        VALUES (?, STR_TO_DATE(?, '%m/%d/%Y'), STR_TO_DATE(?, '%m/%d/%Y'), STR_TO_DATE(?, '%m/%d/%Y'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)
+    `,
+    'fetchPayrollList':`
+        SELECT PAYROLL_ID, PAY_PERIOD_FROM, PAY_PERIOD_TO, TOTAL_NET_PAY
+        FROM PAYROLL
+        WHERE PAYROLL_USER_ID = ?
+    `,
+    'fetchPayrollDetail':`
+        SELECT PAYROLL_ID, PAY_PERIOD_FROM, PAY_PERIOD_TO, PAY_DATE, PAY_PERIOD, PAY_PROVINCE, TOTAL_HOUR, HOURLY_RATE, WAGES, VACATION_PAY, TAX_FED, TAX_PROV, CPP, EI, TOTAL_EARNINGS, TOTAL_DEDUCTION, TOTAL_NET_PAY
+        FROM PAYROLL
+        WHERE 1=1
+            AND PAYROLL_USER_ID = ?
+            AND PAYROLL_ID = ?
+    `,
+    'deletePayroll':`
+        DELETE FROM PAYROLL
+        WHERE 1=1
+            AND PAYROLL_USER_ID = ?
+            AND PAYROLL_ID = ?
     `,
     //-----PROFILE
     'fetchPersonalInfo':`

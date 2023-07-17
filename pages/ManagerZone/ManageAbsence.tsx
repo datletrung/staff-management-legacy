@@ -183,6 +183,11 @@ export default function ManagerZoneManageAbsence() {
             
             <div className={stylesManagerZoneManageAbsence.ViewContainer}>
                 <div className={stylesManagerZoneManageAbsence.ViewChildFlexColumnLeft}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <hr style={{ flex: 1, marginRight: '10px' }} />
+                        <h4>Employee Details</h4>
+                        <hr style={{ flex: 1, marginLeft: '10px' }} />
+                    </div>
                     <div className={stylesManagerZoneManageAbsence.FilterContainer}>
                         <span className={stylesManagerZoneManageAbsence.FilterTitle}>Employee</span>
                         <Autocomplete

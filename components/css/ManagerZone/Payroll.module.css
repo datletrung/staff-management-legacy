@@ -152,14 +152,77 @@
     border-radius: 5px 5px 0 0;
 }
 
-.Tab.Active {
-    background-color: #e6e6e6;
+.Tab.TabActive {
+    background-color: #a4eaa5;
     font-weight: bold;
 }
 
-.Tab:not(.Active):hover {
-    background-color: #E6FFE6;
+.Tab:not(.TabActive):hover {
+    background-color: #a4eaa5;
 }
+
+.ButtonContainer {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    margin: 0.25rem;
+}
+
+.Table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.TableRow{
+    cursor: pointer;
+}
+
+.TableAlterRow {
+    background-color: #EAF5E1;
+}
+
+.PayrollTableContent{
+    padding: 10px;
+    width: 30%;
+    display: table-cell;
+    vertical-align: bottom;
+    text-align: center;
+}
+
+.SubTabContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.SubTab{
+    cursor: pointer;
+    text-align: center;
+    background: #e9ecf1;
+    border-right: 1px solid #c1c4c9;
+    width: 40%;
+    padding: 10px 20px;
+}
+
+.SubTab.SubTabActive {
+    background-color: #d8fdd8;
+}
+
+.SubTab:not(.SubTabActive):hover {
+    background-color: #d8fdd8;
+}
+
+.SubTabLeft {
+    border-top-left-radius: 25px;
+    border-bottom-left-radius: 25px;
+}
+
+.SubTabRight {
+    border-right: 0px;
+    border-top-right-radius: 25px;
+    border-bottom-right-radius: 25px;
+}
+
 
 @media screen and (max-width: 768px) {
     .ViewChildFlexColumnLeft {
