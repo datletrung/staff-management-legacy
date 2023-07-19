@@ -6,7 +6,7 @@ import Notify from '@components/Notify';
 import { useState, useEffect } from 'react';
 import baseApiUrl from '@api/apiConfig';
 
-import { Button, Autocomplete, TextField, Checkbox } from '@mui/material';
+import { Button, Autocomplete, TextField } from '@mui/material';
 import Calendar from 'react-calendar';
 import { checkPermissions } from '@components/CheckPermission';
 import AccessDenied from '@components/AccessDenied';
@@ -14,6 +14,8 @@ import AccessDenied from '@components/AccessDenied';
 import 'react-calendar/dist/Calendar.css';
 import stylesManagerZoneManageAbsence from '@components/css/ManagerZone/ManageAbsence.module.css';
 import { useSession } from "next-auth/react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCheck, faXmark, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 
 export default function ManagerZoneManageAbsence() {
@@ -31,8 +33,9 @@ export default function ManagerZoneManageAbsence() {
     
     const [absenceTableData, setAbsenceTableData] = useState<any[]>([]);
     const [absenceCalendarData, setAbsenceCalendarData] = useState<any[]>([]);
-    const [absenceId, setAbsenceId] = useState(new Set());
     const [viewAbsence, setViewAbsence] = useState(false);
+    const [viewPopUpConfirm, setViewPopUpConfirm] = useState(false);
+    const [absenceId, setAbsenceId] = useState();
 
     const filterOptions = (options: any[], { inputValue }: any) => {
         return options.filter(
@@ -69,7 +72,7 @@ export default function ManagerZoneManageAbsence() {
 
     async function refreshStatus() {
         await getAbsencePerTable(employeeId);
-        await getAbsenceCalendar(employeeId, new Date());
+        await getAbsenceCalendar(employeeId, activeStartDate);
     }
 
     async function getAbsencePerTable(employeeIdPara: any) {
@@ -92,8 +95,8 @@ export default function ManagerZoneManageAbsence() {
         setLoading(false);
     }
 
-    async function getAbsenceCalendar(employeeIdPara: any, datePara: Date) {
-        let formattedDate = datePara.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit'});
+    async function getAbsenceCalendar(employeeIdPara: any, datePara: any) {
+        let formattedDate = new Date(datePara).toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit'});
         const apiUrlEndpoint = `${baseApiUrl}/fetchSql`;
         const postData = {
                 method: 'POST',
@@ -111,10 +114,6 @@ export default function ManagerZoneManageAbsence() {
     }
 
     async function updateApprovalStatusAbsence(status: any) {
-        if (absenceId.size === 0){
-            Notify('Please select at least one absence record.', 'error');
-            return;
-        }
         if (!['APPROVED', 'REJECTED'].includes(status)){
             Notify('Invalid option.', 'error');
             return;
@@ -126,7 +125,7 @@ export default function ManagerZoneManageAbsence() {
                 headers: { 'Content-Type': 'application/json '},
                 body: JSON.stringify({
                         query: 'updateApprovalStatusAbsence',
-                        para: [status, userId, employeeId, Array.from(absenceId).join(',')]
+                        para: [status, userId, employeeId]
                 })
         }        
         const response = await fetch(apiUrlEndpoint, postData);
@@ -135,9 +134,69 @@ export default function ManagerZoneManageAbsence() {
         if (res.error){
             Notify(res.error, 'error');
         }
-        setAbsenceId(new Set());
         refreshStatus();
     }
+
+    async function approveAbsence(absenceIdPara: any) {
+        setLoading(true);
+        const apiUrlEndpoint = `${baseApiUrl}/fetchSql`;
+        const postData = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json '},
+                body: JSON.stringify({
+                        query: 'approveAbsence',
+                        para: [userId, employeeId, absenceIdPara]
+                })
+        }        
+        const response = await fetch(apiUrlEndpoint, postData);
+        const res = await response.json();
+        setLoading(false);
+        if (res.error){
+            Notify(res.error, 'error');
+        }
+        refreshStatus();
+    }
+
+    async function rejectAbsence(absenceIdPara: any) {
+        setLoading(true);
+        const apiUrlEndpoint = `${baseApiUrl}/fetchSql`;
+        const postData = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json '},
+                body: JSON.stringify({
+                        query: 'rejectAbsence',
+                        para: [userId, employeeId, absenceIdPara]
+                })
+        }        
+        const response = await fetch(apiUrlEndpoint, postData);
+        const res = await response.json();
+        setLoading(false);
+        if (res.error){
+            Notify(res.error, 'error');
+        }
+        refreshStatus();
+    }
+
+    async function deleteAbsence() {
+        setLoading(true);
+        const apiUrlEndpoint = `${baseApiUrl}/fetchSql`;
+        const postData = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json '},
+                body: JSON.stringify({
+                        query: 'deleteAbsence',
+                        para: [employeeId, absenceId]
+                })
+        }        
+        const response = await fetch(apiUrlEndpoint, postData);
+        const res = await response.json();
+        setLoading(false);
+        if (res.error){
+            Notify(res.error, 'error');
+        }
+        setViewPopUpConfirm(false);
+        refreshStatus();
+    }    
 
     function tileContent(datePara: any) {
         const formattedDate = datePara.date.toLocaleString("en-US", { timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit' });
@@ -176,10 +235,14 @@ export default function ManagerZoneManageAbsence() {
 
     return (
         <>
+            {viewPopUpConfirm && <div className={stylesManagerZoneManageAbsence.BlurView} onClick={() => {
+                setViewPopUpConfirm(false);
+            }} />}
+
             <Head>
-                <title>{`Time Sheet | ${process.env.WebsiteName}`}</title>
+                <title>{`Manage Absence | ${process.env.WebsiteName}`}</title>
             </Head>
-            <h2><Link href={'/ManagerZone'} style={{textDecoration: 'underline'}}>Manager Zone</Link> &#x2022; {`Time Sheet`}</h2>
+            <h2><Link href={'/ManagerZone'} style={{textDecoration: 'underline'}}>Manager Zone</Link> &#x2022; {`Manage Absence`}</h2>
             
             <div className={stylesManagerZoneManageAbsence.ViewContainer}>
                 <div className={stylesManagerZoneManageAbsence.ViewChildFlexColumnLeft}>
@@ -200,14 +263,14 @@ export default function ManagerZoneManageAbsence() {
                                     setEmployeeId(value.USER_ID);
                                     setEmployeeName(value.FULL_NAME);
                                     getAbsencePerTable(value.USER_ID);
-                                    getAbsenceCalendar(value.USER_ID, new Date());
+                                    getAbsenceCalendar(value.USER_ID, activeStartDate);
                                     setViewAbsence(true);
                                 } else {
                                     setEmployeeId('');
                                     setEmployeeName('');
                                     setViewAbsence(false);
                                     setAbsenceTableData([]);
-                                    setAbsenceTableData([]);
+                                    setAbsenceCalendarData([]);
                                 }
                             }}
                             renderInput={(params) => (
@@ -225,85 +288,124 @@ export default function ManagerZoneManageAbsence() {
                         locale='en-US'
                         activeStartDate={activeStartDate}
                         onActiveStartDateChange={(date: any) => {
-                            setActiveStartDate(date.date);
+                            setActiveStartDate(date.activeStartDate);
                             getAbsenceCalendar(employeeId, date.activeStartDate);
                         }}
                         tileContent={tileContent}
                     />
                 </div>
                 <div className={`${stylesManagerZoneManageAbsence.ViewChildFlexColumnRight} ${loading ? stylesManagerZoneManageAbsence.LoadingBlur : ''}`}>
+                    
+                
                     <div style={{ display: (viewAbsence) ? 'block' : 'none' }}>
-                        <center>
-                            <h3>{employeeName}</h3>
-                        </center>
-                        <div className={stylesManagerZoneManageAbsence.ButtonContainer}>
-                            <Button
-                                variant="outlined"
-                                color="success"
-                                style={{width:'100%'}}
-                                onClick={() => updateApprovalStatusAbsence('APPROVED')}
-                            >
-                                APPROVE
-                            </Button>
-                            <Button
-                                variant="outlined"
-                                color="error"
-                                style={{width:'100%'}}
-                                onClick={() => updateApprovalStatusAbsence('REJECTED')}
-                            >
-                                REJECT
-                            </Button>
-                        </div>
-                        <table className={stylesManagerZoneManageAbsence.Table}>
-                            <tbody>
-                            <tr>
-                                <th></th>
-                                <th className={stylesManagerZoneManageAbsence.TableColumn}>Start date</th>
-                                <th className={stylesManagerZoneManageAbsence.TableColumn}>End date</th>
-                                <th className={stylesManagerZoneManageAbsence.TableColumn}>Total day(s)</th>
-                                <th className={stylesManagerZoneManageAbsence.TableColumn}>Approval Status</th>
-                            </tr>
+                        <div className={`${stylesManagerZoneManageAbsence.AbsenceView} ${loading ? stylesManagerZoneManageAbsence.AbsenceViewBlur : ''} `}>
+                            <center>
+                                <h2>{employeeName}</h2>
+                            </center>
+                            <div className={stylesManagerZoneManageAbsence.ButtonContainer}>
+                                <Button
+                                    variant="outlined"
+                                    color="success"
+                                    style={{width:'100%'}}
+                                    onClick={() => updateApprovalStatusAbsence('APPROVED')}
+                                >
+                                    APPROVE ALL
+                                </Button>
+                                <Button
+                                    variant="outlined"
+                                    color="error"
+                                    style={{width:'100%'}}
+                                    onClick={() => updateApprovalStatusAbsence('REJECTED')}
+                                >
+                                    REJECT ALL
+                                </Button>
+                            </div>
+                            <table className={stylesManagerZoneManageAbsence.Table}>
+                                <tbody>
+                                <tr>
+                                    <th className={stylesManagerZoneManageAbsence.TableColumn}>Start date</th>
+                                    <th className={stylesManagerZoneManageAbsence.TableColumn}>End date</th>
+                                    <th className={stylesManagerZoneManageAbsence.TableColumn}>Total day(s)</th>
+                                    <th className={stylesManagerZoneManageAbsence.TableColumn}>Approval Status</th>
+                                    <th></th>
+                                </tr>
 
-                            {absenceTableData.map((item:any, idx:number) => {
-                                return (
-                                    <tr className={`${(idx % 2 !== 1) ? stylesManagerZoneManageAbsence.TableAlterRow : ''}`}>
-                                        <td>
-                                            <Checkbox
-                                                key={item.ABSENCE_ID}
-                                                color="success"
-                                                style={{ display: item.APPROVAL_STATUS === 'Pending' ? 'block' : 'none' }}
-                                                checked={absenceId.has(item.ABSENCE_ID.toString().padStart(16, '0'))}
-                                                onChange={(event) => {
-                                                    const { checked } = event.target;
-                                                    if (checked) {
-                                                        setAbsenceId((prevSet:any) => new Set(prevSet).add(item.ABSENCE_ID.toString().padStart(16, '0')));
-                                                    } else {
-                                                        setAbsenceId((prevSet:any) => {
-                                                            const newSet = new Set(prevSet);
-                                                            newSet.delete(item.ABSENCE_ID.toString().padStart(16, '0'));
-                                                            return newSet;
-                                                        });
-                                                    }
-                                                }}
-                                            />
-                                        </td>
-                                        <td className={stylesManagerZoneManageAbsence.AbsenceContent}>
-                                            {new Date(item.ABSENCE_START).toLocaleString([], { day: '2-digit', month: '2-digit', year:'numeric' })}
-                                        </td>
-                                        <td className={stylesManagerZoneManageAbsence.AbsenceContent}>
-                                            {new Date(item.ABSENCE_END).toLocaleString([], { day: '2-digit', month: '2-digit', year:'numeric' })}
-                                        </td>
-                                        <td className={stylesManagerZoneManageAbsence.AbsenceContent}>
-                                            {item.TOTAL_DAY}
-                                        </td>
-                                        <td className={stylesManagerZoneManageAbsence.AbsenceContent} style={{ color: item.APPROVAL_STATUS === 'Pending' ? 'orange' : item.APPROVAL_STATUS === 'Approved' ? 'green'  : item.APPROVAL_STATUS === 'Rejected' ? 'red': 'black' }}>
-                                            {item.APPROVAL_STATUS}
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                            </tbody>
-                        </table>
+                                {absenceTableData.map((item:any, idx:number) => {
+                                    return (
+                                        <tr className={`${(idx % 2 !== 1) ? stylesManagerZoneManageAbsence.TableAlterRow : ''}`}>
+                                            <td className={stylesManagerZoneManageAbsence.AbsenceContent}>
+                                                {new Date(item.ABSENCE_START).toLocaleString([], { day: '2-digit', month: '2-digit', year:'numeric' })}
+                                            </td>
+                                            <td className={stylesManagerZoneManageAbsence.AbsenceContent}>
+                                                {new Date(item.ABSENCE_END).toLocaleString([], { day: '2-digit', month: '2-digit', year:'numeric' })}
+                                            </td>
+                                            <td className={stylesManagerZoneManageAbsence.AbsenceContent}>
+                                                {item.TOTAL_DAY}
+                                            </td>
+                                            <td className={stylesManagerZoneManageAbsence.AbsenceContent} style={{ color: item.APPROVAL_STATUS === 'Pending' ? 'orange' : item.APPROVAL_STATUS === 'Approved' ? 'green'  : item.APPROVAL_STATUS === 'Rejected' ? 'red': 'black' }}>
+                                                {item.APPROVAL_STATUS}
+                                            </td>
+                                            <td className={stylesManagerZoneManageAbsence.AbsenceContent}>
+                                                <div style={{ display: 'flex', gap: '5px', justifyContent: 'right'}}>
+                                                    <div
+                                                        style={{ display: item.APPROVAL_STATUS === 'Pending' ? 'inline-flex' : 'none'}}
+                                                        className={`${stylesManagerZoneManageAbsence.ButtonIcon} ${stylesManagerZoneManageAbsence.ButtonIconTick}`}
+                                                        title="Approve"
+                                                        onClick={() => {approveAbsence(item.ABSENCE_ID)}}
+                                                    >
+                                                        <FontAwesomeIcon icon={faCheck} />
+                                                    </div>
+                                                    <div
+                                                        style={{ display: item.APPROVAL_STATUS === 'Pending' ? 'inline-flex' : 'none'}}
+                                                        className={`${stylesManagerZoneManageAbsence.ButtonIcon} ${stylesManagerZoneManageAbsence.ButtonIconCross}`}
+                                                        title="Reject"
+                                                        onClick={() => {rejectAbsence(item.ABSENCE_ID)}}
+                                                    >
+                                                        <FontAwesomeIcon icon={faXmark} />
+                                                    </div>
+                                                    <div
+                                                        className={`${stylesManagerZoneManageAbsence.ButtonIcon} ${stylesManagerZoneManageAbsence.ButtonIconTrash}`}
+                                                        title="Delete"
+                                                        onClick={() => {
+                                                            setAbsenceId(item.ABSENCE_ID);
+                                                            setViewPopUpConfirm(true);
+                                                        }}
+                                                    >
+                                                        <FontAwesomeIcon icon={faTrash} />
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style={{ display: (viewPopUpConfirm) ? 'block' : 'none' }}>
+                <div className={stylesManagerZoneManageAbsence.PopUp}>
+                    <center><h2>Confirm delete</h2></center>
+                    <div>
+                        <span>Are you sure you want to delete this record?</span><br/>
+                        <span>This action cannot be undone.</span>
+                    </div>
+                    <br/>
+                    <div style={{display: 'flex', gap: '5px', justifyContent: 'right'}}>
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            onClick={() => deleteAbsence()}
+                        >
+                            DELETE
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            onClick={() => setViewPopUpConfirm(false)}
+                        >
+                            CANCEL
+                        </Button>
                     </div>
                 </div>
             </div>

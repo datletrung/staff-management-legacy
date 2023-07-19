@@ -36,6 +36,9 @@ export default function ManagerZone() {
                         <h2>Manage Staff</h2>
                     </div>
                 </Link>
+            </div>
+            <br/>
+            <div className={stylesManagerZone.OptionButtonContainer}>
                 <Link href={"/ManagerZone/TimeSheet"}>
                     <div className={stylesManagerZone.OptionButton}>
                         <FontAwesomeIcon icon={faStopwatch} className={stylesManagerZone.OptionButtonIcon} size='2xl'/>

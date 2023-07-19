@@ -45,6 +45,7 @@ export const sqlQuery = {
             ON DATE_ADD(ABSENCE_START, INTERVAL t DAY) BETWEEN ABSENCE_START AND ABSENCE_END
             AND MONTH(STR_TO_DATE(?, '%m/%Y')) BETWEEN MONTH(ABSENCE_START) AND MONTH(ABSENCE_END)
         WHERE USER_ID = ?
+        ORDER BY CREATED_AT DESC
     `,
     'checkAbsenceExist':`
         SELECT 1
@@ -56,17 +57,18 @@ export const sqlQuery = {
             ,ABSENCE
         WHERE 1=1
             AND USER_ID = ?
+            AND APPROVAL_STATUS = 'APPROVED'
             AND (AB_START <= ABSENCE_END AND AB_END >= ABSENCE_START)
     `,
     'requestAbsence': `
-        INSERT INTO ABSENCE (USER_ID, ABSENCE_START, ABSENCE_END, APPROVAL_STATUS)
-        VALUES (?, STR_TO_DATE(?, '%m/%d/%Y'), STR_TO_DATE(?, '%m/%d/%Y'), 'PENDING')
+        INSERT INTO ABSENCE (USER_ID, ABSENCE_START, ABSENCE_END, APPROVAL_STATUS, CREATED_AT)
+        VALUES (?, STR_TO_DATE(?, '%m/%d/%Y'), STR_TO_DATE(?, '%m/%d/%Y'), 'PENDING', NOW())
     `,
-    'withdrawAbsence': `
+    'deleteAbsence': `
         DELETE FROM ABSENCE
         WHERE 1=1
             AND USER_ID = ?
-            AND FIND_IN_SET(ABSENCE_ID, ?)
+            AND ABSENCE_ID = ?
     `,
     //-----STAFF ZONE > TIME ENTRY
     'fetchTimeEntryDay': `
@@ -171,10 +173,33 @@ export const sqlQuery = {
     'updateApprovalStatusAbsence':`
         UPDATE ABSENCE
         SET APPROVAL_STATUS = ?
+            ,STATUS_CHANGE_AT = NOW()
             ,APPROVER = ?
         WHERE 1=1
             AND USER_ID = ?
-            AND FIND_IN_SET(ABSENCE_ID, ?)
+            AND APPROVAL_STATUS = 'PENDING'
+    `,
+    'approveAbsence': `
+        UPDATE ABSENCE
+        SET
+            APPROVAL_STATUS = 'APPROVED'
+            ,STATUS_CHANGE_AT = NOW()
+            ,APPROVER = ?
+        WHERE 1=1
+            AND USER_ID = ?
+            AND ABSENCE_ID = ?
+            AND APPROVAL_STATUS = 'PENDING'
+    `,
+    'rejectAbsence': `
+        UPDATE ABSENCE
+        SET
+            APPROVAL_STATUS = 'REJECTED'
+            ,STATUS_CHANGE_AT = NOW()
+            ,APPROVER = ?
+        WHERE 1=1
+            AND USER_ID = ?
+            AND ABSENCE_ID = ?
+            AND APPROVAL_STATUS = 'PENDING'
     `,
     //-----MANAGER ZONE > SETTINGS
     'fetchSettings':`
@@ -214,14 +239,16 @@ export const sqlQuery = {
             AND (DATE_FORMAT(TIME_IN, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
                 OR DATE_FORMAT(TIME_OUT, '%Y-%m-%d') = DATE_FORMAT(STR_TO_DATE(?, '%m/%d/%Y'), '%Y-%m-%d')
             )
+            AND TIME_OUT IS NOT NULL
             AND 'N' = (SELECT SETTING_VALUE FROM APP_SETTING WHERE SETTING_NAME = 'AUTO_APPROVE' AND MODULE = 'TIME_ENTRY')
     `,
     'approveTimeSheetAll': `
-    UPDATE TIMECLOCK
-    SET APPROVED = 'Y', APPROVED_BY = ?
-    WHERE 1=1
-        AND USER_ID = ?
-        AND 'N' = (SELECT SETTING_VALUE FROM APP_SETTING WHERE SETTING_NAME = 'AUTO_APPROVE' AND MODULE = 'TIME_ENTRY')
+        UPDATE TIMECLOCK
+        SET APPROVED = 'Y', APPROVED_BY = ?
+        WHERE 1=1
+            AND USER_ID = ?
+            AND TIME_OUT IS NOT NULL
+            AND 'N' = (SELECT SETTING_VALUE FROM APP_SETTING WHERE SETTING_NAME = 'AUTO_APPROVE' AND MODULE = 'TIME_ENTRY')
     `,
     'fetchTotalTimePerDay':`
         SELECT
@@ -298,25 +325,25 @@ export const sqlQuery = {
     `,
     //-----MANAGER ZONE > PAYROLL
     'savePayroll':`
-        INSERT INTO PAYROLL (PAYROLL_USER_ID, PAY_PERIOD_FROM, PAY_PERIOD_TO, PAY_DATE, PAY_PERIOD, PAY_PROVINCE, TOTAL_HOUR, HOURLY_RATE, WAGES, VACATION_PAY, TAX_FED, TAX_PROV, CPP, EI, CREATED_AT, CREATED_BY)
+        INSERT INTO PAYROLL (USER_ID, PAY_PERIOD_FROM, PAY_PERIOD_TO, PAY_DATE, PAY_PERIOD, PAY_PROVINCE, TOTAL_HOUR, HOURLY_RATE, WAGES, VACATION_PAY, TAX_FED, TAX_PROV, CPP, EI, CREATED_AT, CREATED_BY)
         VALUES (?, STR_TO_DATE(?, '%m/%d/%Y'), STR_TO_DATE(?, '%m/%d/%Y'), STR_TO_DATE(?, '%m/%d/%Y'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)
     `,
     'fetchPayrollList':`
         SELECT PAYROLL_ID, PAY_PERIOD_FROM, PAY_PERIOD_TO, TOTAL_NET_PAY
         FROM PAYROLL
-        WHERE PAYROLL_USER_ID = ?
+        WHERE USER_ID = ?
     `,
     'fetchPayrollDetail':`
         SELECT PAYROLL_ID, PAY_PERIOD_FROM, PAY_PERIOD_TO, PAY_DATE, PAY_PERIOD, PAY_PROVINCE, TOTAL_HOUR, HOURLY_RATE, WAGES, VACATION_PAY, TAX_FED, TAX_PROV, CPP, EI, TOTAL_EARNINGS, TOTAL_DEDUCTION, TOTAL_NET_PAY
         FROM PAYROLL
         WHERE 1=1
-            AND PAYROLL_USER_ID = ?
+            AND USER_ID = ?
             AND PAYROLL_ID = ?
     `,
     'deletePayroll':`
         DELETE FROM PAYROLL
         WHERE 1=1
-            AND PAYROLL_USER_ID = ?
+            AND USER_ID = ?
             AND PAYROLL_ID = ?
     `,
     //-----PROFILE

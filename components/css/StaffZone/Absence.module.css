@@ -42,7 +42,7 @@
     padding: 10px;
     width: 25%;
     display: table-cell;
-    vertical-align: bottom;
+    vertical-align: center;
     text-align: center;
 }
 
@@ -88,6 +88,25 @@
 
 .FormTitle {
     width: 150px;
+}
+
+
+.ButtonIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.ButtonIcon::before {
+    font-size: 14px;
+}
+
+.ButtonIconCross {
+    border: 1px solid red;
+    color: red;
 }
 
 /* Custom CSS for Calendar */

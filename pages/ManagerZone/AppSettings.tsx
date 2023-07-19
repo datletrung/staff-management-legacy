@@ -140,9 +140,9 @@ export default function ManagerZoneSettings() {
         if (res.error){
             Notify(res.error, 'error');
         } else if (res.data.affectedRows == 0) {
-            Notify(`Nothing changed!`, 'warn');
+            Notify(`Nothing changed.`, 'warn');
         } else if (res.data.affectedRows > 0) {
-            Notify(`Setting updated!`, 'success');
+            Notify(`Setting updated.`, 'success');
         }
     }
 

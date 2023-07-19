@@ -148,7 +148,7 @@ export default function StaffZoneTimeEntry() {
             return (
                 <div
                     style={{
-                        backgroundColor: '#39FF14',
+                        backgroundColor: 'green',
                         width: '100%',
                         height: '5px',
                     }}

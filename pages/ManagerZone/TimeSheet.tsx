@@ -88,8 +88,8 @@ export default function ManagerZoneTimeSheet() {
         setLoading(false);
     }
 
-    async function getTimeEntryPerMonth(employeeIdPara: any, datePara: Date) {
-        let formattedDate = datePara.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit'});
+    async function getTimeEntryPerMonth(employeeIdPara: any, datePara: any) {
+        let formattedDate = new Date(datePara).toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit'});
         const apiUrlEndpoint = `${baseApiUrl}/fetchSql`;
         const postData = {
                 method: 'POST',
@@ -152,8 +152,8 @@ export default function ManagerZoneTimeSheet() {
         let res = await response.json();
         if (res.error){
             Notify(res.error, 'error');
-        } else if (res.data.affectedRows === 0) {
-            Notify('Something went wrong! Please make sure Auto Approve is disabled and try again later.', 'error');
+            setLoading(false);
+            return;
         }
         Notify('Approved.', 'success');
         setLoading(false);
@@ -176,8 +176,8 @@ export default function ManagerZoneTimeSheet() {
         let res = await response.json();
         if (res.error){
             Notify(res.error, 'error');
-        } else if (res.data.affectedRows === 0) {
-            Notify('Something went wrong! Please make sure Auto Approve is disabled and try again later.', 'error');
+            setLoading(false);
+            return;
         }
         Notify('Approved all.', 'success');
         setLoading(false);
@@ -190,7 +190,7 @@ export default function ManagerZoneTimeSheet() {
             return (
                 <div
                     style={{
-                        backgroundColor: '#39FF14',
+                        backgroundColor: 'green',
                         width: '100%',
                         height: '5px',
                     }}
@@ -241,12 +241,14 @@ export default function ManagerZoneTimeSheet() {
 
                                     getTimeEntryPerDay(value.USER_ID, new Date());
                                     getTotalWorkingTimePerWeek(value.USER_ID, new Date());
-                                    getTimeEntryPerMonth(value.USER_ID, new Date());
+                                    getTimeEntryPerMonth(value.USER_ID, activeStartDate);
                                     setViewTimeSheet(true);
                                 } else {
                                     setEmployeeId('');
                                     setEmployeeName('');
                                     setViewTimeSheet(false);
+                                    setTimePunchData([]);
+                                    setTimePunchMonthData([]);
                                 }
                             }}
                             renderInput={(params) => (
@@ -273,7 +275,7 @@ export default function ManagerZoneTimeSheet() {
                         }}
                         activeStartDate={activeStartDate}
                         onActiveStartDateChange={(date: any) => {
-                            setActiveStartDate(date.date);
+                            setActiveStartDate(date.activeStartDate);
                             getTimeEntryPerMonth(employeeId, date.activeStartDate);
                         }}
                         value={calendarDate}

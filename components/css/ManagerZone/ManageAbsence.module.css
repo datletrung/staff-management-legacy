@@ -129,6 +129,34 @@
     margin: 0.25rem;
 }
 
+.ButtonIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.ButtonIcon::before {
+    font-size: 14px;
+}
+
+.ButtonIconTick {
+    border: 1px solid green;
+    color: green;
+}
+
+.ButtonIconCross {
+    border: 1px solid red;
+    color: red;
+}
+
+.ButtonIconTrash {
+    border: 1px solid gray;
+    color: gray;
+}
+
 /* Custom CSS for Calendar */
 .CalendarContainer {
     padding: 0.5rem;
