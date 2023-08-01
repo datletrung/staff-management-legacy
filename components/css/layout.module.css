@@ -45,7 +45,9 @@
 }
 
 .FooterContainer {
+    font-size: 14px;
     margin-top: auto;
+    text-align: center;
 }
 
 .NavBarContainer {

@@ -107,7 +107,7 @@ export default function Layout({ children }:{ children: any}) {
                 </div>
             </div>
             <div className={styles.FooterContainer}> {/*Footer*/}
-                <center><p>Made with ❤ by Brian</p></center>
+                <p>&copy; {new Date().getFullYear()} Daydream Technology. All rights reserved.</p>
             </div>
         </div>
         </>
