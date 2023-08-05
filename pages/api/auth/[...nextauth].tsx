@@ -76,6 +76,10 @@ export default NextAuth({
             return session;
         },
     },
+    session: {
+      strategy: "jwt",
+      maxAge: 60 * 60,
+    },
     theme: {
         colorScheme: 'light',
     },

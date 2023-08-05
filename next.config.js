@@ -3,8 +3,8 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   env: {
-    CompanyName: 'Lionrock Technology Inc.',
-    WebsiteName: 'LRT Staff Management',
+    CompanyName: 'Daydream Technology',
+    WebsiteName: 'Daydream HCM',
   },
   images: {
     remotePatterns: [
