@@ -373,5 +373,77 @@ export const sqlQuery = {
         AND USER_ID = ?
         AND PASSWORD = ?
     `,
+    //-----PROFILE
+    'fetchTotalHourPerWeek':`
+        SELECT
+            FULL_NAME AS ID
+            ,TOTAL_HOUR AS X_AXIS
+            ,WEEK_NUMBER AS Y_AXIS
+        FROM (   
+            SELECT
+                (SELECT CONCAT(FIRST_NAME, ' ', LAST_NAME) FROM USER WHERE USER_ID = TC.USER_ID) AS FULL_NAME
+                ,WEEK(TC.TIME_IN) AS WEEK_NUMBER
+                ,ROUND(SUM(TIME_TO_SEC(TIME(TC.TOTAL_TIME)) / 3600), 2) AS TOTAL_HOUR
+            FROM TIMECLOCK TC
+            GROUP BY TC.USER_ID, WEEK_NUMBER
+            ORDER BY TC.USER_ID, WEEK_NUMBER
+        ) t
+    `,
+    'fetchAttendancePerWeek':`
+        SELECT
+            FULL_NAME AS ID
+            ,ATTENDANCE_COUNT AS X_AXIS
+            ,WEEK_NUMBER AS Y_AXIS
+        FROM (   
+            SELECT
+                (SELECT CONCAT(FIRST_NAME, ' ', LAST_NAME) FROM USER WHERE USER_ID = TC.USER_ID) AS FULL_NAME
+                ,WEEK(TC.TIME_IN) AS WEEK_NUMBER
+                ,COUNT(DISTINCT DATE(TIME_IN)) AS ATTENDANCE_COUNT
+            FROM TIMECLOCK TC
+            GROUP BY TC.USER_ID, WEEK_NUMBER
+            ORDER BY TC.USER_ID, WEEK_NUMBER
+        ) t
+    `,
+    'fetchAvgHourPerDay':`
+        SELECT
+            FULL_NAME AS ID
+            ,AVG_WORKING_HOUR AS X_AXIS
+            ,DAY_OF_WEEK AS Y_AXIS
+        FROM (
+            SELECT
+                (SELECT CONCAT(FIRST_NAME, ' ', LAST_NAME) FROM USER WHERE USER_ID = TIMECLOCK.USER_ID) AS FULL_NAME
+                ,days.DAY_OF_WEEK
+                ,COALESCE(ROUND(AVG(TIME_TO_SEC(TIME(TIMECLOCK.TOTAL_TIME)) / 3600), 2), 0) AS AVG_WORKING_HOUR
+            FROM (
+                    SELECT 1 AS DAY_ORDER, 'Sunday' AS DAY_OF_WEEK UNION ALL
+                    SELECT 2 AS DAY_ORDER, 'Monday' AS DAY_OF_WEEK UNION ALL
+                    SELECT 3 AS DAY_ORDER, 'Tuesday' AS DAY_OF_WEEK UNION ALL
+                    SELECT 4 AS DAY_ORDER, 'Wednesday' AS DAY_OF_WEEK UNION ALL
+                    SELECT 5 AS DAY_ORDER, 'Thursday' AS DAY_OF_WEEK UNION ALL
+                    SELECT 6 AS DAY_ORDER, 'Friday' AS DAY_OF_WEEK UNION ALL
+                    SELECT 7 AS DAY_ORDER, 'Saturday' AS DAY_OF_WEEK
+                ) AS days
+            LEFT JOIN TIMECLOCK
+                ON days.DAY_OF_WEEK = DAYNAME(TIMECLOCK.TIME_IN)
+                AND TIMECLOCK.TIME_OUT IS NOT NULL
+            GROUP BY TIMECLOCK.USER_ID, days.DAY_OF_WEEK
+            ORDER BY TIMECLOCK.USER_ID, days.DAY_ORDER
+        ) t
+    `,
+    'fetchTotalSalaryPaid':`
+        SELECT
+            1 AS ID
+            ,MONTHLY_SALARY_PAY AS X_AXIS
+            ,MONTH_YEAR AS Y_AXIS
+        FROM (
+            SELECT 
+                CONCAT(MONTHNAME(PAY_PERIOD_FROM), ' ', YEAR(PAY_PERIOD_FROM)) AS MONTH_YEAR
+                ,SUM(TOTAL_NET_PAY) AS MONTHLY_SALARY_PAY
+            FROM PAYROLL
+            WHERE MONTH(PAY_PERIOD_FROM) = MONTH(PAY_PERIOD_TO) AND YEAR(PAY_PERIOD_FROM) = YEAR(PAY_PERIOD_TO)
+            GROUP BY MONTH_YEAR
+            ORDER BY MIN(PAY_PERIOD_FROM)
+        ) t
+    `,
 };
 

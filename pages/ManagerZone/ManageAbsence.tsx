@@ -12,7 +12,7 @@ import { checkPermissions } from '@components/CheckPermission';
 import AccessDenied from '@components/AccessDenied';
 
 import 'react-calendar/dist/Calendar.css';
-import stylesManagerZoneManageAbsence from '@components/css/ManagerZone/ManageAbsence.module.css';
+import styles from '@components/css/ManagerZone/ManageAbsence.module.css';
 import { useSession } from "next-auth/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faXmark, faTrash } from '@fortawesome/free-solid-svg-icons';
@@ -235,7 +235,7 @@ export default function ManagerZoneManageAbsence() {
 
     return (
         <>
-            {viewPopUpConfirm && <div className={stylesManagerZoneManageAbsence.BlurView} onClick={() => {
+            {viewPopUpConfirm && <div className={styles.BlurView} onClick={() => {
                 setViewPopUpConfirm(false);
             }} />}
 
@@ -244,15 +244,15 @@ export default function ManagerZoneManageAbsence() {
             </Head>
             <h2><Link href={'/ManagerZone'} style={{textDecoration: 'underline'}}>Manager Zone</Link> &#x2022; {`Manage Absence`}</h2>
             
-            <div className={stylesManagerZoneManageAbsence.ViewContainer}>
-                <div className={stylesManagerZoneManageAbsence.ViewChildFlexColumnLeft}>
+            <div className={styles.ViewContainer}>
+                <div className={styles.ViewChildFlexColumnLeft}>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         <hr style={{ flex: 1, marginRight: '10px' }} />
                         <h4>Employee Details</h4>
                         <hr style={{ flex: 1, marginLeft: '10px' }} />
                     </div>
-                    <div className={stylesManagerZoneManageAbsence.FilterContainer}>
-                        <span className={stylesManagerZoneManageAbsence.FilterTitle}>Employee</span>
+                    <div className={styles.FilterContainer}>
+                        <span className={styles.FilterTitle}>Employee</span>
                         <Autocomplete
                             options={employeeList}
                             autoHighlight
@@ -284,7 +284,7 @@ export default function ManagerZoneManageAbsence() {
                             style={{ width: '100%' }}
                         />
                     </div><br/>
-                    <Calendar className={stylesManagerZoneManageAbsence.CalendarContainer}
+                    <Calendar className={styles.CalendarContainer}
                         locale='en-US'
                         activeStartDate={activeStartDate}
                         onActiveStartDateChange={(date: any) => {
@@ -294,15 +294,15 @@ export default function ManagerZoneManageAbsence() {
                         tileContent={tileContent}
                     />
                 </div>
-                <div className={`${stylesManagerZoneManageAbsence.ViewChildFlexColumnRight} ${loading ? stylesManagerZoneManageAbsence.LoadingBlur : ''}`}>
+                <div className={`${styles.ViewChildFlexColumnRight} ${loading ? styles.LoadingBlur : ''}`}>
                     
                 
                     <div style={{ display: (viewAbsence) ? 'block' : 'none' }}>
-                        <div className={`${stylesManagerZoneManageAbsence.AbsenceView} ${loading ? stylesManagerZoneManageAbsence.AbsenceViewBlur : ''} `}>
+                        <div className={`${styles.AbsenceView} ${loading ? styles.AbsenceViewBlur : ''} `}>
                             <center>
                                 <h2>{employeeName}</h2>
                             </center>
-                            <div className={stylesManagerZoneManageAbsence.ButtonContainer}>
+                            <div className={styles.ButtonContainer}>
                                 <Button
                                     variant="outlined"
                                     color="success"
@@ -320,36 +320,36 @@ export default function ManagerZoneManageAbsence() {
                                     REJECT ALL
                                 </Button>
                             </div>
-                            <table className={stylesManagerZoneManageAbsence.Table}>
+                            <table className={styles.Table}>
                                 <tbody>
                                 <tr>
-                                    <th className={stylesManagerZoneManageAbsence.TableColumn}>Start date</th>
-                                    <th className={stylesManagerZoneManageAbsence.TableColumn}>End date</th>
-                                    <th className={stylesManagerZoneManageAbsence.TableColumn}>Total day(s)</th>
-                                    <th className={stylesManagerZoneManageAbsence.TableColumn}>Approval Status</th>
+                                    <th className={styles.TableColumn}>Start date</th>
+                                    <th className={styles.TableColumn}>End date</th>
+                                    <th className={styles.TableColumn}>Total day(s)</th>
+                                    <th className={styles.TableColumn}>Approval Status</th>
                                     <th></th>
                                 </tr>
 
                                 {absenceTableData.map((item:any, idx:number) => {
                                     return (
-                                        <tr className={`${(idx % 2 !== 1) ? stylesManagerZoneManageAbsence.TableAlterRow : ''}`}>
-                                            <td className={stylesManagerZoneManageAbsence.AbsenceContent}>
+                                        <tr className={`${(idx % 2 !== 1) ? styles.TableAlterRow : ''}`}>
+                                            <td className={styles.AbsenceContent}>
                                                 {new Date(item.ABSENCE_START).toLocaleString([], { day: '2-digit', month: '2-digit', year:'numeric' })}
                                             </td>
-                                            <td className={stylesManagerZoneManageAbsence.AbsenceContent}>
+                                            <td className={styles.AbsenceContent}>
                                                 {new Date(item.ABSENCE_END).toLocaleString([], { day: '2-digit', month: '2-digit', year:'numeric' })}
                                             </td>
-                                            <td className={stylesManagerZoneManageAbsence.AbsenceContent}>
+                                            <td className={styles.AbsenceContent}>
                                                 {item.TOTAL_DAY}
                                             </td>
-                                            <td className={stylesManagerZoneManageAbsence.AbsenceContent} style={{ color: item.APPROVAL_STATUS === 'Pending' ? 'orange' : item.APPROVAL_STATUS === 'Approved' ? 'green'  : item.APPROVAL_STATUS === 'Rejected' ? 'red': 'black' }}>
+                                            <td className={styles.AbsenceContent} style={{ color: item.APPROVAL_STATUS === 'Pending' ? 'orange' : item.APPROVAL_STATUS === 'Approved' ? 'green'  : item.APPROVAL_STATUS === 'Rejected' ? 'red': 'black' }}>
                                                 {item.APPROVAL_STATUS}
                                             </td>
-                                            <td className={stylesManagerZoneManageAbsence.AbsenceContent}>
+                                            <td className={styles.AbsenceContent}>
                                                 <div style={{ display: 'flex', gap: '5px', justifyContent: 'right'}}>
                                                     <div
                                                         style={{ display: item.APPROVAL_STATUS === 'Pending' ? 'inline-flex' : 'none'}}
-                                                        className={`${stylesManagerZoneManageAbsence.ButtonIcon} ${stylesManagerZoneManageAbsence.ButtonIconTick}`}
+                                                        className={`${styles.ButtonIcon} ${styles.ButtonIconTick}`}
                                                         title="Approve"
                                                         onClick={() => {approveAbsence(item.ABSENCE_ID)}}
                                                     >
@@ -357,14 +357,14 @@ export default function ManagerZoneManageAbsence() {
                                                     </div>
                                                     <div
                                                         style={{ display: item.APPROVAL_STATUS === 'Pending' ? 'inline-flex' : 'none'}}
-                                                        className={`${stylesManagerZoneManageAbsence.ButtonIcon} ${stylesManagerZoneManageAbsence.ButtonIconCross}`}
+                                                        className={`${styles.ButtonIcon} ${styles.ButtonIconCross}`}
                                                         title="Reject"
                                                         onClick={() => {rejectAbsence(item.ABSENCE_ID)}}
                                                     >
                                                         <FontAwesomeIcon icon={faXmark} />
                                                     </div>
                                                     <div
-                                                        className={`${stylesManagerZoneManageAbsence.ButtonIcon} ${stylesManagerZoneManageAbsence.ButtonIconTrash}`}
+                                                        className={`${styles.ButtonIcon} ${styles.ButtonIconTrash}`}
                                                         title="Delete"
                                                         onClick={() => {
                                                             setAbsenceId(item.ABSENCE_ID);
@@ -385,7 +385,7 @@ export default function ManagerZoneManageAbsence() {
                 </div>
             </div>
             <div style={{ display: (viewPopUpConfirm) ? 'block' : 'none' }}>
-                <div className={stylesManagerZoneManageAbsence.PopUp}>
+                <div className={styles.PopUp}>
                     <center><h2>Confirm delete</h2></center>
                     <div>
                         <span>Are you sure you want to delete this record?</span><br/>

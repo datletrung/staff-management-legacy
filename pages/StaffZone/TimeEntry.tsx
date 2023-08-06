@@ -13,7 +13,7 @@ import AccessDenied from '@components/AccessDenied';
 import baseApiUrl from '@api/apiConfig';
 
 import 'react-calendar/dist/Calendar.css';
-import stylesStaffZoneTimeEntry from '@components/css/StaffZone/TimeEntry.module.css';
+import styles from '@components/css/StaffZone/TimeEntry.module.css';
 
 export default function StaffZoneTimeEntry() {
     if (!checkPermissions()) {
@@ -166,13 +166,13 @@ export default function StaffZoneTimeEntry() {
             </Head>
             <h2><Link href={'/StaffZone'} style={{textDecoration: 'underline'}}>Staff Zone</Link> &#x2022; {`Time Entry`}</h2>
 
-            <div className={stylesStaffZoneTimeEntry.SplitViewRow}>
-                <div className={stylesStaffZoneTimeEntry.CenterView}>
-                    <div className={stylesStaffZoneTimeEntry.Clock}>
+            <div className={styles.SplitViewRow}>
+                <div className={styles.CenterView}>
+                    <div className={styles.Clock}>
                         <div>{currentDate}</div>
-                        <div className={stylesStaffZoneTimeEntry.ClockTime}>{currentTime}</div>
+                        <div className={styles.ClockTime}>{currentTime}</div>
                     </div>
-                    <Calendar className={stylesStaffZoneTimeEntry.CalendarContainer}
+                    <Calendar className={styles.CalendarContainer}
                         locale='en-US'
                         onChange={(datePara: any) => {
                             setCalendarDate(datePara);
@@ -188,19 +188,31 @@ export default function StaffZoneTimeEntry() {
                         tileContent={tileContent}
                     />
                 </div>
-                <div className={stylesStaffZoneTimeEntry.SplitViewRowChild}>
-                    <div className={stylesStaffZoneTimeEntry.SplitViewColumn}>
-                        <div className={`${stylesStaffZoneTimeEntry.TimePunchView} ${loading ? stylesStaffZoneTimeEntry.TimePunchViewBlur : ''} `}>
+                <div className={styles.SplitViewRowChild}>
+                    <div className={styles.SplitViewColumn}>
+                        <div className={`${styles.TimePunchView} ${loading ? styles.TimePunchViewBlur : ''} `}>
                             <center>
                                 <div>Selected date: {calendarDate.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'})}</div>
                                 <div>Total hour this week: {totalTimePerWeek}</div>
-                            </center>
-                            <table className={stylesStaffZoneTimeEntry.Table}>
+                            </center>    
+                            <div className={`${styles.ButtonContainer} ${disabled ? styles.ButtonHidden : ''}`}>
+                                <Button
+                                    size="large"
+                                    variant="outlined"
+                                    color="success"
+                                    style={{width:'100%'}}
+                                    disabled={disabled}
+                                    onClick={() => submitTimeEntry()}
+                                >
+                                    PUNCH THE CLOCK
+                                </Button>
+                            </div>
+                            <table className={styles.Table}>
                                 <tbody>
                                 <tr>
-                                    <th className={stylesStaffZoneTimeEntry.TableColumn}>Time in</th>
-                                    <th className={stylesStaffZoneTimeEntry.TableColumn}>Time out</th>
-                                    <th className={stylesStaffZoneTimeEntry.TableColumn}>Total hour</th>
+                                    <th className={styles.TableColumn}>Time in</th>
+                                    <th className={styles.TableColumn}>Time out</th>
+                                    <th className={styles.TableColumn}>Total hour</th>
                                 </tr>
 
                                 {timePunchData.map((item:any, idx:number) => {
@@ -229,8 +241,8 @@ export default function StaffZoneTimeEntry() {
                                             }   
                                         }
                                         return (
-                                            <tr className={`${(idx % 2 !== 1) ? stylesStaffZoneTimeEntry.TableAlterRow : ''}`}>
-                                                <td className={`${stylesStaffZoneTimeEntry.TimeCardContent} ${stylesStaffZoneTimeEntry.TimeCardIn} ${stylesStaffZoneTimeEntry.TableColumn}`}>
+                                            <tr className={`${(idx % 2 !== 1) ? styles.TableAlterRow : ''}`}>
+                                                <td className={`${styles.TimeCardContent} ${styles.TimeCardIn} ${styles.TableColumn}`}>
                                                     {
                                                     timeIn.includes(',') ? (
                                                         <>
@@ -240,7 +252,7 @@ export default function StaffZoneTimeEntry() {
                                                     ) : (
                                                         timeIn
                                                     )}</td>
-                                                <td className={`${stylesStaffZoneTimeEntry.TimeCardContent} ${stylesStaffZoneTimeEntry.TimeCardOut} ${stylesStaffZoneTimeEntry.TableColumn}`}>
+                                                <td className={`${styles.TimeCardContent} ${styles.TimeCardOut} ${styles.TableColumn}`}>
                                                     {
                                                     timeOut.includes(',') ? (
                                                         <>
@@ -250,25 +262,12 @@ export default function StaffZoneTimeEntry() {
                                                     ) : (
                                                         timeOut
                                                     )}</td>
-                                                <td className={`${stylesStaffZoneTimeEntry.TimeCardContent}  ${stylesStaffZoneTimeEntry.TableColumn}`}>{totalTime}</td>
+                                                <td className={`${styles.TimeCardContent}  ${styles.TableColumn}`}>{totalTime}</td>
                                             </tr>
                                         );
                                 })}
                                 </tbody>
                             </table>
-                        </div>
-                        <br/>
-                        <div className={`${stylesStaffZoneTimeEntry.ButtonContainer} ${disabled ? stylesStaffZoneTimeEntry.ButtonHidden : ''}`}>
-                            <Button
-                                size="large"
-                                variant="outlined"
-                                color="success"
-                                style={{width:'100%'}}
-                                disabled={disabled}
-                                onClick={() => submitTimeEntry()}
-                            >
-                                PUNCH THE CLOCK
-                            </Button>
                         </div>
                     </div>
                 </div>

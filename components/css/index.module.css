@@ -9,8 +9,25 @@
     width: 100%;
 }
 
+.ChartContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    gap: 10px;
+}
+
+.Chart {
+    width: 40%;
+}
+
 @media screen and (max-width: 768px) {
     .FormContainer {
+        width: 100%;
+    }
+    .ChartContainer {
+        flex-direction: column;
+    }
+    .Chart {
         width: 100%;
     }
 }

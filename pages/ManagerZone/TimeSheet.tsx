@@ -12,7 +12,7 @@ import { checkPermissions } from '@components/CheckPermission';
 import AccessDenied from '@components/AccessDenied';
 
 import 'react-calendar/dist/Calendar.css';
-import stylesManagerZoneTimeSheet from '@components/css/ManagerZone/TimeSheet.module.css';
+import styles from '@components/css/ManagerZone/TimeSheet.module.css';
 import { useSession } from "next-auth/react";
 
 
@@ -212,15 +212,15 @@ export default function ManagerZoneTimeSheet() {
             </Head>
             <h2><Link href={'/ManagerZone'} style={{textDecoration: 'underline'}}>Manager Zone</Link> &#x2022; {`Time Sheet`}</h2>
             
-            <div className={stylesManagerZoneTimeSheet.ViewContainer}>
-                <div className={stylesManagerZoneTimeSheet.ViewChildFlexColumnLeft}>
+            <div className={styles.ViewContainer}>
+                <div className={styles.ViewChildFlexColumnLeft}>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         <hr style={{ flex: 1, marginRight: '10px' }} />
                         <h4>Employee Details</h4>
                         <hr style={{ flex: 1, marginLeft: '10px' }} />
                     </div>
-                    <div className={stylesManagerZoneTimeSheet.FilterContainer}>
-                        <span className={stylesManagerZoneTimeSheet.FilterTitle}>Employee</span>
+                    <div className={styles.FilterContainer}>
+                        <span className={styles.FilterTitle}>Employee</span>
                         <Autocomplete
                             options={employeeList}
                             autoHighlight
@@ -236,7 +236,7 @@ export default function ManagerZoneTimeSheet() {
                             onChange={(event, value) => {
                                 if (value){
                                     setEmployeeId(value.USER_ID);
-                                    setEmployeeName(value.FULL_NAME);                            
+                                    setEmployeeName(value.FULL_NAME);
                                     setCalendarDate(new Date());
 
                                     getTimeEntryPerDay(value.USER_ID, new Date());
@@ -262,7 +262,7 @@ export default function ManagerZoneTimeSheet() {
                             style={{ width: '100%' }}
                         />
                     </div><br/>
-                    <Calendar className={stylesManagerZoneTimeSheet.CalendarContainer}
+                    <Calendar className={styles.CalendarContainer}
                         locale='en-US'
                         onChange={(datePara: any) => {
                             setCalendarDate(datePara);
@@ -282,14 +282,14 @@ export default function ManagerZoneTimeSheet() {
                         tileContent={tileContent}
                     />
                 </div>
-                <div className={`${stylesManagerZoneTimeSheet.ViewChildFlexColumnRight} ${loading ? stylesManagerZoneTimeSheet.LoadingBlur : ''}`}>
+                <div className={`${styles.ViewChildFlexColumnRight} ${loading ? styles.LoadingBlur : ''}`}>
                     <div style={{ display: (viewTimeSheet) ? 'block' : 'none' }}>
                         <center>
                             <h3>{employeeName}</h3>
                             <div>Selected date: {calendarDate.toLocaleString("en-US", {timeZone: 'America/Halifax', year: 'numeric', month: '2-digit', day: '2-digit'})}</div>
                             <div>Total hour this week: {totalTimePerWeek}</div>
                         </center>
-                        <div className={stylesManagerZoneTimeSheet.ButtonContainer}>
+                        <div className={styles.ButtonContainer}>
                             <Button
                                 variant="outlined"
                                 color="success"
@@ -307,12 +307,12 @@ export default function ManagerZoneTimeSheet() {
                                 APPROVE ALL
                             </Button>
                         </div>
-                        <table className={stylesManagerZoneTimeSheet.Table}>
+                        <table className={styles.Table}>
                             <tbody>
                             <tr>
-                                <th className={stylesManagerZoneTimeSheet.TableColumn}>Time in</th>
-                                <th className={stylesManagerZoneTimeSheet.TableColumn}>Time out</th>
-                                <th className={stylesManagerZoneTimeSheet.TableColumn}>Total hour</th>
+                                <th className={styles.TableColumn}>Time in</th>
+                                <th className={styles.TableColumn}>Time out</th>
+                                <th className={styles.TableColumn}>Total hour</th>
                             </tr>
 
                             {timePunchData.map((item:any, idx:number) => {
@@ -341,8 +341,8 @@ export default function ManagerZoneTimeSheet() {
                                         }   
                                     }
                                     return (
-                                        <tr className={`${(idx % 2 !== 1) ? stylesManagerZoneTimeSheet.TableAlterRow : ''}`}>
-                                            <td className={`${stylesManagerZoneTimeSheet.TimeCardContent} ${stylesManagerZoneTimeSheet.TimeCardIn} ${stylesManagerZoneTimeSheet.TableColumn}`}>
+                                        <tr className={`${(idx % 2 !== 1) ? styles.TableAlterRow : ''}`}>
+                                            <td className={`${styles.TimeCardContent} ${styles.TimeCardIn} ${styles.TableColumn}`}>
                                                 {
                                                 timeIn.includes(',') ? (
                                                     <>
@@ -352,7 +352,7 @@ export default function ManagerZoneTimeSheet() {
                                                 ) : (
                                                     timeIn
                                                 )}</td>
-                                            <td className={`${stylesManagerZoneTimeSheet.TimeCardContent} ${stylesManagerZoneTimeSheet.TimeCardOut} ${stylesManagerZoneTimeSheet.TableColumn}`}>
+                                            <td className={`${styles.TimeCardContent} ${styles.TimeCardOut} ${styles.TableColumn}`}>
                                                 {
                                                 timeOut.includes(',') ? (
                                                     <>
@@ -362,7 +362,7 @@ export default function ManagerZoneTimeSheet() {
                                                 ) : (
                                                     timeOut
                                                 )}</td>
-                                            <td className={`${stylesManagerZoneTimeSheet.TimeCardContent}  ${stylesManagerZoneTimeSheet.TableColumn}`}>{totalTime}</td>
+                                            <td className={`${styles.TimeCardContent}  ${styles.TableColumn}`}>{totalTime}</td>
                                         </tr>
                                     );
                             })}

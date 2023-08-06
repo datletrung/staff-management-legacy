@@ -24,6 +24,7 @@
     max-width: 320px;
     display:flex;
     flex-direction: column;
+    gap: 8px;
     overflow-y: auto;
 }
 
@@ -31,9 +32,13 @@
     cursor: pointer;
     display: flex;
     flex-direction: row;
-    border-radius: 0.5rem;
-    border: 2px solid rgba(0, 128, 0, 0.3);
-    margin-bottom: 0.25rem;
+    border-radius: 10px;
+    border: 2px solid lightgray;
+}
+
+.EmployeeCardContainer:hover {
+    background-color: #d1f2e2;
+    border: 2px solid #d1f2e2;
 }
 
 .EmployeeCard {
@@ -43,6 +48,15 @@
     background-color: inherit;
     margin-bottom: 0.2rem;
     padding: 0.5rem;
+}
+
+.EmployeeCardTitle {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.EmployeeCardDesc {
+    font-size: 12px;
 }
 
 .EmployeeCardOption {
@@ -56,13 +70,15 @@
 
 .UserIcon {
     margin: auto;
-    margin-left: 10px;
+    margin-left: 20px;
+    margin-right: 15px;
 }
 
 .ButtonContainer {
-    width: 100%;
     display: flex;
-    flex-direction: row;
+    gap: 10px;
+    width: 100%;
+    margin-top: 0.25rem;
 }
 
 .Button {
@@ -85,6 +101,10 @@
 .FormChild {
     width: 100%;
     padding: 0.5rem;
+}
+.Clickable {
+    text-decoration: underline;
+    color: #0e996f;
 }
 
 .PopUp {

@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStopwatch, faCalendarXmark } from '@fortawesome/free-solid-svg-icons';
 
 import 'react-calendar/dist/Calendar.css';
-import stylesStaffZone from '@components/css/StaffZone/index.module.css';
+import styles from '@components/css/StaffZone/index.module.css';
 
 
 export default function StaffZone() {
@@ -23,16 +23,16 @@ export default function StaffZone() {
                 <title>{`Staff Zone | ${process.env.WebsiteName}`}</title>
             </Head>
             <h2>Staff Zone</h2>
-            <div className={stylesStaffZone.OptionButtonContainer}>
+            <div className={styles.OptionButtonContainer}>
                 <Link href={"/StaffZone/TimeEntry"}>
-                    <div className={stylesStaffZone.OptionButton}>
-                        <FontAwesomeIcon icon={faStopwatch} className={stylesStaffZone.OptionButtonIcon} size='2xl'/>
+                    <div className={styles.OptionButton}>
+                        <FontAwesomeIcon icon={faStopwatch} className={styles.OptionButtonIcon} size='2xl'/>
                         <h2>Time Entry</h2>
                     </div>
                 </Link>
                 <Link href={"/StaffZone/Absence"}>
-                    <div className={stylesStaffZone.OptionButton}>
-                        <FontAwesomeIcon icon={faCalendarXmark} className={stylesStaffZone.OptionButtonIcon} size='2xl'/>
+                    <div className={styles.OptionButton}>
+                        <FontAwesomeIcon icon={faCalendarXmark} className={styles.OptionButtonIcon} size='2xl'/>
                         <h2>Absence</h2>
                     </div>
                 </Link>

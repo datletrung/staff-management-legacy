@@ -7,7 +7,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faBars } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRightFromBracket, faBars } from '@fortawesome/free-solid-svg-icons';
 
 
 export default function Layout({ children }:{ children: any}) {
@@ -29,7 +29,6 @@ export default function Layout({ children }:{ children: any}) {
     }
 
     useEffect(() => {
-        console.log(router.asPath);
         if (status === "authenticated") {
             setDisplayName(`Logged in as ${session?.user?.name}`);
         }
@@ -45,7 +44,7 @@ export default function Layout({ children }:{ children: any}) {
         <div className={styles.MainBody}>
             <div className={styles.HeaderContainer}>
                 <div className={styles.HeaderNavMenuButton}>
-                    <FontAwesomeIcon icon={faBars} size="xl"
+                    <FontAwesomeIcon icon={faBars} size="2xl"
                         onClick={() => {
                             setIsOpen(!isOpen);
                             if (window.innerWidth < 768){
@@ -66,7 +65,7 @@ export default function Layout({ children }:{ children: any}) {
                         return (
                             <Link href={menu.href}
                                 key={idx.toString()}
-                                className={`${styles.NavBarItem} ${(router.asPath == menu.href) ? styles.NavBarItemActive : ''}`}
+                                className={`${styles.NavBarItem} ${(router.asPath.split("/", 2).join("/") === menu.href) ? styles.NavBarItemActive : ''}`}
                                 onClick={() => {
                                     if (window.innerWidth < 768) {
                                         setIsOpen(false);
@@ -95,7 +94,7 @@ export default function Layout({ children }:{ children: any}) {
                         > {/* Account Button */}
 
                         <div style={{width: '30px'}}>
-                            <FontAwesomeIcon icon={faUser}/>
+                            <FontAwesomeIcon icon={faArrowRightFromBracket}/>
                         </div>
                         <div className={styles.NavBarItemText}>{displayName}</div>
                     </div>

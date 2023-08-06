@@ -4,17 +4,17 @@ import Link from "next/link";
 import Head from 'next/head';
 import Notify from '@components/Notify';
 import { useState, useEffect } from 'react';
-import { TextField, Switch, Radio, RadioGroup, FormControlLabel, FormControl, Button, Select, MenuItem } from '@mui/material';
+import { TextField, Switch, Radio, RadioGroup, FormControlLabel, FormControl, Button, Select, MenuItem, Autocomplete } from '@mui/material';
 import baseApiUrl from '@api/apiConfig';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faUsersGear, faLock, faTrash, faCopy, faKey, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
+import { faUserLarge, faUsersGear, faLock, faTrash, faCopy, faKey, faArrowsRotate } from '@fortawesome/free-solid-svg-icons';
 import { Add as AddIcon, Edit as EditIcon } from '@mui/icons-material';
 
 import { checkPermissions } from '@components/CheckPermission';
 import AccessDenied from '@components/AccessDenied';
 import { createHash } from 'crypto';
 
-import stylesManagerZoneManageStaff from '@components/css/ManagerZone/ManageStaff.module.css';
+import styles from '@components/css/ManagerZone/ManageStaff.module.css';
 import { useSession } from "next-auth/react";
 
 export default function ManagerZoneManageStaff() {
@@ -56,6 +56,15 @@ export default function ManagerZoneManageStaff() {
     const [resetPasswordNewPass1, setResetPasswordNewPass1] = useState('');
     const [resetPasswordNewPass2, setResetPasswordNewPass2] = useState('');
 
+    const filterOptions = (options: any[], { inputValue }: any) => {
+        return options.filter(
+          (option: { USER_ID: string; EMAIL: string; FULL_NAME: string; }) =>
+            option.USER_ID.toString().toLowerCase().includes(inputValue.toLowerCase()) ||
+            option.EMAIL.toLowerCase().includes(inputValue.toLowerCase()) ||
+            option.FULL_NAME.toLowerCase().includes(inputValue.toLowerCase())
+        );
+    };
+
     function scrolltoHash(elementId: string) {
         const element = document.getElementById(elementId);
         element?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
@@ -90,6 +99,10 @@ export default function ManagerZoneManageStaff() {
             Notify('Something went wrong! Please try again later.', 'error');
             return;
         }
+        const data = res.data;
+        data.forEach((item: any) => {
+            item.USER_ID = item.USER_ID.toString().padStart(6, '0');
+        });
         setEmployeeList(res.data);
     }
 
@@ -303,7 +316,7 @@ export default function ManagerZoneManageStaff() {
 
     return (
         <>
-            {viewStaffAdditionPopup && <div className={stylesManagerZoneManageStaff.BlurView} onClick={() => {
+            {viewStaffAdditionPopup && <div className={styles.BlurView} onClick={() => {
                 setViewStaffAdditionPopup(false);
                 setViewStaffAddition(false);
                 setNewGeneratedPassword('');
@@ -311,7 +324,7 @@ export default function ManagerZoneManageStaff() {
                 setStaffFirstName('');
                 setStaffLastName('');
             }} />}
-            {viewResetPassword && <div className={stylesManagerZoneManageStaff.BlurView} onClick={() => {
+            {viewResetPassword && <div className={styles.BlurView} onClick={() => {
                 setViewResetPassword(false);
                 setViewResetPasswordMsg(false);
                 setResetPasswordNewPass1('');
@@ -324,12 +337,12 @@ export default function ManagerZoneManageStaff() {
             </Head>
             <h2><Link href={'/ManagerZone'} style={{textDecoration: 'underline'}}>Manager Zone</Link> &#x2022; {`Manage Staff`}</h2>
             
-            <div className={stylesManagerZoneManageStaff.ViewContainer}>
-                <div className={stylesManagerZoneManageStaff.ViewChildFlexColumnLeft}>
-                    <div className={stylesManagerZoneManageStaff.Title}>
-                        <h2 className={stylesManagerZoneManageStaff.TitleText}>
+            <div className={styles.ViewContainer}>
+                <div className={styles.ViewChildFlexColumnLeft}>
+                    <div className={styles.Title}>
+                        <h3 className={styles.TitleText}>
                             Employee List
-                        </h2>
+                        </h3>
                         <FontAwesomeIcon
                             icon={faArrowsRotate}
                             style={{cursor: 'pointer'}}
@@ -339,7 +352,50 @@ export default function ManagerZoneManageStaff() {
                             }}
                         />
                     </div>
-                    <div className={stylesManagerZoneManageStaff.EmployeeList}>
+                    <Autocomplete
+                        options={employeeList}
+                        autoHighlight
+                        filterOptions={filterOptions}
+                        getOptionLabel={(option: any) => option.FULL_NAME}
+                        isOptionEqualToValue={(option: any, value: any) => {
+                            return (
+                                option?.USER_ID !== value?.USER_ID ||
+                                option?.FULL_NAME !== value?.FULL_NAME ||
+                                option?.EMAIL !== value?.EMAIL
+                            );
+                        }}
+                        onChange={(event, value) => {
+                            if (value){
+                                setStaffCurrentViewId((value?.USER_ID)?value?.USER_ID:'');
+                                setStaffCurrentViewFirstName((value?.FIRST_NAME)?value?.FIRST_NAME:'');
+                                setStaffCurrentViewLastName((value?.LAST_NAME)?value?.LAST_NAME:'');
+                                setStaffCurrentViewEmail((value?.EMAIL)?value?.EMAIL:'');
+                                setStaffCurrentViewPhoneNumber((value?.PHONE_NUMBER)?value?.PHONE_NUMBER:'');
+
+                                getEmployeeOption(value?.USER_ID);
+                                setProfileEditStatus(false);
+                                setAccountEditStatus(false);
+                                setDisableLockSwitch(false);
+                                setCheckedLockSwitch(false);
+                                setViewStaffOption(true);
+                                setViewStaffAddition(false);
+                                setViewStaffAdditionPopup(false);
+                                scrolltoHash('detail-info');
+                            }
+                        }}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                variant='standard'
+                                autoComplete='off'
+                                placeholder="Search"
+                                style={{width:'100%'}}
+                            />
+                        )}
+                        style={{ width: '100%' }}
+                    />
+                    <br/>
+                    <div className={styles.EmployeeList}>
                         {employeeList.map((item:any, idx:number) => {
                             let staffUserIdTmp = item.USER_ID;
                             let emailTmp = item.EMAIL;
@@ -348,9 +404,9 @@ export default function ManagerZoneManageStaff() {
                             let fullNameTmp = item.FIRST_NAME + ' ' + item.LAST_NAME;
                             let phoneTmp = item.PHONE_NUMBER;
                             return (
-                            <div key={idx} className={`${stylesManagerZoneManageStaff.EmployeeCardContainer}`}>
-                                <FontAwesomeIcon icon={faUser} size="2xl" className={stylesManagerZoneManageStaff.UserIcon}/>
-                                <div className={`${stylesManagerZoneManageStaff.EmployeeCard}`}
+                            <div key={idx} className={`${styles.EmployeeCardContainer}`}>
+                                <FontAwesomeIcon icon={faUserLarge} size="2xl" className={styles.UserIcon}/>
+                                <div className={`${styles.EmployeeCard}`}
                                     onClick={() => {
                                         setStaffCurrentViewId((staffUserIdTmp)?staffUserIdTmp:'');
                                         setStaffCurrentViewFirstName((firstNameTmp)?firstNameTmp:'');
@@ -369,16 +425,16 @@ export default function ManagerZoneManageStaff() {
                                         scrolltoHash('detail-info');
                                     }}
                                 >
-                                    <b>{fullNameTmp}</b>
-                                    <small>Staff ID: {staffUserIdTmp.toString().padStart(6, '0')}</small>
-                                    <small>Email: {emailTmp}</small>
+                                    <span className={styles.EmployeeCardTitle}><b>{fullNameTmp}</b></span>
+                                    <span className={styles.EmployeeCardDesc}><b>Staff ID:</b> {staffUserIdTmp.toString().padStart(6, '0')}</span>
+                                    <span className={styles.EmployeeCardDesc}><b>Email:</b> {emailTmp}</span>
                                 </div>
                             </div>
                             );                    
                         })}
                     </div>
-                    <div className={stylesManagerZoneManageStaff.ButtonContainer}>
-                            <div className={stylesManagerZoneManageStaff.Button}>
+                    <div className={styles.ButtonContainer}>
+                            <div className={styles.Button}>
                                 <Button
                                 variant="outlined" endIcon={<AddIcon/>}
                                 style={{width:'100%'}}
@@ -395,26 +451,26 @@ export default function ManagerZoneManageStaff() {
                         </div>
                 </div>
                 <div id='detail-info'
-                    className={`${stylesManagerZoneManageStaff.ViewChildFlexColumnRight} ${loading ? stylesManagerZoneManageStaff.LoadingBlur : ''}`}>
+                    className={`${styles.ViewChildFlexColumnRight} ${loading ? styles.LoadingBlur : ''}`}>
                     <div style={{ display: (viewStaffOption) ? 'block' : 'none' }}>
                         <div>
-                            <div className={stylesManagerZoneManageStaff.Title}>
-                                <h3 className={stylesManagerZoneManageStaff.TitleText}>
+                            <div className={styles.Title}>
+                                <h3 className={styles.TitleText}>
                                     Personal Information
                                 </h3>
                                 <Button
                                     variant="outlined"
                                     endIcon={<EditIcon/>}
-                                    className={stylesManagerZoneManageStaff.TitleButton}
+                                    className={styles.TitleButton}
                                     onClick={() => {setProfileEditStatus(!profileEditStatus)}}
                                 >
                                     EDIT
                                 </Button>
                             </div>
-                            <div className={stylesManagerZoneManageStaff.InfoContainer}>
-                                <b className={stylesManagerZoneManageStaff.InfoTitle}>Staff ID: </b>
-                                <div className={stylesManagerZoneManageStaff.InfoContent}>{staffCurrentViewId.toString().padStart(6, '0')}</div>
-                                <b className={stylesManagerZoneManageStaff.InfoTitle}>First Name: </b>
+                            <div className={styles.InfoContainer}>
+                                <b className={styles.InfoTitle}>Staff ID: </b>
+                                <div className={styles.InfoContent}>{staffCurrentViewId.toString().padStart(6, '0')}</div>
+                                <b className={styles.InfoTitle}>First Name: </b>
                                 <TextField
                                     variant="standard"
                                     style={{display: (profileEditStatus) ? 'inline-block' : 'none'}}
@@ -422,12 +478,12 @@ export default function ManagerZoneManageStaff() {
                                     onChange={(event) => setStaffCurrentViewFirstName(event.target.value)}
                                 />
                                 <div
-                                    className={stylesManagerZoneManageStaff.InfoContent}
+                                    className={styles.InfoContent}
                                     style={{display: (profileEditStatus) ? 'none' : 'inline-block'}}
                                 >
                                     {staffCurrentViewFirstName}
                                 </div>
-                                <b className={stylesManagerZoneManageStaff.InfoTitle}>Last Name: </b>
+                                <b className={styles.InfoTitle}>Last Name: </b>
                                 <div>
                                     <TextField
                                         variant="standard"
@@ -436,13 +492,13 @@ export default function ManagerZoneManageStaff() {
                                         onChange={(event) => setStaffCurrentViewLastName(event.target.value)}
                                     />
                                     <div
-                                        className={stylesManagerZoneManageStaff.InfoContent}
+                                        className={styles.InfoContent}
                                         style={{display: (profileEditStatus) ? 'none' : 'inline-block'}}
                                     >
                                         {staffCurrentViewLastName}
                                     </div>
                                 </div>
-                                <b className={stylesManagerZoneManageStaff.InfoTitle}>Email: </b>
+                                <b className={styles.InfoTitle}>Email: </b>
                                 <div>
                                     <TextField
                                         variant="standard"
@@ -451,10 +507,10 @@ export default function ManagerZoneManageStaff() {
                                         onChange={(event) => setStaffCurrentViewEmail(event.target.value)}
                                     />
                                     <div
-                                        className={stylesManagerZoneManageStaff.InfoContent}
+                                        className={styles.InfoContent}
                                         style={{display: (profileEditStatus) ? 'none' : 'inline-block'}}
                                     >
-                                        <a href={`mailto:${staffCurrentViewEmail}`}>{staffCurrentViewEmail}</a>
+                                        <a className={styles.Clickable} href={`mailto:${staffCurrentViewEmail}`}>{staffCurrentViewEmail}</a>
                                         <span>&nbsp;</span>
                                         <FontAwesomeIcon
                                             icon={faCopy}
@@ -466,7 +522,7 @@ export default function ManagerZoneManageStaff() {
                                         />
                                     </div>
                                 </div>
-                                <b className={stylesManagerZoneManageStaff.InfoTitle}>Phone Number: </b>
+                                <b className={styles.InfoTitle}>Phone Number: </b>
                                 <div>
                                     <TextField
                                         variant="standard"
@@ -477,10 +533,10 @@ export default function ManagerZoneManageStaff() {
                                         }}
                                     />
                                     <div
-                                        className={stylesManagerZoneManageStaff.InfoContent}
+                                        className={styles.InfoContent}
                                         style={{display: (profileEditStatus) ? 'none' : 'inline-block'}}
                                     >
-                                        <a href={`tel:${staffCurrentViewPhoneNumber}`}>{staffCurrentViewPhoneNumber}</a>
+                                        <a className={styles.Clickable} href={`tel:${staffCurrentViewPhoneNumber}`}>{staffCurrentViewPhoneNumber}</a>
                                         <span>&nbsp;</span>
                                         <FontAwesomeIcon
                                             icon={faCopy}
@@ -493,35 +549,30 @@ export default function ManagerZoneManageStaff() {
                                     </div>
                                 </div>
                             </div>
-                            <div
-                                className={stylesManagerZoneManageStaff.FormChild}
-                                style={{display: (profileEditStatus) ? 'inline-block' : 'none'}}
-                            >
-                                <div className={stylesManagerZoneManageStaff.ButtonContainer}>
-                                    <div className={stylesManagerZoneManageStaff.Button}>
-                                        <Button
-                                            variant="outlined"
-                                            style={{width:'100%'}}
-                                            onClick={() => {
-                                                updateEmployeeInfo();
-                                            }}
-                                        >
-                                            SAVE
-                                        </Button>
-                                    </div>
+                            <div className={styles.ButtonContainer} style={{display: (profileEditStatus) ? 'inline-block' : 'none'}}>
+                                <div className={styles.Button}>
+                                    <Button
+                                        variant="outlined"
+                                        style={{width:'100%'}}
+                                        onClick={() => {
+                                            updateEmployeeInfo();
+                                        }}
+                                    >
+                                        SAVE
+                                    </Button>
                                 </div>
                             </div>
                         </div>
-                        <hr/>
+                        <br/><hr/>
                         <div>
-                            <div className={stylesManagerZoneManageStaff.Title}>
-                                <h3 className={stylesManagerZoneManageStaff.TitleText}>
+                            <div className={styles.Title}>
+                                <h3 className={styles.TitleText}>
                                     Account Settings
                                 </h3>
                                 <Button
                                     variant="outlined"
                                     endIcon={<EditIcon/>}
-                                    className={stylesManagerZoneManageStaff.TitleButton}
+                                    className={styles.TitleButton}
                                     onClick={() => {setAccountEditStatus(!accountEditStatus)}}
                                 >
                                     EDIT
@@ -530,25 +581,8 @@ export default function ManagerZoneManageStaff() {
                             <div 
                                 style={{display: (accountEditStatus) ? 'block' : 'none'}}
                             >
-                                <div className={stylesManagerZoneManageStaff.FormChild}>
-                                    <div className={stylesManagerZoneManageStaff.SwitchContainer}>
-                                        <label><FontAwesomeIcon icon={faKey}/> Password</label>
-                                        <Button
-                                            variant="outlined"
-                                            className={stylesManagerZoneManageStaff.TitleButton}
-                                            onClick={() => {
-                                                setViewResetPassword(true);
-                                                setViewResetPasswordMsg(false);
-                                                setResetPasswordOption('option1');
-                                                setViewResetPasswordManual(false);
-                                            }}
-                                        >
-                                            RESET PASSWORD
-                                        </Button>
-                                    </div>
-                                </div>
-                                <div className={stylesManagerZoneManageStaff.FormChild}>
-                                    <div className={stylesManagerZoneManageStaff.SwitchContainer}>
+                                <div className={styles.FormChild}>
+                                    <div className={styles.SwitchContainer}>
                                         <label><FontAwesomeIcon icon={faUsersGear}/> Change Role</label>
                                         <Select
                                             variant='standard'
@@ -561,8 +595,8 @@ export default function ManagerZoneManageStaff() {
                                         </Select>
                                     </div>
                                 </div>
-                                <div className={stylesManagerZoneManageStaff.FormChild}>
-                                    <div className={stylesManagerZoneManageStaff.SwitchContainer}>
+                                <div className={styles.FormChild}>
+                                    <div className={styles.SwitchContainer}>
                                         <label><FontAwesomeIcon icon={faLock}/> Lock Account</label>
                                         <Switch
                                             checked={checkedLockSwitch}
@@ -571,8 +605,8 @@ export default function ManagerZoneManageStaff() {
                                         />
                                     </div>
                                 </div>
-                                <div className={stylesManagerZoneManageStaff.FormChild}>
-                                    <div className={stylesManagerZoneManageStaff.SwitchContainer}>
+                                <div className={styles.FormChild}>
+                                    <div className={styles.SwitchContainer}>
                                     <label><FontAwesomeIcon icon={faTrash}/> Remove Account</label>
                                         <Switch
                                             checked={checkedRemoveSwitch}
@@ -585,19 +619,34 @@ export default function ManagerZoneManageStaff() {
                                         />
                                     </div>
                                 </div>
-                                <div className={stylesManagerZoneManageStaff.FormChild}>
-                                    <div className={stylesManagerZoneManageStaff.ButtonContainer}>
-                                        <div className={stylesManagerZoneManageStaff.Button}>
-                                            <Button
-                                                variant="outlined"
-                                                style={{width:'100%'}}
-                                                onClick={() => {
-                                                    updateEmployeeOption();
-                                                }}
-                                            >
-                                                SAVE
-                                            </Button>
-                                        </div>
+                                <div className={styles.FormChild}>
+                                    <div className={styles.SwitchContainer}>
+                                        <label><FontAwesomeIcon icon={faKey}/> Password</label>
+                                        <Button
+                                            variant="outlined"
+                                            className={styles.TitleButton}
+                                            onClick={() => {
+                                                setViewResetPassword(true);
+                                                setViewResetPasswordMsg(false);
+                                                setResetPasswordOption('option1');
+                                                setViewResetPasswordManual(false);
+                                            }}
+                                        >
+                                            RESET PASSWORD
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div className={styles.ButtonContainer}>
+                                    <div className={styles.Button}>
+                                        <Button
+                                            variant="outlined"
+                                            style={{width:'100%'}}
+                                            onClick={() => {
+                                                updateEmployeeOption();
+                                            }}
+                                        >
+                                            SAVE
+                                        </Button>
                                     </div>
                                 </div>
                             </div>
@@ -607,7 +656,7 @@ export default function ManagerZoneManageStaff() {
                         <div style={{ display: (viewStaffAdditionPopup) ? 'none' : 'block' }}>
                             <div>
                                 <center><h2>Hire New Employee</h2></center>
-                                <div className={stylesManagerZoneManageStaff.FormChild}>
+                                <div className={styles.FormChild}>
                                     <TextField
                                         required
                                         label="First Name"
@@ -617,7 +666,7 @@ export default function ManagerZoneManageStaff() {
                                         onChange={(event) => setStaffFirstName(event.target.value)}
                                     />
                                 </div>
-                                <div className={stylesManagerZoneManageStaff.FormChild}>
+                                <div className={styles.FormChild}>
                                     <TextField
                                         required
                                         label="Last Name"
@@ -627,7 +676,7 @@ export default function ManagerZoneManageStaff() {
                                         onChange={(event) => setStaffLastName(event.target.value)}
                                     />
                                 </div>
-                                <div className={stylesManagerZoneManageStaff.FormChild}>
+                                <div className={styles.FormChild}>
                                     <TextField
                                         required
                                         label="Email"
@@ -638,9 +687,9 @@ export default function ManagerZoneManageStaff() {
                                         onChange={(event) => setStaffEmail(event.target.value)}
                                     />
                                 </div>
-                                <div className={stylesManagerZoneManageStaff.FormChild}>
-                                    <div className={stylesManagerZoneManageStaff.ButtonContainer}>
-                                        <div className={stylesManagerZoneManageStaff.Button}>
+                                <div className={styles.FormChild}>
+                                    <div className={styles.ButtonContainer}>
+                                        <div className={styles.Button}>
                                             <Button
                                                 variant="outlined" endIcon={<AddIcon/>}
                                                 style={{width:'100%'}}
@@ -654,7 +703,7 @@ export default function ManagerZoneManageStaff() {
                             </div>
                         </div>
                         <div style={{ display: (viewStaffAdditionPopup) ? 'block' : 'none' }}>
-                            <div className={stylesManagerZoneManageStaff.PopUp}>
+                            <div className={styles.PopUp}>
                                 <center><h2>{promptMsg}</h2></center>
                                 <i>Please share this information with the employee:</i><br/>
                                 <span><b>Staff ID:</b> {employeeId}</span>
@@ -665,7 +714,7 @@ export default function ManagerZoneManageStaff() {
                     </div>
                     <div style={{ display: (viewResetPassword) ? 'block' : 'none' }}>
                         <div style={{ display: (viewResetPasswordMsg) ? 'none' : 'block' }}>
-                            <div className={stylesManagerZoneManageStaff.PopUp}>
+                            <div className={styles.PopUp}>
                                 <center><h2>Reset Password</h2></center>
                                 <FormControl>
                                     <RadioGroup
@@ -717,7 +766,7 @@ export default function ManagerZoneManageStaff() {
                             </div>
                         </div>
                         <div style={{ display: (viewResetPasswordMsg) ? 'block' : 'none' }}>
-                            <div className={stylesManagerZoneManageStaff.PopUp}>
+                            <div className={styles.PopUp}>
                                 <center><h2>Reset Password</h2></center>
                                 <i>Please share this information with the employee:</i><br/>
                                 <span><b>Staff ID:</b> {staffCurrentViewId.toString().padStart(6, '0')}</span>

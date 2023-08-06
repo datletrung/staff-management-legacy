@@ -12,7 +12,7 @@ import AccessDenied from '@components/AccessDenied';
 import { MuiTelInput, matchIsValidTel } from 'mui-tel-input';
 import baseApiUrl from '@api/apiConfig';
 
-import stylesProfile from '@components/css/Profile.module.css';
+import styles from '@components/css/Profile.module.css';
 
 export default function SystemMaintenance() {
     if (!checkPermissions()) {
@@ -147,19 +147,19 @@ export default function SystemMaintenance() {
                 <title>{`${process.env.WebsiteName}`}</title>
             </Head>
             <h2>Profile</h2>
-            <div className={stylesProfile.FormContainer}>
-                <div className={stylesProfile.FormSplitView}>
+            <div className={styles.FormContainer}>
+                <div className={styles.FormSplitView}>
                     <h3>
                         Personal Information
                     </h3>
-                    <div className={`${stylesProfile.splitViewForm} ${stylesProfile.FormChild}`}>
+                    <div className={`${styles.SplitViewForm} ${styles.FormChild}`}>
                         <TextField
                             label='First Name'
                             id='first-name-input'
                             variant="standard"
                             value={personFirstName}
                             onChange={(event) => setPersonFirstName(event.target.value)}
-                            className={stylesProfile.FormSubChild}
+                            className={styles.FormSubChild}
                         />
                         <TextField
                             label='Last Name'
@@ -167,10 +167,10 @@ export default function SystemMaintenance() {
                             variant="standard"
                             value={personLastName}
                             onChange={(event) => setPersonLastName(event.target.value)}
-                            className={stylesProfile.FormSubChild}
+                            className={styles.FormSubChild}
                         />
                     </div>
-                    <div className={stylesProfile.FormChild}>
+                    <div className={styles.FormChild}>
                         <TextField
                             label='Email'
                             id='email-input'
@@ -178,17 +178,17 @@ export default function SystemMaintenance() {
                             variant="standard"
                             value={personEmail}
                             onChange={(event) => setPersonEmail(event.target.value)}
-                            className={stylesProfile.FormSubChild}
+                            className={styles.FormSubChild}
                         />
                     </div>
-                    <div className={stylesProfile.FormChild}>
+                    <div className={styles.FormChild}>
                         <MuiTelInput
                             label='Phone Number'
                             id='phone-number-input'
                             variant="standard" 
                             value={personPhoneNumber}
                             onChange={(value: any) => setPersonPhoneNumber(value)}
-                            className={stylesProfile.FormSubChild}
+                            className={styles.FormSubChild}
                         />
                     </div>
                     <div>
@@ -203,11 +203,11 @@ export default function SystemMaintenance() {
                         </Button>
                     </div>
                 </div>
-                <div className={stylesProfile.FormSplitView}>
+                <div className={styles.FormSplitView}>
                     <h3>
                         Security
                     </h3>
-                    <div className={stylesProfile.FormChild}>
+                    <div className={styles.FormChild}>
                         <TextField
                             label='Old Password'
                             type='password'
@@ -215,10 +215,10 @@ export default function SystemMaintenance() {
                             variant="standard"
                             value={personOldPassword}
                             onChange={(event) => setPersonOldPassword(event.target.value)}
-                            className={stylesProfile.FormSubChild}
+                            className={styles.FormSubChild}
                         />
                     </div>
-                    <div className={stylesProfile.FormChild}>
+                    <div className={styles.FormChild}>
                         <TextField
                             label='New Password'
                             type='password'
@@ -226,10 +226,10 @@ export default function SystemMaintenance() {
                             variant="standard"
                             value={personNewPassword1}
                             onChange={(event) => setPersonNewPassword1(event.target.value)}
-                            className={stylesProfile.FormSubChild}
+                            className={styles.FormSubChild}
                         />
                     </div>
-                    <div className={stylesProfile.FormChild}>
+                    <div className={styles.FormChild}>
                         <TextField
                             label='Confirm New Password'
                             type='password'
@@ -237,7 +237,7 @@ export default function SystemMaintenance() {
                             variant="standard"
                             value={personNewPassword2}
                             onChange={(event) => setPersonNewPassword2(event.target.value)}
-                            className={stylesProfile.FormSubChild}
+                            className={styles.FormSubChild}
                         />
                     </div>
                     <div>

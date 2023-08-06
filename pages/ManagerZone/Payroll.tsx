@@ -19,7 +19,7 @@ import baseApiUrl from '@api/apiConfig';
 import { checkPermissions } from '@components/CheckPermission';
 import AccessDenied from '@components/AccessDenied';
 
-import stylesManagerZonePayroll from '@components/css/ManagerZone/Payroll.module.css';
+import styles from '@components/css/ManagerZone/Payroll.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
 
@@ -295,6 +295,27 @@ export default function ManagerZonePayroll() {
                 vacationPay: retrievedData.vacationPay,
                 disclaimer: '',
             };
+        } else {
+            payrollData = {
+                employeeName: employeeName,
+                employerName: companyName,
+                payPeriod: getPayPeriod(selectedPayPeriodOption),
+                payDate: payDate.format('YYYY/MM/DD'),
+                province: getProvince(selectedProvinceOption),
+                totalWorkingHour: '0.00',
+                hourlyRate: '0.00',
+                wages: '0.00', 
+                CPP: '0.00',
+                EI: '0.00',
+                taxFed: '0.00',
+                taxProv: '0.00',
+                totalDeduction: '0.00',
+                totalEarnings: '0.00',
+                totalNetPay: '0.00',
+                vacationPay: '0.00',
+                disclaimer: '',
+            };
+            setPayrollInfo(payrollData);
         }
         setPayrollInfo(payrollData);
         setViewPayrollResult(true);
@@ -349,8 +370,8 @@ export default function ManagerZonePayroll() {
             wages: retrievedData.WAGES, 
             CPP: retrievedData.CPP,
             EI: retrievedData.EI,
-            taxFed: retrievedData.taxFed,
-            taxProv: retrievedData.taxProv,
+            taxFed: retrievedData.TAX_FED,
+            taxProv: retrievedData.TAX_PROV,
             totalDeduction: retrievedData.TOTAL_DEDUCTION,
             totalEarnings: retrievedData.TOTAL_EARNINGS,
             totalNetPay: retrievedData.TOTAL_NET_PAY,
@@ -441,17 +462,17 @@ export default function ManagerZonePayroll() {
                 <title>{`Payroll | ${process.env.WebsiteName}`}</title>
             </Head>
             <h2><Link href={'/ManagerZone'} style={{textDecoration: 'underline'}}>Manager Zone</Link> &#x2022; {`Payroll`}</h2>
-            {viewDisclaimerPopup && <div className={stylesManagerZonePayroll.BlurView}/>}
+            {viewDisclaimerPopup && <div className={styles.BlurView}/>}
 
-            <div className={stylesManagerZonePayroll.ViewContainer}>
-                <div className={stylesManagerZonePayroll.ViewChildFlexColumnLeft}>
+            <div className={styles.ViewContainer}>
+                <div className={styles.ViewChildFlexColumnLeft}>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         <hr style={{ flex: 1, marginRight: '10px' }} />
                         <h4>Employee Details</h4>
                         <hr style={{ flex: 1, marginLeft: '10px' }} />
                     </div>
-                    <div className={stylesManagerZonePayroll.FilterContainer}>
-                        <span className={stylesManagerZonePayroll.FilterTitle}>Employee</span>
+                    <div className={styles.FilterContainer}>
+                        <span className={styles.FilterTitle}>Employee</span>
                         <Autocomplete
                             options={employeeList}
                             autoHighlight
@@ -486,39 +507,15 @@ export default function ManagerZonePayroll() {
                             )}
                             style={{ width: '100%' }}
                         />
-                        <span className={stylesManagerZonePayroll.FilterTitle}>From Date</span>
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <DatePicker
-                                value={fromDate}
-                                onChange={(value: any) => {
-                                    setFromDate(value);
-                                }}
-                                slots={{
-                                    textField: textFieldProps => <TextField {...textFieldProps} variant='standard' />
-                                }}
-                            />
-                        </LocalizationProvider>
-                        <span className={stylesManagerZonePayroll.FilterTitle}>To Date</span>
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <DatePicker
-                                value={toDate}
-                                onChange={(value: any) => {
-                                    setToDate(value);
-                                }}
-                                slots={{
-                                    textField: textFieldProps => <TextField {...textFieldProps} variant='standard' />
-                                }}
-                            />
-                        </LocalizationProvider>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         <hr style={{ flex: 1, marginRight: '10px' }} />
                         <h4>Payroll</h4>
                         <hr style={{ flex: 1, marginLeft: '10px' }} />
                     </div>
-                    <div className={stylesManagerZonePayroll.TabContainer}>
+                    <div className={styles.TabContainer}>
                         <div
-                            className={`${stylesManagerZonePayroll.Tab} ${viewNewPayroll ? stylesManagerZonePayroll.TabActive : ''}`}
+                            className={`${styles.Tab} ${viewNewPayroll ? styles.TabActive : ''}`}
                             onClick={() => {
                                 setViewNewPayroll(true);
                                 setViewPayrollResult(false);
@@ -529,7 +526,7 @@ export default function ManagerZonePayroll() {
                             New Payroll
                         </div>
                         <div
-                            className={`${stylesManagerZonePayroll.Tab} ${!viewNewPayroll ? stylesManagerZonePayroll.TabActive : ''}`}
+                            className={`${styles.Tab} ${!viewNewPayroll ? styles.TabActive : ''}`}
                             onClick={() => {
                                 setViewNewPayroll(false);
                                 setViewPayrollResult(false);
@@ -544,9 +541,9 @@ export default function ManagerZonePayroll() {
                         </div>
                     </div>
                     <div style={{display: viewNewPayroll ? 'block' : 'none'}}>
-                        <div className={stylesManagerZonePayroll.SubTabContainer}>
+                        <div className={styles.SubTabContainer}>
                             <span
-                                className={`${stylesManagerZonePayroll.SubTab} ${stylesManagerZonePayroll.SubTabLeft} ${!salaryOption ? stylesManagerZonePayroll.SubTabActive : ''}`}
+                                className={`${styles.SubTab} ${styles.SubTabLeft} ${!salaryOption ? styles.SubTabActive : ''}`}
                                 onClick={() => {
                                     setSalaryOption(false);
                                 }}
@@ -554,7 +551,7 @@ export default function ManagerZonePayroll() {
                                 Hourly Wage
                             </span>
                             <span
-                                className={`${stylesManagerZonePayroll.SubTab} ${stylesManagerZonePayroll.SubTabRight} ${salaryOption ? stylesManagerZonePayroll.SubTabActive : ''}`}
+                                className={`${styles.SubTab} ${styles.SubTabRight} ${salaryOption ? styles.SubTabActive : ''}`}
                                 onClick={() => {
                                     setSalaryOption(true);
                                 }}
@@ -563,8 +560,8 @@ export default function ManagerZonePayroll() {
                             </span>
                         </div>
                         <br/>
-                        <div className={stylesManagerZonePayroll.FilterContainer} style={{display: salaryOption ? 'none' : 'grid'}}>
-                            <span className={stylesManagerZonePayroll.FilterTitle}>Hourly Rate</span>
+                        <div className={styles.FilterContainer} style={{display: salaryOption ? 'none' : 'grid'}}>
+                            <span className={styles.FilterTitle}>Hourly Rate</span>
                             <TextField
                                     type="number"
                                     variant='standard'
@@ -576,8 +573,8 @@ export default function ManagerZonePayroll() {
                                     }}
                             />
                         </div>
-                        <div className={stylesManagerZonePayroll.FilterContainer} style={{display: salaryOption ? 'grid' : 'none'}}>
-                            <span className={stylesManagerZonePayroll.FilterTitle}>Salary</span>
+                        <div className={styles.FilterContainer} style={{display: salaryOption ? 'grid' : 'none'}}>
+                            <span className={styles.FilterTitle}>Salary</span>
                             <TextField
                                     type="number"
                                     variant='standard'
@@ -589,8 +586,8 @@ export default function ManagerZonePayroll() {
                                     }}
                             />
                         </div><br/>
-                        <div className={stylesManagerZonePayroll.FilterContainer}>
-                            <span className={stylesManagerZonePayroll.FilterTitle}>Vacation Pay</span>
+                        <div className={styles.FilterContainer}>
+                            <span className={styles.FilterTitle}>Vacation Pay</span>
                             <TextField
                                     type="number"
                                     variant='standard'
@@ -601,7 +598,31 @@ export default function ManagerZonePayroll() {
                                         endAdornment: '%',
                                     }}
                             />
-                            <span className={stylesManagerZonePayroll.FilterTitle}>Pay Date</span>
+                            <span className={styles.FilterTitle}>From Date</span>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <DatePicker
+                                    value={fromDate}
+                                    onChange={(value: any) => {
+                                        setFromDate(value);
+                                    }}
+                                    slots={{
+                                        textField: textFieldProps => <TextField {...textFieldProps} variant='standard' />
+                                    }}
+                                />
+                            </LocalizationProvider>
+                            <span className={styles.FilterTitle}>To Date</span>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <DatePicker
+                                    value={toDate}
+                                    onChange={(value: any) => {
+                                        setToDate(value);
+                                    }}
+                                    slots={{
+                                        textField: textFieldProps => <TextField {...textFieldProps} variant='standard' />
+                                    }}
+                                />
+                            </LocalizationProvider>
+                            <span className={styles.FilterTitle}>Pay Date</span>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                 <DatePicker
                                     value={payDate}
@@ -613,7 +634,7 @@ export default function ManagerZonePayroll() {
                                     }}
                                 />
                             </LocalizationProvider>
-                            <span className={stylesManagerZonePayroll.FilterTitle}>Province</span>
+                            <span className={styles.FilterTitle}>Province</span>
                             <Select
                                 variant="standard"
                                 value={selectedProvinceOption}
@@ -626,7 +647,7 @@ export default function ManagerZonePayroll() {
                                 </MenuItem>
                                 ))}
                             </Select>
-                            <span className={stylesManagerZonePayroll.FilterTitle}>Pay Period</span>
+                            <span className={styles.FilterTitle}>Pay Period</span>
                             <Select
                                 variant="standard"
                                 value={selectedPayPeriodOption}
@@ -654,30 +675,30 @@ export default function ManagerZonePayroll() {
                     </div>
                     <div style={{display: viewNewPayroll ? 'none' : 'block'}}>
                         <div>
-                            <table className={stylesManagerZonePayroll.Table}>
+                            <table className={styles.Table}>
                                 <tbody>
                                 <tr>
-                                    <th className={stylesManagerZonePayroll.TableColumn}>Period from</th>
-                                    <th className={stylesManagerZonePayroll.TableColumn}>Period to</th>
-                                    <th className={stylesManagerZonePayroll.TableColumn}>Amount</th>
+                                    <th className={styles.TableColumn}>Period from</th>
+                                    <th className={styles.TableColumn}>Period to</th>
+                                    <th className={styles.TableColumn}>Amount</th>
                                     <th></th>
                                 </tr>
                                 {payrollList.map((item:any, idx:number) => {
                                     return (
                                         <tr
-                                            className={`${stylesManagerZonePayroll.TableRow} ${(idx % 2 !== 1) ? stylesManagerZonePayroll.TableAlterRow : ''}`}
+                                            className={`${styles.TableRow} ${(idx % 2 !== 1) ? styles.TableAlterRow : ''}`}
                                             onClick={() => {
                                                 setPayrollId(item.PAYROLL_ID);
                                                 fetchPayrollDetail(employeeId, item.PAYROLL_ID);
                                             }}
                                         >
-                                            <td className={stylesManagerZonePayroll.PayrollTableContent}>
+                                            <td className={styles.PayrollTableContent}>
                                                 {new Date(item.PAY_PERIOD_FROM).toLocaleString([], { day: '2-digit', month: '2-digit', year:'2-digit' })}
                                             </td>
-                                            <td className={stylesManagerZonePayroll.PayrollTableContent}>
+                                            <td className={styles.PayrollTableContent}>
                                                 {new Date(item.PAY_PERIOD_TO).toLocaleString([], { day: '2-digit', month: '2-digit', year:'2-digit' })}
                                             </td>
-                                            <td className={stylesManagerZonePayroll.PayrollTableContent}>
+                                            <td className={styles.PayrollTableContent}>
                                                 {item.TOTAL_NET_PAY}
                                             </td>
                                             <td>
@@ -691,10 +712,10 @@ export default function ManagerZonePayroll() {
                         </div>
                     </div>
                 </div>
-                <div className={`${stylesManagerZonePayroll.ViewChildFlexColumnRight} ${loading ? stylesManagerZonePayroll.LoadingBlur : ''}`}>  
+                <div className={`${styles.ViewChildFlexColumnRight} ${loading ? styles.LoadingBlur : ''}`}>  
                     <div style={{ display: (viewPayrollResult) ? 'block' : 'none' }}>
-                        <div className={stylesManagerZonePayroll.PayrollContainer}>
-                            <div className={stylesManagerZonePayroll.ButtonContainer}>
+                        <div className={styles.PayrollContainer}>
+                            <div className={styles.ButtonContainer}>
                                 <Button
                                     variant="outlined"
                                     style={{width:'100%'}}
@@ -725,9 +746,9 @@ export default function ManagerZonePayroll() {
                 </div>
             </div>
             <div style={{ display: (viewDisclaimerPopup) ? 'block' : 'none' }}>
-                <div className={stylesManagerZonePayroll.PopUp}>
+                <div className={styles.PopUp}>
                     <center><h2>Disclaimer</h2></center>
-                    <div  className={stylesManagerZonePayroll.PopUpScroll}>
+                    <div  className={styles.PopUpScroll}>
                         <div>
                         The payroll deduction calculator provided on this platform is intended for reference purposes only. While we strive to ensure the accuracy and reliability of the calculator, it is important to note that it may not account for all possible scenarios and variations in tax laws and regulations.
                         </div><br/>
@@ -753,19 +774,19 @@ export default function ManagerZonePayroll() {
 
 const PayrollInfo = (payrollInfo: any) => {
     return (
-        <div className={stylesManagerZonePayroll.PayrollInfoContainer}>
+        <div className={styles.PayrollInfoContainer}>
             <center><h2>Payroll</h2></center>
             <div>
-                <div className={stylesManagerZonePayroll.PayrollInfo}>
-                    <span className={stylesManagerZonePayroll.PayrollInfoTitle}>Employee's name:</span>
+                <div className={styles.PayrollInfo}>
+                    <span className={styles.PayrollInfoTitle}>Employee's name:</span>
                     <span>{payrollInfo.payrollInfo.employeeName}</span>
-                    <span className={stylesManagerZonePayroll.PayrollInfoTitle}>Employer's name:</span>
+                    <span className={styles.PayrollInfoTitle}>Employer's name:</span>
                     <span>{payrollInfo.payrollInfo.employerName}</span>
-                    <span className={stylesManagerZonePayroll.PayrollInfoTitle}>Pay period frequency:</span>
+                    <span className={styles.PayrollInfoTitle}>Pay period frequency:</span>
                     <span>{payrollInfo.payrollInfo.payPeriod}</span>
-                    <span className={stylesManagerZonePayroll.PayrollInfoTitle}>Date the employee is paid:</span>
+                    <span className={styles.PayrollInfoTitle}>Date the employee is paid:</span>
                     <span>{payrollInfo.payrollInfo.payDate} (YYYY/MM/DD)</span>
-                    <span className={stylesManagerZonePayroll.PayrollInfoTitle}>Province of employment:</span>
+                    <span className={styles.PayrollInfoTitle}>Province of employment:</span>
                     <span>{payrollInfo.payrollInfo.province}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -774,7 +795,7 @@ const PayrollInfo = (payrollInfo: any) => {
                     <hr style={{ flex: 1, marginLeft: '10px' }} />
                 </div>
                 <div>
-                <table className={stylesManagerZonePayroll.PayrollTable}>
+                <table className={styles.PayrollTable}>
                         <tbody>
                             <tr>
                                 <td>Hours</td>
@@ -795,7 +816,7 @@ const PayrollInfo = (payrollInfo: any) => {
                     <hr style={{ flex: 1, marginLeft: '10px' }} />
                 </div>
                 <div>
-                    <table className={stylesManagerZonePayroll.PayrollTable}>
+                    <table className={styles.PayrollTable}>
                         <tbody>
                             <tr>
                                 <td>Salary or wages income</td>

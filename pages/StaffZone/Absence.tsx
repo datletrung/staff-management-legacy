@@ -21,7 +21,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 
 import 'react-calendar/dist/Calendar.css';
-import stylesStaffZoneAbsence from '@components/css/StaffZone/Absence.module.css';
+import styles from '@components/css/StaffZone/Absence.module.css';
 
 export default function StaffZoneAbsence() {
     if (!checkPermissions()) {
@@ -186,11 +186,11 @@ export default function StaffZoneAbsence() {
 
     return (
         <>
-            {viewPopUp && <div className={stylesStaffZoneAbsence.BlurView} onClick={() => {
+            {viewPopUp && <div className={styles.BlurView} onClick={() => {
                 setViewPopUp(false);
             }} />}
             
-            {viewPopUpConfirm && <div className={stylesStaffZoneAbsence.BlurView} onClick={() => {
+            {viewPopUpConfirm && <div className={styles.BlurView} onClick={() => {
                 setViewPopUpConfirm(false);
             }} />}
 
@@ -199,9 +199,9 @@ export default function StaffZoneAbsence() {
             </Head>
             <h2><Link href={'/StaffZone'} style={{textDecoration: 'underline'}}>Staff Zone</Link> &#x2022; {`Absence`}</h2>
 
-            <div className={stylesStaffZoneAbsence.SplitViewRow}>
-                <div className={stylesStaffZoneAbsence.CenterView}>
-                    <Calendar className={stylesStaffZoneAbsence.CalendarContainer}
+            <div className={styles.SplitViewRow}>
+                <div className={styles.CenterView}>
+                    <Calendar className={styles.CalendarContainer}
                         locale='en-US'
                         activeStartDate={activeStartDate}
                         onActiveStartDateChange={(date: any) => {
@@ -211,10 +211,10 @@ export default function StaffZoneAbsence() {
                         tileContent={tileContent}
                     />
                 </div>
-                <div className={stylesStaffZoneAbsence.SplitViewRowChild}>
-                    <div className={stylesStaffZoneAbsence.SplitViewColumn}>
-                        <div className={`${stylesStaffZoneAbsence.AbsenceView} ${loading ? stylesStaffZoneAbsence.AbsenceViewBlur : ''} `}>
-                            <div className={stylesStaffZoneAbsence.ButtonContainer}>
+                <div className={styles.SplitViewRowChild}>
+                    <div className={styles.SplitViewColumn}>
+                        <div className={`${styles.AbsenceView} ${loading ? styles.AbsenceViewBlur : ''} `}>
+                            <div className={styles.ButtonContainer}>
                                 <Button
                                     size="large"
                                     variant="outlined"
@@ -225,34 +225,34 @@ export default function StaffZoneAbsence() {
                                     REQUEST NEW ABSENCE
                                 </Button>
                             </div>
-                            <table className={stylesStaffZoneAbsence.Table}>
+                            <table className={styles.Table}>
                                 <tbody>
                                 <tr>
-                                    <th className={stylesStaffZoneAbsence.TableColumn}>Start date</th>
-                                    <th className={stylesStaffZoneAbsence.TableColumn}>End date</th>
-                                    <th className={stylesStaffZoneAbsence.TableColumn}>Total day(s)</th>
-                                    <th className={stylesStaffZoneAbsence.TableColumn}>Approval Status</th>
+                                    <th className={styles.TableColumn}>Start date</th>
+                                    <th className={styles.TableColumn}>End date</th>
+                                    <th className={styles.TableColumn}>Total day(s)</th>
+                                    <th className={styles.TableColumn}>Approval Status</th>
                                     <th></th>
                                 </tr>
 
                                 {absenceTableData.map((item:any, idx:number) => {
                                     return (
-                                        <tr className={`${(idx % 2 !== 1) ? stylesStaffZoneAbsence.TableAlterRow : ''}`}>
-                                            <td className={stylesStaffZoneAbsence.AbsenceContent}>
+                                        <tr className={`${(idx % 2 !== 1) ? styles.TableAlterRow : ''}`}>
+                                            <td className={styles.AbsenceContent}>
                                                 {new Date(item.ABSENCE_START).toLocaleString([], { day: '2-digit', month: '2-digit', year:'numeric' })}
                                             </td>
-                                            <td className={stylesStaffZoneAbsence.AbsenceContent}>
+                                            <td className={styles.AbsenceContent}>
                                                 {new Date(item.ABSENCE_END).toLocaleString([], { day: '2-digit', month: '2-digit', year:'numeric' })}
                                             </td>
-                                            <td className={stylesStaffZoneAbsence.AbsenceContent}>
+                                            <td className={styles.AbsenceContent}>
                                                 {item.TOTAL_DAY}
                                             </td>
-                                            <td className={stylesStaffZoneAbsence.AbsenceContent} style={{ color: item.APPROVAL_STATUS === 'Pending' ? 'orange' : item.APPROVAL_STATUS === 'Approved' ? 'green'  : item.APPROVAL_STATUS === 'Rejected' ? 'red': 'black' }}>
+                                            <td className={styles.AbsenceContent} style={{ color: item.APPROVAL_STATUS === 'Pending' ? 'orange' : item.APPROVAL_STATUS === 'Approved' ? 'green'  : item.APPROVAL_STATUS === 'Rejected' ? 'red': 'black' }}>
                                                 {item.APPROVAL_STATUS}
                                             </td>
-                                            <td className={stylesStaffZoneAbsence.AbsenceContent}>
+                                            <td className={styles.AbsenceContent}>
                                                 <div style={{display: 'flex', gap: '5px'}}>
-                                                    <div className={`${stylesStaffZoneAbsence.ButtonIcon} ${stylesStaffZoneAbsence.ButtonIconCross}`}
+                                                    <div className={`${styles.ButtonIcon} ${styles.ButtonIconCross}`}
                                                         title="Withdraw"
                                                         onClick={() => {
                                                             setAbsenceId(item.ABSENCE_ID);
@@ -273,10 +273,10 @@ export default function StaffZoneAbsence() {
                 </div>
             </div>
             <div style={{ display: (viewPopUp) ? 'block' : 'none' }}>
-                <div className={stylesStaffZoneAbsence.PopUp}>
+                <div className={styles.PopUp}>
                     <center><h2>Request New Absence</h2></center>
-                    <div className={stylesStaffZoneAbsence.FormContainer}>
-                        <span className={stylesStaffZoneAbsence.FormTitle}>Absence Date From</span>
+                    <div className={styles.FormContainer}>
+                        <span className={styles.FormTitle}>Absence Date From</span>
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <DatePicker
                                 value={absenceDateFrom}
@@ -294,7 +294,7 @@ export default function StaffZoneAbsence() {
                                 }}
                             />
                         </LocalizationProvider>
-                        <span className={stylesStaffZoneAbsence.FormTitle}>Absence Date To</span>
+                        <span className={styles.FormTitle}>Absence Date To</span>
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <DatePicker
                                 value={absenceDateTo}
@@ -312,7 +312,7 @@ export default function StaffZoneAbsence() {
                                 }}
                             />
                         </LocalizationProvider>
-                        <span className={stylesStaffZoneAbsence.FormTitle}>Total Absence Day(s)</span>
+                        <span className={styles.FormTitle}>Total Absence Day(s)</span>
                         <span>{totalAbsenceDays}</span>
                     </div><br/>
                     <Button
@@ -327,7 +327,7 @@ export default function StaffZoneAbsence() {
                 </div>
             </div>
             <div style={{ display: (viewPopUpConfirm) ? 'block' : 'none' }}>
-                <div className={stylesStaffZoneAbsence.PopUp}>
+                <div className={styles.PopUp}>
                     <center><h2>Confirm withdrawal</h2></center>
                     <div>
                         <span>Are you sure you want to withdraw this record?</span><br/>

@@ -11,7 +11,7 @@ import { useSession } from "next-auth/react";
 import { checkPermissions } from '@components/CheckPermission';
 import AccessDenied from '@components/AccessDenied';
 
-import stylesManagerZoneSettings from '@components/css/ManagerZone/Settings.module.css';
+import styles from '@components/css/ManagerZone/Settings.module.css';
 
 export default function ManagerZoneSettings() {
     if (!checkPermissions()) {
@@ -158,14 +158,14 @@ export default function ManagerZoneSettings() {
             <h2><Link href={'/ManagerZone'} style={{textDecoration: 'underline'}}>Manager Zone</Link> &#x2022; {`App Settings`}</h2>
             <div>
                 <h4>General</h4>
-                <div className={stylesManagerZoneSettings.GridContainer}>
-                    <span className={stylesManagerZoneSettings.SettingTitle}>Company Name</span>
+                <div className={styles.GridContainer}>
+                    <span className={styles.SettingTitle}>Company Name</span>
                     <TextField
                         variant="standard"
                         value={companyName}
                         onChange={(event) => {setCompanyName(event.target.value)}}
                     />
-                    <span className={stylesManagerZoneSettings.SettingTitle}>Company Short Name</span>
+                    <span className={styles.SettingTitle}>Company Short Name</span>
                     <TextField
                         variant="standard"
                         value={companyShortName}
@@ -173,16 +173,16 @@ export default function ManagerZoneSettings() {
                     />
                 </div>
                 <h4>Time Entry</h4>
-                <div className={stylesManagerZoneSettings.GridContainer}>
-                    <span className={stylesManagerZoneSettings.SettingTitle}>Time Sheet Auto Approval</span>
+                <div className={styles.GridContainer}>
+                    <span className={styles.SettingTitle}>Time Sheet Auto Approval</span>
                     <Switch
                         checked={checkedAutoApproveSwitch}
                         onChange={(event) => {setCheckedAutoApproveSwitch(event.target.checked)}}
                     />
                 </div>
                 <h4>Payroll</h4>
-                <div className={stylesManagerZoneSettings.GridContainer}>
-                    <span className={stylesManagerZoneSettings.SettingTitle}>Province</span>
+                <div className={styles.GridContainer}>
+                    <span className={styles.SettingTitle}>Province</span>
                     <Select
                         variant="standard"
                         value={selectedProvinceOption}
@@ -194,7 +194,7 @@ export default function ManagerZoneSettings() {
                         </MenuItem>
                         ))}
                     </Select>
-                    <span className={stylesManagerZoneSettings.SettingTitle}>Pay Period</span>
+                    <span className={styles.SettingTitle}>Pay Period</span>
                     <Select
                         variant="standard"
                         value={selectedPayPeriodOption}
@@ -206,7 +206,7 @@ export default function ManagerZoneSettings() {
                         </MenuItem>
                         ))}
                     </Select>
-                    <span className={stylesManagerZoneSettings.SettingTitle}>Overtime Rules</span>
+                    <span className={styles.SettingTitle}>Overtime Rules</span>
                     <div>
                         <TextField
                             variant="standard"

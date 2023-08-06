@@ -53,8 +53,10 @@
 }
 
 .ButtonContainer {
+    display: flex;
+    gap: 10px;
     width: 100%;
-    margin: 0.25rem;
+    margin-top: 0.25rem;
 }
 
 .SplitViewRow {

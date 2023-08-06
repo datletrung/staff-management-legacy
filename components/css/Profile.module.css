@@ -19,7 +19,7 @@
     width: 100%;
 }
 
-.splitViewForm {
+.SplitViewForm {
     display: flex;
     gap: 10px;
 }
