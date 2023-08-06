@@ -23,7 +23,6 @@ export default function App({ Component, pageProps, router }: AppProps) {
       <SessionProvider session={pageProps.session}>
         <RouteGuard router={router}>
           <Layout>
-            {/*<Script src="https://kit.fontawesome.com/79d48c8813.js" />*/}
             <Component {...pageProps} />
             <ToastContainer limit={3} />
           </Layout>

@@ -13,26 +13,34 @@ import {
     Chart as ChartJS,
     CategoryScale,
     LinearScale,
+    RadialLinearScale,
     BarElement,
+    PointElement,
+    LineElement,
     Title,
+    Filler,
     Tooltip,
     Legend,
 } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import { Bar, Line, Radar } from 'react-chartjs-2';
 import { ChartOptions } from 'chart.js';
 
 ChartJS.register(
     CategoryScale,
     LinearScale,
+    RadialLinearScale,
     BarElement,
+    PointElement,
+    LineElement,
     Title,
+    Filler,
     Tooltip,
     Legend
 );
 
-const processData = (data: any) => {
+const processData = (data: any, chartType: any) => {
     const ids = [...new Set(data.map((item: any) => item.ID))];
-    const datasets = ids.map((id, index) => { // Added 'index' parameter
+    const datasets = ids.map((id, index) => {
         const userEntries = data.filter((item: any) => item.ID === id);
         const labels = userEntries.map((entry: any) => entry.Y_AXIS);
         const dataPoints = userEntries.map((entry: any) => entry.X_AXIS);
@@ -40,12 +48,13 @@ const processData = (data: any) => {
         return {
             label: id,
             data: dataPoints,
-            backgroundColor: chartColor[index % chartColor.length],
+            backgroundColor: (chartType == 'bar') ? chartColor[index % chartColor.length] : chartColorAlpha[index % chartColorAlpha.length],
+            borderColor: chartColor[index % chartColor.length],
             borderRadius: 3,
-            borderWidth: 0,
+            borderWidth: (chartType == 'bar') ? 0 : 1,
             pointRadius: 5,
             pointHoverRadius: 7,
-            fill: false,
+            fill: true,
         };
     });
 
@@ -58,10 +67,19 @@ const processData = (data: any) => {
 const chartColor = [
     '#FF8A80', // Coral
     '#33C08C', // Muted Teal
-    '#FFA726', // Orange
-    '#81C784', // Light Green
     '#FFD700', // Gold
-    '#66BB6A', // Green
+    '#5C42A5', // Purple
+    '#FFA726', // Orange
+    '#AC99BD', // Purple
+];
+
+const chartColorAlpha = [
+    'rgba(255, 138, 128, 0.25)', // Coral
+    'rgba(51, 192, 140, 0.25)', // Muted Teal
+    'rgba(255, 215, 0, 0.25)', // Gold
+    'rgba(92, 66, 165, 0.25)', // Purple
+    'rgba(255, 167, 38, 0.25)', // Orange
+    'rgba(172, 153, 189, 0.25)', // Purple
 ];
 
 export default function Account() {
@@ -86,6 +104,7 @@ export default function Account() {
     };
 
     async function getCharts() {
+        //------Chart 1
         const apiUrlEndpoint = `${baseApiUrl}/fetchSql`;
         var postData = {
             method: 'POST',
@@ -95,11 +114,11 @@ export default function Account() {
                 para: []
             })
         }
-    
         var response = await fetch(apiUrlEndpoint, postData);
         var res = await response.json();
-        setTotalHourPerWeekChartData(processData(res.data));
+        setTotalHourPerWeekChartData(processData(res.data, 'bar'));
 
+        //------Chart 2
         var postData = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json '},
@@ -108,11 +127,11 @@ export default function Account() {
                 para: []
             })
         }
-    
         var response = await fetch(apiUrlEndpoint, postData);
         var res = await response.json();
-        setAttendancePerWeekChartData(processData(res.data));
+        setAttendancePerWeekChartData(processData(res.data, 'bar'));
 
+        //------Chart 3
         var postData = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json '},
@@ -121,11 +140,14 @@ export default function Account() {
                 para: []
             })
         }
-    
         var response = await fetch(apiUrlEndpoint, postData);
         var res = await response.json();
-        setAvgHourPerDayChartData(processData(res.data));
+        console.log(res.data);
+        var labels: Array<any> = [];
+        var dataTmp: Array<number> = [];
+        setAvgHourPerDayChartData(processData(res.data, 'radar'));
 
+        //------Chart 4
         var postData = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json '},
@@ -134,10 +156,10 @@ export default function Account() {
                 para: []
             })
         }
-    
         var response = await fetch(apiUrlEndpoint, postData);
         var res = await response.json();
-        setTotalSalaryPaidChartData(processData(res.data));
+        setTotalSalaryPaidChartData(processData(res.data, 'line'));
+
     }
 
     async function handleSignIn() {
@@ -247,12 +269,14 @@ export default function Account() {
                                 scales: {
                                     ...options.scales,
                                     x: {
+                                        stacked: true,
                                         title: {
                                             display: true,
                                             text: 'Week Number',
                                         }
                                     },
                                     y: {
+                                        stacked: true,
                                         title: {
                                             display: true,
                                             text: 'Days',
@@ -263,49 +287,33 @@ export default function Account() {
                         />
                     </div>
                     <div className={styles.Chart}>
-                        <Bar
+                        <Radar
                             data={avgHourPerDayChartData}
                             options={{
-                                ...options,
                                 plugins: {
-                                    ...options.plugins,
                                     title: {
                                         text: 'Average Hour per Day',
                                         display: true,
                                     }
                                 },
-                                scales: {
-                                    ...options.scales,
-                                    x: {
-                                        title: {
-                                            display: true,
-                                            text: 'Day of week',
-                                        }
-                                    },
-                                    y: {
-                                        title: {
-                                            display: true,
-                                            text: 'Hours',
-                                        }
-                                    }
-                                }
                             }}
                         />
                     </div>
                     <div className={styles.Chart}>
-                        <Bar
+                        <Line
+                            style={{display: (session?.user?.role == "MANAGER") ? 'block' : 'none'}}
                             data={totalSalaryPaidChartData}
                             options={{
-                                ...options,
                                 plugins: {
-                                    ...options.plugins,
+                                    legend: {
+                                        display: false,
+                                    },
                                     title: {
                                         text: 'Total Salary Paid',
                                         display: true,
-                                    }
+                                    },
                                 },
                                 scales: {
-                                    ...options.scales,
                                     x: {
                                         title: {
                                             display: true,
@@ -313,6 +321,7 @@ export default function Account() {
                                         }
                                     },
                                     y: {
+                                        beginAtZero: true,
                                         title: {
                                             display: true,
                                             text: '$',

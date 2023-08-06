@@ -89,7 +89,7 @@ export default function Layout({ children }:{ children: any}) {
                                 router.push('/');
                             }
                         }}
-                        onMouseEnter={() => setDisplayName('Sign Out')}
+                        onMouseEnter={() => setDisplayName('Log Out')}
                         onMouseLeave={() => setDisplayName(`Logged in as ${session?.user?.name}`)}
                         > {/* Account Button */}
 

@@ -55,6 +55,7 @@ export default function ManagerZoneManageStaff() {
     const [resetPasswordOption, setResetPasswordOption] = useState('');
     const [resetPasswordNewPass1, setResetPasswordNewPass1] = useState('');
     const [resetPasswordNewPass2, setResetPasswordNewPass2] = useState('');
+    const [roleOptions, setRoleOptions] = useState([]);
 
     const filterOptions = (options: any[], { inputValue }: any) => {
         return options.filter(
@@ -310,7 +311,23 @@ export default function ManagerZoneManageStaff() {
         }
     }
 
+    async function getRoles() {
+        const apiUrlEndpoint = `${baseApiUrl}/fetchSql`;
+        const postData = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json '},
+                body: JSON.stringify({
+                        query: 'fetchRoles',
+                        para: []
+                })
+        }
+        const response = await fetch(apiUrlEndpoint, postData);
+        const res = await response.json();
+        setRoleOptions(res.data);
+    }
+
     useEffect(() => {
+        getRoles();
         getEmployeeList();
     }, [])
 
@@ -589,9 +606,14 @@ export default function ManagerZoneManageStaff() {
                                             value={selectedRole}
                                             onChange={(event) => { setSelectedRole(event.target.value as string); }}
                                             >
+                                            {roleOptions.map((item:any, idx:number) => {
+                                                return <MenuItem value={item.LOOKUP_CODE}>{item.MEANING}</MenuItem>
+                                            })}
+                                            {/*
                                             <MenuItem value='EMPLOYEE'>Employee</MenuItem>
                                             <MenuItem value='MANAGER'>Manager</MenuItem>
                                             <MenuItem value='SYSADMIN'>SysAdmin</MenuItem>
+                                            */}
                                         </Select>
                                     </div>
                                 </div>

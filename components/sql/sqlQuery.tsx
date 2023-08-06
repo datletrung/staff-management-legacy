@@ -270,6 +270,11 @@ export const sqlQuery = {
             AND USER_ID = ?
     `,
     //-----MANAGER ZONE > MANAGE STAFF
+    'fetchRoles':`
+        SELECT LOOKUP_CODE, MEANING
+        FROM LOOKUPS
+        WHERE LOOKUP_TYPE = 'STAFF_ROLE'
+    `,
     'fetchEmployeeList':`
         SELECT USER_ID, FIRST_NAME, LAST_NAME, CONCAT(FIRST_NAME, ' ', LAST_NAME) AS FULL_NAME, EMAIL, PHONE_NUMBER
         FROM USER
@@ -432,8 +437,7 @@ export const sqlQuery = {
     `,
     'fetchTotalSalaryPaid':`
         SELECT
-            1 AS ID
-            ,MONTHLY_SALARY_PAY AS X_AXIS
+            MONTHLY_SALARY_PAY AS X_AXIS
             ,MONTH_YEAR AS Y_AXIS
         FROM (
             SELECT 
