@@ -4,6 +4,7 @@ import Link from "next/link";
 import Head from 'next/head';
 import Notify from '@components/Notify';
 import { useState, useEffect } from 'react';
+import { useSession } from "next-auth/react";
 import baseApiUrl from '@api/apiConfig';
 
 import { Button, Autocomplete, TextField } from '@mui/material';
@@ -13,7 +14,9 @@ import AccessDenied from '@components/AccessDenied';
 
 import 'react-calendar/dist/Calendar.css';
 import styles from '@components/css/ManagerZone/TimeSheet.module.css';
-import { useSession } from "next-auth/react";
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPen, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 
 export default function ManagerZoneTimeSheet() {
@@ -313,6 +316,7 @@ export default function ManagerZoneTimeSheet() {
                                 <th className={styles.TableColumn}>Time in</th>
                                 <th className={styles.TableColumn}>Time out</th>
                                 <th className={styles.TableColumn}>Total hour</th>
+                                <th></th>
                             </tr>
 
                             {timePunchData.map((item:any, idx:number) => {
@@ -351,7 +355,8 @@ export default function ManagerZoneTimeSheet() {
                                                     </>
                                                 ) : (
                                                     timeIn
-                                                )}</td>
+                                                )}
+                                            </td>
                                             <td className={`${styles.TimeCardContent} ${styles.TimeCardOut} ${styles.TableColumn}`}>
                                                 {
                                                 timeOut.includes(',') ? (
@@ -361,8 +366,32 @@ export default function ManagerZoneTimeSheet() {
                                                     </>
                                                 ) : (
                                                     timeOut
-                                                )}</td>
+                                                )}
+                                            </td>
                                             <td className={`${styles.TimeCardContent}  ${styles.TableColumn}`}>{totalTime}</td>
+                                            <td className={styles.TimeCardContent}>
+                                                <div style={{ display: 'flex', gap: '5px', justifyContent: 'right'}}>
+                                                    <div
+                                                        className={`${styles.ButtonIcon} ${styles.ButtonIconEdit}`}
+                                                        title="Edit"
+                                                        /*onClick={() => {rejectAbsence(item.ABSENCE_ID)}}*/
+                                                    >
+                                                        <FontAwesomeIcon icon={faPen} />
+                                                    </div>
+                                                    <div
+                                                        className={`${styles.ButtonIcon} ${styles.ButtonIconTrash}`}
+                                                        title="Delete"
+                                                        /*
+                                                        onClick={() => {
+                                                            setAbsenceId(item.ABSENCE_ID);
+                                                            setViewPopUpConfirm(true);
+                                                        }}
+                                                        */
+                                                    >
+                                                        <FontAwesomeIcon icon={faTrash} />
+                                                    </div>
+                                                </div>
+                                            </td>
                                         </tr>
                                     );
                             })}

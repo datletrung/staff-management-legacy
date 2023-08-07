@@ -74,6 +74,7 @@ export const sqlQuery = {
     'fetchTimeEntryDay': `
         SELECT
             USER_ID
+            ,TIMECLOCK_ID
             ,TIME_IN
             ,TIME_OUT
             ,ROUND(TIME_TO_SEC(CASE WHEN TOTAL_TIME IS NOT NULL

@@ -38,16 +38,14 @@ const processData = (data: any) => {
         const userEntries = data.filter((item: any) => item.ID === id);
         const labels = userEntries.map((entry: any) => entry.Y_AXIS);
         const dataPoints = userEntries.map((entry: any) => entry.X_AXIS);
+        console.log(`rgba(${chartColor[index % chartColor.length]}, 1)`);
 
         return {
             label: id,
             data: dataPoints,
-            backgroundColor: chartColor[index % chartColor.length],
-            borderRadius: 3,
-            borderWidth: 0,
-            pointRadius: 5,
-            pointHoverRadius: 7,
-            fill: true,
+            backgroundColor: `rgba(${chartColor[index % chartColor.length]}, 0.7)`,
+            borderColor: `rgba(0, 0, 0, 1)`,
+            borderWidth: 1,
         };
     });
 
@@ -58,12 +56,12 @@ const processData = (data: any) => {
 };
 
 const chartColor = [
-    '#10C882', // Muted Teal
-    '#FF8A80', // Coral
-    '#FFD700', // Gold
-    '#5C42A5', // Purple
-    '#FFA726', // Orange
-    '#AC99BD', // Purple
+    '16, 200, 130', // Muted Teal
+    '255, 138, 128', // Coral
+    '255, 215, 0', // Gold
+    '92, 66, 165', // Purple
+    '255, 167, 38', // Orange
+    '172, 153, 189', // Purple
 ];
 
 export default function Account() {
