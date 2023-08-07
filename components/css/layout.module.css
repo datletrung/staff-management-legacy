@@ -10,6 +10,7 @@
 }
 
 .HeaderNavMenuButton {
+    cursor: pointer;
     margin: 8px;
     padding: 5px;
 }
