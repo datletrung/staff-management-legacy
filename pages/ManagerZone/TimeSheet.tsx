@@ -331,7 +331,7 @@ export default function ManagerZoneTimeSheet() {
                                             timeIn = timeInTmp?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
                                         } else {
                                             timeIn = timeInTmp?.toLocaleTimeString([], { day: '2-digit', month: '2-digit', year:'2-digit', hour:'2-digit', minute: '2-digit', hour12: false });
-                                        }   
+                                        }
                                     }
                                     let timeOut = '-';
                                     if (item.TIME_OUT) {
@@ -342,7 +342,7 @@ export default function ManagerZoneTimeSheet() {
                                             timeOut = timeOutTmp?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
                                         } else {
                                             timeOut = timeOutTmp?.toLocaleTimeString([], { day: '2-digit', month: '2-digit', year:'2-digit', hour:'2-digit', minute: '2-digit', hour12: false });
-                                        }   
+                                        }
                                     }
                                     return (
                                         <tr className={`${(idx % 2 !== 1) ? styles.TableAlterRow : ''}`}>
