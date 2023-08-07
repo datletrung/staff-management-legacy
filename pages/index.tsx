@@ -13,32 +13,26 @@ import {
     Chart as ChartJS,
     CategoryScale,
     LinearScale,
-    RadialLinearScale,
     BarElement,
-    PointElement,
-    LineElement,
     Title,
     Filler,
     Tooltip,
     Legend,
 } from 'chart.js';
-import { Bar, Line, Radar } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
 import { ChartOptions } from 'chart.js';
 
 ChartJS.register(
     CategoryScale,
     LinearScale,
-    RadialLinearScale,
     BarElement,
-    PointElement,
-    LineElement,
     Title,
     Filler,
     Tooltip,
     Legend
 );
 
-const processData = (data: any, chartType: any) => {
+const processData = (data: any) => {
     const ids = [...new Set(data.map((item: any) => item.ID))];
     const datasets = ids.map((id, index) => {
         const userEntries = data.filter((item: any) => item.ID === id);
@@ -48,10 +42,9 @@ const processData = (data: any, chartType: any) => {
         return {
             label: id,
             data: dataPoints,
-            backgroundColor: (chartType == 'bar') ? chartColor[index % chartColor.length] : chartColorAlpha[index % chartColorAlpha.length],
-            borderColor: chartColor[index % chartColor.length],
+            backgroundColor: chartColor[index % chartColor.length],
             borderRadius: 3,
-            borderWidth: (chartType == 'bar') ? 0 : 1,
+            borderWidth: 0,
             pointRadius: 5,
             pointHoverRadius: 7,
             fill: true,
@@ -65,21 +58,12 @@ const processData = (data: any, chartType: any) => {
 };
 
 const chartColor = [
+    '#10C882', // Muted Teal
     '#FF8A80', // Coral
-    '#33C08C', // Muted Teal
     '#FFD700', // Gold
     '#5C42A5', // Purple
     '#FFA726', // Orange
     '#AC99BD', // Purple
-];
-
-const chartColorAlpha = [
-    'rgba(255, 138, 128, 0.25)', // Coral
-    'rgba(51, 192, 140, 0.25)', // Muted Teal
-    'rgba(255, 215, 0, 0.25)', // Gold
-    'rgba(92, 66, 165, 0.25)', // Purple
-    'rgba(255, 167, 38, 0.25)', // Orange
-    'rgba(172, 153, 189, 0.25)', // Purple
 ];
 
 export default function Account() {
@@ -116,7 +100,7 @@ export default function Account() {
         }
         var response = await fetch(apiUrlEndpoint, postData);
         var res = await response.json();
-        setTotalHourPerWeekChartData(processData(res.data, 'bar'));
+        setTotalHourPerWeekChartData(processData(res.data));
 
         //------Chart 2
         var postData = {
@@ -129,7 +113,7 @@ export default function Account() {
         }
         var response = await fetch(apiUrlEndpoint, postData);
         var res = await response.json();
-        setAttendancePerWeekChartData(processData(res.data, 'bar'));
+        setAttendancePerWeekChartData(processData(res.data));
 
         //------Chart 3
         var postData = {
@@ -142,10 +126,7 @@ export default function Account() {
         }
         var response = await fetch(apiUrlEndpoint, postData);
         var res = await response.json();
-        console.log(res.data);
-        var labels: Array<any> = [];
-        var dataTmp: Array<number> = [];
-        setAvgHourPerDayChartData(processData(res.data, 'radar'));
+        setAvgHourPerDayChartData(processData(res.data));
 
         //------Chart 4
         var postData = {
@@ -158,7 +139,7 @@ export default function Account() {
         }
         var response = await fetch(apiUrlEndpoint, postData);
         var res = await response.json();
-        setTotalSalaryPaidChartData(processData(res.data, 'line'));
+        setTotalSalaryPaidChartData(processData(res.data));
 
     }
 
@@ -241,7 +222,7 @@ export default function Account() {
                                     x: {
                                         title: {
                                             display: true,
-                                            text: 'Week Number',
+                                            text: 'Date Range',
                                         }
                                     },
                                     y: {
@@ -272,7 +253,7 @@ export default function Account() {
                                         stacked: true,
                                         title: {
                                             display: true,
-                                            text: 'Week Number',
+                                            text: 'Date Range',
                                         }
                                     },
                                     y: {
@@ -287,23 +268,37 @@ export default function Account() {
                         />
                     </div>
                     <div className={styles.Chart}>
-                        <Radar
+                        <Bar
                             data={avgHourPerDayChartData}
                             options={{
+                                indexAxis: 'y' as const,
                                 plugins: {
+                                    legend: {
+                                        display: true,
+                                        position: 'bottom' as const,
+                                    },
                                     title: {
                                         text: 'Average Hour per Day',
                                         display: true,
                                     }
                                 },
+                                scales: {
+                                    x: {
+                                        stacked: true,
+                                    },
+                                    y: {
+                                        stacked: true,
+                                    }
+                                }
                             }}
                         />
                     </div>
                     <div className={styles.Chart}>
-                        <Line
+                        <Bar
                             style={{display: (session?.user?.role == "MANAGER") ? 'block' : 'none'}}
                             data={totalSalaryPaidChartData}
                             options={{
+                                indexAxis: 'y' as const,
                                 plugins: {
                                     legend: {
                                         display: false,
@@ -317,14 +312,13 @@ export default function Account() {
                                     x: {
                                         title: {
                                             display: true,
-                                            text: 'Month-Year',
+                                            text: '$',
                                         }
                                     },
                                     y: {
-                                        beginAtZero: true,
                                         title: {
                                             display: true,
-                                            text: '$',
+                                            text: 'Month-Year',
                                         }
                                     }
                                 }

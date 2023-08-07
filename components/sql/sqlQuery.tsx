@@ -381,59 +381,112 @@ export const sqlQuery = {
     //-----PROFILE
     'fetchTotalHourPerWeek':`
         SELECT
-            FULL_NAME AS ID
-            ,TOTAL_HOUR AS X_AXIS
-            ,WEEK_NUMBER AS Y_AXIS
-        FROM (   
+            CONCAT(u.FIRST_NAME, ' ', u.LAST_NAME) AS ID,
+            IFNULL(t.TOTAL_HOUR, 0) AS X_AXIS,
+            g.DATE_RANGE AS Y_AXIS
+        FROM (
+            SELECT DISTINCT USER_ID FROM TIMECLOCK
+        ) users
+        CROSS JOIN (
+            SELECT DISTINCT
+                CONCAT(
+                        DATE_FORMAT(DATE_SUB(DATE(TIME_IN), INTERVAL 1 + WEEKDAY(TIME_IN) DAY), '%d')
+                        ,'-'
+                        ,DATE_FORMAT(DATE_ADD(DATE_SUB(DATE(TIME_IN), INTERVAL 1 + WEEKDAY(TIME_IN) DAY), INTERVAL 6 DAY), '%d')
+                        ,'/'
+                        ,MONTH(TIME_IN)
+                )
+                AS DATE_RANGE
+            FROM TIMECLOCK
+        ) g
+        LEFT JOIN (
             SELECT
-                (SELECT CONCAT(FIRST_NAME, ' ', LAST_NAME) FROM USER WHERE USER_ID = TC.USER_ID) AS FULL_NAME
-                ,WEEK(TC.TIME_IN) AS WEEK_NUMBER
-                ,ROUND(SUM(TIME_TO_SEC(TIME(TC.TOTAL_TIME)) / 3600), 2) AS TOTAL_HOUR
+                USER_ID,
+                CONCAT(
+                        DATE_FORMAT(DATE_SUB(DATE(TC.TIME_IN), INTERVAL 1 + WEEKDAY(TC.TIME_IN) DAY), '%d')
+                        ,'-'
+                        ,DATE_FORMAT(DATE_ADD(DATE_SUB(DATE(TC.TIME_IN), INTERVAL 1 + WEEKDAY(TC.TIME_IN) DAY), INTERVAL 6 DAY), '%d')
+                        ,'/'
+                        ,MONTH(TIME_IN)
+                ) AS DATE_RANGE,
+                ROUND(SUM(TIME_TO_SEC(TIME(TC.TOTAL_TIME)) / 3600), 2) AS TOTAL_HOUR
             FROM TIMECLOCK TC
-            GROUP BY TC.USER_ID, WEEK_NUMBER
-            ORDER BY TC.USER_ID, WEEK_NUMBER
-        ) t
+            GROUP BY TC.USER_ID, DATE_RANGE
+        ) t ON users.USER_ID = t.USER_ID AND g.DATE_RANGE = t.DATE_RANGE
+        LEFT JOIN (
+            SELECT USER_ID, FIRST_NAME, LAST_NAME FROM USER
+        ) u ON users.USER_ID = u.USER_ID
+        ORDER BY g.DATE_RANGE, u.USER_ID
     `,
     'fetchAttendancePerWeek':`
         SELECT
-            FULL_NAME AS ID
-            ,ATTENDANCE_COUNT AS X_AXIS
-            ,WEEK_NUMBER AS Y_AXIS
-        FROM (   
+            CONCAT(u.FIRST_NAME, ' ', u.LAST_NAME) AS ID,
+            IFNULL(t.ATTENDANCE_COUNT, 0) AS X_AXIS,
+            g.DATE_RANGE AS Y_AXIS
+        FROM (
+            SELECT DISTINCT USER_ID FROM TIMECLOCK
+        ) users
+        CROSS JOIN (
+            SELECT DISTINCT
+                CONCAT(
+                        DATE_FORMAT(DATE_SUB(DATE(TIME_IN), INTERVAL 1 + WEEKDAY(TIME_IN) DAY), '%d')
+                        ,'-'
+                        ,DATE_FORMAT(DATE_ADD(DATE_SUB(DATE(TIME_IN), INTERVAL 1 + WEEKDAY(TIME_IN) DAY), INTERVAL 6 DAY), '%d')
+                        ,'/'
+                        ,MONTH(TIME_IN)
+                )
+                AS DATE_RANGE
+            FROM TIMECLOCK
+        ) g
+        LEFT JOIN (
             SELECT
-                (SELECT CONCAT(FIRST_NAME, ' ', LAST_NAME) FROM USER WHERE USER_ID = TC.USER_ID) AS FULL_NAME
-                ,WEEK(TC.TIME_IN) AS WEEK_NUMBER
-                ,COUNT(DISTINCT DATE(TIME_IN)) AS ATTENDANCE_COUNT
+                USER_ID,
+                CONCAT(
+                        DATE_FORMAT(DATE_SUB(DATE(TC.TIME_IN), INTERVAL 1 + WEEKDAY(TC.TIME_IN) DAY), '%d')
+                        ,'-'
+                        ,DATE_FORMAT(DATE_ADD(DATE_SUB(DATE(TC.TIME_IN), INTERVAL 1 + WEEKDAY(TC.TIME_IN) DAY), INTERVAL 6 DAY), '%d')
+                        ,'/'
+                        ,MONTH(TIME_IN)
+                ) AS DATE_RANGE,
+                COUNT(DISTINCT DATE(TIME_IN)) AS ATTENDANCE_COUNT
             FROM TIMECLOCK TC
-            GROUP BY TC.USER_ID, WEEK_NUMBER
-            ORDER BY TC.USER_ID, WEEK_NUMBER
-        ) t
+            GROUP BY TC.USER_ID, DATE_RANGE
+        ) t ON users.USER_ID = t.USER_ID AND g.DATE_RANGE = t.DATE_RANGE
+        LEFT JOIN (
+            SELECT USER_ID, FIRST_NAME, LAST_NAME FROM USER
+        ) u ON users.USER_ID = u.USER_ID
+        ORDER BY g.DATE_RANGE, u.USER_ID
     `,
     'fetchAvgHourPerDay':`
         SELECT
-            FULL_NAME AS ID
-            ,AVG_WORKING_HOUR AS X_AXIS
-            ,DAY_OF_WEEK AS Y_AXIS
+            u.FULL_NAME AS ID,
+            COALESCE(t.AVG_WORKING_HOUR, 0) AS X_AXIS,
+            days.DAY_OF_WEEK AS Y_AXIS
         FROM (
-            SELECT
-                (SELECT CONCAT(FIRST_NAME, ' ', LAST_NAME) FROM USER WHERE USER_ID = TIMECLOCK.USER_ID) AS FULL_NAME
-                ,days.DAY_OF_WEEK
-                ,COALESCE(ROUND(AVG(TIME_TO_SEC(TIME(TIMECLOCK.TOTAL_TIME)) / 3600), 2), 0) AS AVG_WORKING_HOUR
+            SELECT 1 AS DAY_ORDER, 'Sunday' AS DAY_OF_WEEK UNION ALL
+            SELECT 2 AS DAY_ORDER, 'Monday' AS DAY_OF_WEEK UNION ALL
+            SELECT 3 AS DAY_ORDER, 'Tuesday' AS DAY_OF_WEEK UNION ALL
+            SELECT 4 AS DAY_ORDER, 'Wednesday' AS DAY_OF_WEEK UNION ALL
+            SELECT 5 AS DAY_ORDER, 'Thursday' AS DAY_OF_WEEK UNION ALL
+            SELECT 6 AS DAY_ORDER, 'Friday' AS DAY_OF_WEEK UNION ALL
+            SELECT 7 AS DAY_ORDER, 'Saturday' AS DAY_OF_WEEK
+        ) AS days
+        CROSS JOIN (
+            SELECT USER_ID, (SELECT CONCAT(FIRST_NAME, ' ', LAST_NAME) FROM USER WHERE USER_ID = t.USER_ID) AS FULL_NAME
             FROM (
-                    SELECT 1 AS DAY_ORDER, 'Sunday' AS DAY_OF_WEEK UNION ALL
-                    SELECT 2 AS DAY_ORDER, 'Monday' AS DAY_OF_WEEK UNION ALL
-                    SELECT 3 AS DAY_ORDER, 'Tuesday' AS DAY_OF_WEEK UNION ALL
-                    SELECT 4 AS DAY_ORDER, 'Wednesday' AS DAY_OF_WEEK UNION ALL
-                    SELECT 5 AS DAY_ORDER, 'Thursday' AS DAY_OF_WEEK UNION ALL
-                    SELECT 6 AS DAY_ORDER, 'Friday' AS DAY_OF_WEEK UNION ALL
-                    SELECT 7 AS DAY_ORDER, 'Saturday' AS DAY_OF_WEEK
-                ) AS days
-            LEFT JOIN TIMECLOCK
-                ON days.DAY_OF_WEEK = DAYNAME(TIMECLOCK.TIME_IN)
-                AND TIMECLOCK.TIME_OUT IS NOT NULL
-            GROUP BY TIMECLOCK.USER_ID, days.DAY_OF_WEEK
-            ORDER BY TIMECLOCK.USER_ID, days.DAY_ORDER
-        ) t
+                SELECT DISTINCT USER_ID
+                FROM TIMECLOCK
+            ) t
+        ) AS u
+        LEFT JOIN (
+            SELECT
+                USER_ID,
+                DAYNAME(TIME_IN) AS DAY_OF_WEEK,
+                COALESCE(ROUND(AVG(TIME_TO_SEC(TIME(TOTAL_TIME)) / 3600), 2), 0) AS AVG_WORKING_HOUR
+            FROM TIMECLOCK
+            GROUP BY USER_ID, DAYNAME(TIME_IN)
+        ) AS t ON u.USER_ID = t.USER_ID AND days.DAY_OF_WEEK = t.DAY_OF_WEEK
+        ORDER BY u.USER_ID, days.DAY_ORDER
     `,
     'fetchTotalSalaryPaid':`
         SELECT
