@@ -491,17 +491,28 @@ export const sqlQuery = {
     `,
     'fetchTotalSalaryPaid':`
         SELECT
-            MONTHLY_SALARY_PAY AS X_AXIS
-            ,MONTH_YEAR AS Y_AXIS
+            MONTHLY_SALARY_PAY AS X_AXIS,
+            CONCAT(
+                DAY(biweekly_period_start),
+                '-',
+                DAY(biweekly_period_end),
+                ' ',
+                DATE_FORMAT(biweekly_period_start, '%M, %Y')
+            ) AS Y_AXIS
         FROM (
-            SELECT 
-                CONCAT(MONTHNAME(PAY_PERIOD_FROM), ' ', YEAR(PAY_PERIOD_FROM)) AS MONTH_YEAR
-                ,SUM(TOTAL_NET_PAY) AS MONTHLY_SALARY_PAY
+            SELECT
+                YEAR(PAY_PERIOD_FROM) AS year_num,
+                MONTH(PAY_PERIOD_FROM) AS month_num,
+                FLOOR((DAY(PAY_PERIOD_FROM) - 1) / 14) + 1 AS biweekly_period_num,
+                MIN(PAY_PERIOD_FROM) AS biweekly_period_start,
+                MAX(PAY_PERIOD_TO) AS biweekly_period_end,
+                SUM(TOTAL_NET_PAY) AS MONTHLY_SALARY_PAY
             FROM PAYROLL
             WHERE MONTH(PAY_PERIOD_FROM) = MONTH(PAY_PERIOD_TO) AND YEAR(PAY_PERIOD_FROM) = YEAR(PAY_PERIOD_TO)
-            GROUP BY MONTH_YEAR
+            GROUP BY year_num, month_num, biweekly_period_num
             ORDER BY MIN(PAY_PERIOD_FROM)
         ) t
+        ORDER BY biweekly_period_start;
     `,
 };
 
