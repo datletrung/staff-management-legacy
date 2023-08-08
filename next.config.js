@@ -4,7 +4,7 @@ const nextConfig = {
   swcMinify: true,
   env: {
     CompanyName: 'Daydream Technology',
-    WebsiteName: 'Daydream HCM',
+    WebsiteName: 'Daydream Technology HCM',
   },
   images: {
     remotePatterns: [
