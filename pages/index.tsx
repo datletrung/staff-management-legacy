@@ -200,7 +200,7 @@ export default function Account() {
                 </>
                 :
                 <>
-                <h2>{`Welcome back, ${session?.user?.name}!`}</h2>
+                <h2>Dashboard</h2>
                 <div className={styles.ChartContainer}>
                     <div className={styles.Chart}>
                         <Bar
