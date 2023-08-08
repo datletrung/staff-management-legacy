@@ -1,7 +1,8 @@
 import '../styles/globals.css'
 import '@components/css/nprogress.css';
 
-import type { AppProps } from 'next/app'
+import type { AppProps } from 'next/app';
+import Head from 'next/head';
 import Router from 'next/router';
 import { SessionProvider } from "next-auth/react";
 import NProgress from 'nprogress';
@@ -23,6 +24,9 @@ export default function App({ Component, pageProps, router }: AppProps) {
       <SessionProvider session={pageProps.session}>
         <RouteGuard router={router}>
           <Layout>
+            <Head>
+                <link rel="icon" href="https://staffmanagement.daydreamtech.net/favicon.ico" />
+            </Head>
             <Component {...pageProps} />
             <ToastContainer limit={3} />
           </Layout>

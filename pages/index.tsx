@@ -38,7 +38,6 @@ const processData = (data: any) => {
         const userEntries = data.filter((item: any) => item.ID === id);
         const labels = userEntries.map((entry: any) => entry.Y_AXIS);
         const dataPoints = userEntries.map((entry: any) => entry.X_AXIS);
-        console.log(`rgba(${chartColor[index % chartColor.length]}, 1)`);
 
         return {
             label: id,
