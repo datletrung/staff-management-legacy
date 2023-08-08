@@ -32,14 +32,14 @@ export default function notify(msg:String, type:String){
             theme: "light",
         });
     } else if (type == 'info'){
-    toast.info(msg, {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        progress: undefined,
-        theme: "light",
-    });
+        toast.info(msg, {
+            position: "bottom-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            progress: undefined,
+            theme: "light",
+        });
     }
 }
