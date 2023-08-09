@@ -76,7 +76,7 @@ export default function SystemMaintenance() {
         ) {
             Notify('Nothing changed!', 'warn');
         } else if (personFirstName != prevFirstName || personLastName != prevLastName || personEmail != prevEmail || personPhoneNumber != prevPhoneNumber) {
-            if (personPhoneNumber !== '' && !matchIsValidTel(personPhoneNumber)){     
+            if (personPhoneNumber !== '' && !matchIsValidTel(personPhoneNumber)){
                 Notify('Invalid phone number!', 'error');
                 return;
             }
