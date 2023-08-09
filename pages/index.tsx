@@ -4,7 +4,8 @@ import { useSession, signIn } from "next-auth/react";
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
-import { TextField, Button } from '@mui/material';
+import { TextField } from '@mui/material';
+import { LoadingButton } from '@mui/lab';
 import Notify from '@components/Notify';
 import baseApiUrl from '@api/apiConfig';
 import styles from '@components/css/index.module.css';
@@ -72,6 +73,9 @@ export default function Account() {
     const [attendancePerWeekChartData, setAttendancePerWeekChartData] = useState({ labels: [] as any[], datasets: [] as any[] });
     const [avgHourPerDayChartData, setAvgHourPerDayChartData] = useState({ labels: [] as any[], datasets: [] as any[] });
     const [totalSalaryPaidChartData, setTotalSalaryPaidChartData] = useState({ labels: [] as any[], datasets: [] as any[] });
+    
+    const [buttonLoading, setButtonLoading] = useState(false);
+    const [buttonDisabled, setButtonDisabled] = useState(false);
 
     const options: ChartOptions<'bar'> = {
         responsive: true,
@@ -140,6 +144,8 @@ export default function Account() {
     }
 
     async function handleSignIn() {
+        setButtonLoading(true);
+        setButtonDisabled(true);
         const result = await signIn('credentials', {
             email: personUserName,
             password: personPassword,
@@ -149,6 +155,8 @@ export default function Account() {
         if (result?.error) {
             Notify(result.error, 'error');
         }
+        setButtonLoading(false);
+        setButtonDisabled(false);
     };
 
     useEffect(() => {
@@ -186,15 +194,17 @@ export default function Account() {
                             className={styles.FormChild}
                         />
                         <br/><br/>
-                        <Button
+                        <LoadingButton
                             size="large"
                             variant="outlined"
                             color="success"
+                            loading={buttonLoading}
+                            disabled={buttonDisabled}
                             onClick={() => handleSignIn()}
                             className={styles.FormChild}
                         >
                             Sign in
-                        </Button>
+                        </LoadingButton>
                     </div>
                 </>
                 :
