@@ -43,8 +43,7 @@ const processData = (data: any) => {
             label: id,
             data: dataPoints,
             backgroundColor: `rgba(${chartColor[index % chartColor.length]}, 0.7)`,
-            borderColor: `rgba(0, 0, 0, 1)`,
-            borderWidth: 1,
+            borderWidth: 0,
         };
     });
 
