@@ -563,40 +563,43 @@ export default function ManagerZonePayroll() {
                         <div className={styles.FilterContainer} style={{display: salaryOption ? 'none' : 'grid'}}>
                             <span className={styles.FilterTitle}>Hourly Rate</span>
                             <TextField
-                                    type="number"
-                                    variant='standard'
-                                    style={{width: '100%'}}
-                                    value={hourlyRate}
-                                    onChange={(event) => {setHourlyRate(Number(event.target.value))}}
-                                    InputProps={{
-                                        endAdornment: '$/hr',
-                                    }}
+                                required
+                                type="number"
+                                variant='standard'
+                                style={{width: '100%'}}
+                                value={hourlyRate}
+                                onChange={(event) => {setHourlyRate(Number(event.target.value))}}
+                                InputProps={{
+                                    endAdornment: '$/hr',
+                                }}
                             />
                         </div>
                         <div className={styles.FilterContainer} style={{display: salaryOption ? 'grid' : 'none'}}>
                             <span className={styles.FilterTitle}>Salary</span>
                             <TextField
-                                    type="number"
-                                    variant='standard'
-                                    style={{width: '100%'}}
-                                    value={salary}
-                                    onChange={(event) => {setSalary(Number(event.target.value))}}
-                                    InputProps={{
-                                        endAdornment: '$',
-                                    }}
+                                required
+                                type="number"
+                                variant='standard'
+                                style={{width: '100%'}}
+                                value={salary}
+                                onChange={(event) => {setSalary(Number(event.target.value))}}
+                                InputProps={{
+                                    endAdornment: '$',
+                                }}
                             />
                         </div><br/>
                         <div className={styles.FilterContainer}>
                             <span className={styles.FilterTitle}>Vacation Pay</span>
                             <TextField
-                                    type="number"
-                                    variant='standard'
-                                    style={{width: '100%'}}
-                                    value={vacationPayPercent}
-                                    onChange={(event) => {setVacationPayPercent(Number(event.target.value))}}
-                                    InputProps={{
-                                        endAdornment: '%',
-                                    }}
+                                required
+                                type="number"
+                                variant='standard'
+                                style={{width: '100%'}}
+                                value={vacationPayPercent}
+                                onChange={(event) => {setVacationPayPercent(Number(event.target.value))}}
+                                InputProps={{
+                                    endAdornment: '%',
+                                }}
                             />
                             <span className={styles.FilterTitle}>From Date</span>
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
