@@ -63,7 +63,7 @@ const chartColor = [
     '172, 153, 189', // Purple
 ];
 
-export default function Account() {
+export default function Dashboard() {
     const {data: session} = useSession();
     const router = useRouter();
 
