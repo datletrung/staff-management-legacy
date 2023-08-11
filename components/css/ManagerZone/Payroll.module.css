@@ -181,6 +181,13 @@
     background-color: #EAF5E1;
 }
 
+.TableColumn {
+    width: 30%;
+    display: table-cell;
+    vertical-align: bottom;
+    text-align: center;
+}
+
 .PayrollTableContent{
     padding: 10px;
     width: 30%;

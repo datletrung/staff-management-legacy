@@ -798,7 +798,7 @@ const PayrollInfo = (payrollInfo: any) => {
                     <hr style={{ flex: 1, marginLeft: '10px' }} />
                 </div>
                 <div>
-                <table className={styles.PayrollTable}>
+                    <table className={styles.PayrollTable}>
                         <tbody>
                             <tr>
                                 <td>Hours</td>
