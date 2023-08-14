@@ -14,7 +14,7 @@ import baseApiUrl from '@api/apiConfig';
 
 import styles from '@components/css/Profile.module.css';
 
-export default function SystemMaintenance() {
+export default function Profile() {
     if (!checkPermissions()) {
         return <AccessDenied/>;
     }
