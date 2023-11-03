@@ -3,8 +3,8 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   env: {
-    CompanyName: 'Daydream Technology',
-    WebsiteName: 'Daydream Technology HCM',
+    CompanyName: 'Daydream Technology Inc.',
+    WebsiteName: 'Daydream HCM',
   },
   images: {
     remotePatterns: [
